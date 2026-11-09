@@ -1,0 +1,68 @@
+"""PU-03 a PU-05: cadena de respaldo del agente tutor (RF-004, ADR-04)."""
+import httpx
+
+from app.modules.tutor.proveedores import AdaptadorOpenAICompatible, ErrorProveedor, RespuestaIA
+from app.modules.tutor.servicio import ServicioTutor
+
+
+class Falla:
+    def __init__(self, nombre):
+        self.nombre, self.modelo = nombre, "x"
+
+    def completar(self, sistema, mensaje):
+        raise ErrorProveedor("caído")
+
+
+class Responde:
+    def __init__(self, nombre):
+        self.nombre, self.modelo = nombre, "m"
+
+    def completar(self, sistema, mensaje):
+        return RespuestaIA("explicación", self.nombre, self.modelo, 10)
+
+
+ARGS = ("Etapa 1", "Observe la mucosa", "Explicación preparada")
+
+
+def test_usa_principal_si_responde():
+    assert ServicioTutor([Responde("principal"), Responde("alternativo")]).explicar(*ARGS).proveedor == "principal"
+
+
+def test_pasa_al_alternativo_si_falla_el_principal():
+    s = ServicioTutor([Falla("principal"), Responde("alternativo")])
+    assert s.explicar(*ARGS).proveedor == "alternativo"
+    assert len(s.errores) == 1
+
+
+def test_usa_predefinida_si_todo_falla():
+    r = ServicioTutor([Falla("principal"), Falla("alternativo")]).explicar(*ARGS)
+    assert r.proveedor == "predefinida"
+    assert "Explicación preparada" in r.texto and "no reemplaza" in r.texto
+
+
+def test_adaptador_sin_clave_lanza_error():
+    a = AdaptadorOpenAICompatible("principal", "http://x", "", "m")
+    try:
+        a.completar("s", "m")
+        raise AssertionError("debía fallar")
+    except ErrorProveedor:
+        pass
+
+
+def test_adaptador_lee_respuesta_formato_openai():
+    def manejador(request):
+        assert request.headers["Authorization"] == "Bearer k"
+        return httpx.Response(200, json={"choices": [{"message": {"content": " hola "}}]})
+    a = AdaptadorOpenAICompatible("principal", "http://x/v1", "k", "m",
+                                  cliente=httpx.Client(transport=httpx.MockTransport(manejador)))
+    assert a.completar("s", "m").texto == "hola"
+
+
+def test_adaptador_convierte_error_http():
+    a = AdaptadorOpenAICompatible("principal", "http://x", "k", "m",
+                                  cliente=httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(503))))
+    try:
+        a.completar("s", "m")
+        raise AssertionError("debía fallar")
+    except ErrorProveedor:
+        pass

@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: colorrectal_sim
+          POSTGRES_USER: colorrectal
+          POSTGRES_PASSWORD: colorrectal
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U colorrectal" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://colorrectal:colorrectal@localhost:5432/colorrectal_sim
+      JWT_SECRETO: secreto-solo-para-ci
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Crear esquema y catálogos
+        run: |
+          for f in ../db/*.sql; do
+            PGPASSWORD=colorrectal psql -h localhost -U colorrectal -d colorrectal_sim -v ON_ERROR_STOP=1 -f "$f"
+          done
+      - name: Estilo (ruff)
+        run: ruff check .
+      - name: Pruebas con cobertura
+        run: pytest --cov=app --cov-report=term-missing --cov-report=xml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-backend
+          path: backend/coverage.xml
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: npm run build
+
+  secretos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Buscar secretos con gitleaks
+        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.21.2 detect --source /repo --verbose
