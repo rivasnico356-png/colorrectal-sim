@@ -37,8 +37,10 @@ def test_registro_login_y_perfil(cliente):
 @requiere_db
 def test_bloqueo_tras_cinco_intentos(cliente):
     correo = f"bloq_{uuid.uuid4().hex[:8]}@ejemplo.com"
-    cliente.post("/api/v1/auth/registro", json={"nombre": "B", "correo": correo, "contrasena": "Segura123",
-                                               "rango_edad": "18-29", "acepta_politica": True})
+    r = cliente.post("/api/v1/auth/registro", json={"nombre": "Persona bloqueo", "correo": correo,
+                                                   "contrasena": "Segura123", "rango_edad": "18-29",
+                                                   "acepta_politica": True})
+    assert r.status_code == 201
     for _ in range(5):
         cliente.post("/api/v1/auth/login", json={"correo": correo, "contrasena": "mala12345"})
     r = cliente.post("/api/v1/auth/login", json={"correo": correo, "contrasena": "Segura123"})
