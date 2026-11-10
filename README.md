@@ -174,13 +174,13 @@ Lee la [guía de contribución](CONTRIBUTING.md) antes de abrir un Pull Request.
 
 ## 👥 Equipo Medical programmers
 
-| Integrante | Rol en el desarrollo |
-|------------|----------------------|
-| Nicolas Rivas Castillo | Líder del proyecto, integración y documentación |
-| David Muñoz | Backend, base de datos y Docker |
-| Juan Camilo | Frontend |
-| Valentina | Agente tutor de IA y modelo de visión |
-| María Camila | Pruebas e integración continua |
+| Integrante | GitHub | Rol en el desarrollo |
+|------------|--------|----------------------|
+| Nicolás Rivas Castillo | [@rivasnico356-png](https://github.com/rivasnico356-png) | Líder del proyecto, integración y documentación |
+| David Steven Muñoz | [@Darksteven30](https://github.com/Darksteven30) | Backend, base de datos y Docker |
+| Juan Camilo Paredes Ramírez | [@juanparedes247](https://github.com/juanparedes247) | Frontend |
+| Valentina Ramírez | [@valentinaramirezs](https://github.com/valentinaramirezs) | Agente tutor de IA y modelo de visión |
+| María Camila Viveros | [@camiviveros0-sketch](https://github.com/camiviveros0-sketch) | Pruebas e integración continua |
 
 Dueño del proyecto: Jair Enrique Sanclemente Castro · Gestión de Proyectos TI 2026-B, Universidad Santiago de Cali.
 
