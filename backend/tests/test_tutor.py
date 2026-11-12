@@ -74,6 +74,19 @@ def test_adaptador_pide_razonamiento_bajo_a_gpt_oss():
     assert enviado["max_completion_tokens"] == 1024 and "max_tokens" not in enviado
 
 
+def test_adaptador_explica_el_rechazo_del_proveedor_y_limpia_la_clave():
+    def manejador(request):
+        assert request.headers["Authorization"] == "Bearer k"
+        return httpx.Response(401, json={"error": {"message": "Invalid API Key"}})
+    a = AdaptadorOpenAICompatible("principal", "http://x", " k\n", "m",
+                                  cliente=httpx.Client(transport=httpx.MockTransport(manejador)))
+    try:
+        a.completar("s", "m")
+        raise AssertionError("debía fallar")
+    except ErrorProveedor as e:
+        assert "401" in str(e) and "Invalid API Key" in str(e)
+
+
 def test_adaptador_convierte_error_http():
     a = AdaptadorOpenAICompatible("principal", "http://x", "k", "m",
                                   cliente=httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(503))))

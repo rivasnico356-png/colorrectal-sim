@@ -1,10 +1,13 @@
 """Patrón Strategy (RF-004 4.5): IA principal → modelo alternativo → recomendación predefinida.
 La simulación nunca se bloquea si la IA falla."""
+import logging
+
 from app.core.config import get_settings
 from app.core.textos import ROTULO_IA
 from app.modules.tutor import prompt
 from app.modules.tutor.proveedores import AdaptadorOpenAICompatible, ErrorProveedor, ProveedorLLM, RespuestaIA
 
+registro = logging.getLogger("colorrectal.tutor")
 MENSAJE_PREDEFINIDA = f"El tutor no está disponible en este momento. Esta es la explicación preparada para la etapa. {ROTULO_IA}"
 
 
@@ -24,6 +27,8 @@ class ServicioTutor:
                 return proveedor.completar(prompt.SISTEMA, mensaje)
             except ErrorProveedor as e:
                 self.errores.append(f"{proveedor.nombre}: {e}")
+                # Va al registro del servidor para diagnosticar; nunca incluye la clave de API.
+                registro.warning("Tutor: falló %s (%s): %s", proveedor.nombre, getattr(proveedor, "modelo", "-"), e)
         return RespuestaIA(f"{explicacion_predefinida}\n\n{MENSAJE_PREDEFINIDA}", "predefinida", "-", 0)
 
 
