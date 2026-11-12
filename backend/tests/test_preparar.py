@@ -24,9 +24,12 @@ def test_preparar_es_idempotente(cliente, monkeypatch):
         db.commit()
         assert preparar.crear_admin_inicial(db) is True
         assert preparar.crear_admin_inicial(db) is False
+        # Si la variable cambia (o traía un salto de línea), el administrador queda con la contraseña nueva.
+        monkeypatch.setenv("ADMIN_CONTRASENA", "Nueva12345\n")
+        assert preparar.crear_admin_inicial(db) is False
         assert preparar.publicar_caso_demo(db) is True
         assert preparar.publicar_caso_demo(db) is False
-    cab = token(cliente, admin, "Inicial123")
+    cab = token(cliente, admin, "Nueva12345")
     assert cliente.get("/api/v1/admin/usuarios", headers=cab).status_code == 200
     _, cab_usuario = registrar_usuario(cliente)
     catalogo = cliente.get("/api/v1/casos", headers=cab_usuario).json()

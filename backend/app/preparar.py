@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.db import SessionLocal, engine
-from app.core.security import hash_contrasena
+from app.core.security import hash_contrasena, verificar_contrasena
 from app.modules.casos import service as casos
 from app.modules.casos.schemas import CasoIn, EtapaIn, OpcionIn
 from app.modules.usuarios.schemas import validar_contrasena
@@ -49,12 +49,23 @@ def _crear_usuario(db: Session, rol: str, nombre: str, correo: str, contrasena: 
 
 
 def crear_admin_inicial(db: Session) -> bool:
-    correo, contrasena = os.getenv("ADMIN_CORREO", "").strip(), os.getenv("ADMIN_CONTRASENA", "")
+    """Crea el administrador inicial o, si ya existe, deja su contraseña igual a ADMIN_CONTRASENA y lo desbloquea.
+
+    Los campos de Render admiten varias líneas: se quitan espacios y saltos de línea al inicio y al final.
+    """
+    correo, contrasena = os.getenv("ADMIN_CORREO", "").strip(), os.getenv("ADMIN_CONTRASENA", "").strip()
     if not (correo and contrasena):
         return False
-    if db.execute(text("SELECT 1 FROM usuario WHERE lower(correo) = lower(:c)"), {"c": correo}).first():
-        return False
     validar_contrasena(contrasena)
+    existente = db.execute(text("SELECT id_usuario, hash_contrasena FROM usuario WHERE lower(correo) = lower(:c)"),
+                           {"c": correo}).first()
+    if existente:
+        if not verificar_contrasena(contrasena, existente.hash_contrasena):
+            db.execute(text("""UPDATE usuario SET hash_contrasena = :h, intentos_fallidos = 0, bloqueado_hasta = NULL
+                               WHERE id_usuario = :u"""), {"h": hash_contrasena(contrasena), "u": existente.id_usuario})
+            db.commit()
+            print("Contraseña del administrador inicial actualizada desde ADMIN_CONTRASENA.")
+        return False
     _crear_usuario(db, "Administrador", os.getenv("ADMIN_NOMBRE", "Administrador"), correo, contrasena)
     db.commit()
     print("Administrador inicial creado.")
