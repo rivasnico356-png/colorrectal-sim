@@ -35,3 +35,7 @@ vision/salidas/
 Thumbs.db
 .vscode/
 .idea/
+
+# Modelo de visión: se descarga del release modelo-vision (no se versiona)
+/backend/modelos/
+*.onnx
