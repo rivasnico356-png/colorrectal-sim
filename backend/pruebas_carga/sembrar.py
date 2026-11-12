@@ -45,11 +45,13 @@ def main() -> None:
         "contexto_simulado": "Persona simulada de prueba."}).json()["id_caso"]
     for orden in (1, 2):
         opciones = [{"texto": f"Opción {x}", "puntaje": p, "es_correcta": p == 100, "recomendada_ia": x == "A",
-                     "retroalimentacion": "Explicación sintética de prueba.", "fuente": "Fuente sintética"} for x, p in (("A", 100), ("B", 0))]
+                     "retroalimentacion": "Explicación sintética de prueba.", "fuente": "Fuente sintética"}
+                    for x, p in (("A", 100), ("B", 0))]
         c.put(f"/editor/casos/{caso}/etapas", headers=autor, json={
             "orden": orden, "enunciado": f"Enunciado sintético de la etapa {orden}.",
             "recomendacion_ia": "Sugerencia sintética de prueba.", "opciones": opciones}).raise_for_status()
-    c.post(f"/editor/casos/{caso}/revision", headers=revisor, json={"accion": "aprobar", "fuente_clinica": "Fuente sintética"}).raise_for_status()
+    aprobar = {"accion": "aprobar", "fuente_clinica": "Fuente sintética"}
+    c.post(f"/editor/casos/{caso}/revision", headers=revisor, json=aprobar).raise_for_status()
     c.post(f"/editor/casos/{caso}/revision", headers=revisor, json={"accion": "publicar"}).raise_for_status()
     print(f"Caso sintético publicado: {caso}")
 
