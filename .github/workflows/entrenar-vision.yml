@@ -40,7 +40,15 @@ jobs:
       - name: Descargar Kvasir-SEG desde la fuente oficial
         run: |
           mkdir -p data && cd data
-          curl -fsSL --retry 3 -o kvasir-seg.zip https://datasets.simula.no/downloads/kvasir-seg.zip
+          # El servidor oficial no envía el certificado intermedio. Se descarga desde la dirección que publica el propio
+          # certificado (AIA) y se verifica la cadena completa contra las autoridades del sistema (sin desactivar TLS).
+          aia=$(echo | openssl s_client -connect datasets.simula.no:443 -servername datasets.simula.no 2>/dev/null \
+                | openssl x509 -noout -ext authorityInfoAccess | grep -o 'CA Issuers - URI:[^ ]*' | sed 's/CA Issuers - URI://')
+          echo "Intermedio: $aia"
+          curl -fsSL "$aia" -o intermedio.crt
+          (openssl x509 -inform DER -in intermedio.crt 2>/dev/null || openssl x509 -in intermedio.crt) > intermedio.pem
+          cat /etc/ssl/certs/ca-certificates.crt intermedio.pem > cadena.pem
+          curl -fsSL --retry 3 --cacert cadena.pem -o kvasir-seg.zip https://datasets.simula.no/downloads/kvasir-seg.zip
           sha256sum kvasir-seg.zip | tee kvasir-seg.sha256
           unzip -q kvasir-seg.zip
           ls Kvasir-SEG | head; echo "Imágenes: $(ls Kvasir-SEG/images | wc -l) · Máscaras: $(ls Kvasir-SEG/masks | wc -l)"
