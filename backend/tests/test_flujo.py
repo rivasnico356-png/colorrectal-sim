@@ -170,3 +170,26 @@ def test_administracion_de_usuarios(cliente, admin):
     assert cliente.post(f"{API}/admin/usuarios", headers=admin, json={"nombre": "Otra", "correo": correo("x"), "contrasena": "Segura123",
                                                                      "rol": "Usuario"}).status_code == 201
     assert token  # importado para reutilizar en otras pruebas
+
+
+@requiere_db
+def test_recurso_multimedia_exige_formato_dataset_y_licencia(cliente, admin, tmp_path, monkeypatch):
+    """RF-002 2.2: solo JPG/PNG/MP4, con dataset de origen y licencia; se publica bajo /media."""
+    from app.core.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "media_dir", str(tmp_path))
+    _, autor = crear_profesional(cliente, admin)
+    _, revisor = crear_profesional(cliente, admin)
+    id_caso = publicar_caso(cliente, autor, revisor)
+    id_etapa = cliente.get(f"{API}/editor/casos/{id_caso}", headers=revisor).json()["etapas"][0]["id_etapa"]
+    png = b"\x89PNG\r\n\x1a\n" + b"0" * 64
+    url = f"{API}/editor/etapas/{id_etapa}/recursos"
+    assert cliente.post(url, headers=autor, files={"archivo": ("a.pdf", b"%PDF", "application/pdf")},
+                        data={"id_dataset": "1", "licencia": "CC BY 4.0"}).status_code == 415
+    assert cliente.post(url, headers=autor, files={"archivo": ("a.png", png, "image/png")},
+                        data={"id_dataset": "1", "licencia": " "}).status_code == 422
+    assert cliente.post(url, headers=autor, files={"archivo": ("a.png", png, "image/png")},
+                        data={"id_dataset": "999", "licencia": "CC BY 4.0"}).status_code == 422
+    r = cliente.post(url, headers=autor, files={"archivo": ("a.png", png, "image/png")}, data={"id_dataset": "1", "licencia": "CC BY 4.0"})
+    assert r.status_code == 201, r.text
+    assert (tmp_path / "casos" / str(id_caso) / f"{r.json()['id_recurso']}.png").exists()
