@@ -62,8 +62,12 @@ def main() -> None:
     ap.add_argument("--tasa", type=float, default=1e-4)
     ap.add_argument("--semilla", type=int, default=2026)
     ap.add_argument("--salida", default="vision/salidas")
-    ap.add_argument("--version", default=f"polipos-unet-r34-{datetime.now():%Y%m%d}")
+    ap.add_argument("--codificador", default="resnet34",
+                    help="Codificador de la U-Net (resnet34 con GPU; mobilenet_v2 para entrenar en CPU)")
+    ap.add_argument("--trabajadores", type=int, default=2, help="Procesos que leen imágenes")
+    ap.add_argument("--version", default=None)
     a = ap.parse_args()
+    a.version = a.version or f"polipos-unet-{a.codificador}-{datetime.now():%Y%m%d}"
 
     fijar_semillas(a.semilla)
     salida = Path(a.salida)
@@ -74,8 +78,8 @@ def main() -> None:
 
     dispositivo = "cuda" if torch.cuda.is_available() else "cpu"
     cargar = {k: DataLoader(DatasetPolipos(v, a.tamano, aumentar=(k == "entrenamiento")), batch_size=a.lote,
-                            shuffle=(k == "entrenamiento"), num_workers=2) for k, v in particiones.items()}
-    modelo = smp.Unet(encoder_name="resnet34", encoder_weights="imagenet", in_channels=3, classes=1).to(dispositivo)
+                            shuffle=(k == "entrenamiento"), num_workers=a.trabajadores) for k, v in particiones.items()}
+    modelo = smp.Unet(encoder_name=a.codificador, encoder_weights="imagenet", in_channels=3, classes=1).to(dispositivo)
     perdida_dice = smp.losses.DiceLoss(mode="binary")
     perdida_bce = torch.nn.BCEWithLogitsLoss()
     optim = torch.optim.Adam(modelo.parameters(), lr=a.tasa)
@@ -104,10 +108,11 @@ def main() -> None:
     ejemplo = torch.zeros(1, 3, a.tamano, a.tamano)
     torch.onnx.export(modelo, ejemplo, salida / "vision.onnx", input_names=["imagen"], output_names=["logits"], opset_version=17)
     meta = {
-        "version": a.version, "tamano": a.tamano, "umbral": 0.5, "arquitectura": "U-Net con codificador ResNet-34",
+        "version": a.version, "tamano": a.tamano, "umbral": 0.5, "arquitectura": f"U-Net con codificador {a.codificador} (preentrenado en ImageNet)",
         "datasets": a.datasets, "imagenes_por_particion": {k: len(v) for k, v in particiones.items()},
         "semilla": a.semilla, "epocas": a.epocas, "lote": a.lote, "tasa_aprendizaje": a.tasa,
         "metricas_prueba": prueba, "historial_validacion": historial,
+        "dispositivo": dispositivo,
         "librerias": {"python": platform.python_version(), "torch": torch.__version__, "smp": smp.__version__},
         "uso": "Resultado experimental de apoyo a la detección e interpretación; no reemplaza la valoración de su médico.",
     }

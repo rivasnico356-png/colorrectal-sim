@@ -1,0 +1,88 @@
+# Entrena el modelo de visión (IE-04, RF-003 3.4, RF-010 10.3) en los servidores de GitHub, sin GPU, con Kvasir-SEG
+# descargado de su fuente oficial (uso educativo permitido; se cita el artículo del dataset en docs/datasets.md).
+# Publica vision.onnx y vision.json en el release «modelo-vision», de donde los toma el despliegue en Render.
+# Las imágenes nunca se suben al repositorio.
+name: Entrenar modelo de visión
+
+on:
+  workflow_dispatch:
+    inputs:
+      epocas:
+        description: "Épocas de entrenamiento"
+        default: "25"
+      tamano:
+        description: "Tamaño de imagen (píxeles)"
+        default: "256"
+      codificador:
+        description: "Codificador de la U-Net"
+        default: "mobilenet_v2"
+      publicar:
+        description: "Publicar el modelo en el release modelo-vision"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  entrenar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Librerías (PyTorch para CPU)
+        run: |
+          pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install segmentation-models-pytorch==0.3.4 "numpy<2.2" pillow onnx==1.17.0 onnxruntime==1.20.1
+      - name: Descargar Kvasir-SEG desde la fuente oficial
+        run: |
+          mkdir -p data && cd data
+          curl -fsSL --retry 3 -o kvasir-seg.zip https://datasets.simula.no/downloads/kvasir-seg.zip
+          sha256sum kvasir-seg.zip | tee kvasir-seg.sha256
+          unzip -q kvasir-seg.zip
+          ls Kvasir-SEG | head; echo "Imágenes: $(ls Kvasir-SEG/images | wc -l) · Máscaras: $(ls Kvasir-SEG/masks | wc -l)"
+      - name: Entrenar
+        working-directory: vision
+        run: |
+          python entrenar.py --imagenes ../data/Kvasir-SEG/images --mascaras ../data/Kvasir-SEG/masks \
+            --datasets Kvasir-SEG --codificador "${{ inputs.codificador }}" --epocas "${{ inputs.epocas }}" \
+            --tamano "${{ inputs.tamano }}" --lote 8 --trabajadores 2 --salida salidas
+          cp ../data/kvasir-seg.sha256 salidas/
+          ls -la salidas
+      - name: Verificar que la plataforma puede cargar el modelo
+        working-directory: vision/salidas
+        run: |
+          python - <<'PY'
+          import json, numpy as np, onnxruntime as ort
+          meta = json.load(open("vision.json")); t = meta["tamano"]
+          s = ort.InferenceSession("vision.onnx", providers=["CPUExecutionProvider"])
+          y = s.run(None, {s.get_inputs()[0].name: np.zeros((1, 3, t, t), np.float32)})[0]
+          assert y.shape == (1, 1, t, t), y.shape
+          print("ONNX válido:", y.shape, "· Dice prueba:", meta["metricas_prueba"])
+          PY
+          {
+            echo "### Modelo de visión"
+            echo '```json'; python -c "import json;m=json.load(open('vision.json'));m.pop('historial_validacion');print(json.dumps(m,indent=1,ensure_ascii=False))"; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: modelo-vision
+          path: |
+            vision/salidas/vision.onnx
+            vision/salidas/vision.json
+            vision/salidas/particiones.json
+            vision/salidas/kvasir-seg.sha256
+      - name: Publicar en el release modelo-vision
+        if: inputs.publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd vision/salidas
+          if ! gh release view modelo-vision >/dev/null 2>&1; then
+            gh release create modelo-vision --title "Modelo de visión (experimental)" --prerelease \
+              --notes "Modelo experimental de segmentación de pólipos entrenado con Kvasir-SEG (Jha et al., 2020), uso educativo. Resultado experimental de apoyo a la detección e interpretación; no reemplaza la valoración de su médico."
+          fi
+          gh release upload modelo-vision vision.onnx vision.json particiones.json kvasir-seg.sha256 --clobber

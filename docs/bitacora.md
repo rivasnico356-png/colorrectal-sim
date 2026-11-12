@@ -15,6 +15,7 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 
 | Hora | Qué | Evidencia | Resultado |
 |---|---|---|---|
+| 15:20 | Licencia de Kvasir-SEG verificada en la fuente oficial (uso educativo permitido, con cita). Se agrega el flujo «Entrenar modelo de visión» en GitHub Actions (CPU, U-Net con MobileNetV2) | https://datasets.simula.no/kvasir-seg; `.github/workflows/entrenar-vision.yml` | En curso |
 | 14:55 | Tutor con IA real en el enlace público: responde `openai/gpt-oss-120b` en 767 ms (1,7 s con la red). Se ajusta para responder en texto plano (prompt tutor-v0.3) | Prueba en https://colorrectal-sim.onrender.com; commits 8e900ed y siguiente | Funciona |
 | 14:45 | Defecto: la variable `IA_API_KEY` no existía en Render (el tutor usaba la explicación predefinida). Se agrega el registro del motivo de falla del proveedor | Registro de Render: «No hay clave de API configurada»; commit 8e900ed | Corregido al crear la variable |
 | 14:20 | Defecto: Groq retiró los modelos del tutor (`llama-3.3-70b-versatile` y `llama-3.1-8b-instant`, 16-08-2026). Se cambian por `openai/gpt-oss-120b` y `openai/gpt-oss-20b` con razonamiento bajo | Página de modelos retirados de Groq; commit 78f84fc; corrida 43285732686 | CI aprobado (42 pruebas); falta la clave de Groq en Render para probarlo en vivo |
