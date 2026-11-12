@@ -15,6 +15,7 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 
 | Hora | Qué | Evidencia | Resultado |
 |---|---|---|---|
+| 15:35 | Rama `main` vaciada por indicación del profesor: queda solo un README y recibe la versión 1.0 al cierre. La rama principal de GitHub sigue siendo `develop` | Commit 719af89 en `main` (el historial anterior se conserva) | Hecho |
 | 15:20 | Licencia de Kvasir-SEG verificada en la fuente oficial (uso educativo permitido, con cita). Se agrega el flujo «Entrenar modelo de visión» en GitHub Actions (CPU, U-Net con MobileNetV2) | https://datasets.simula.no/kvasir-seg; `.github/workflows/entrenar-vision.yml` | En curso |
 | 14:55 | Tutor con IA real en el enlace público: responde `openai/gpt-oss-120b` en 767 ms (1,7 s con la red). Se ajusta para responder en texto plano (prompt tutor-v0.3) | Prueba en https://colorrectal-sim.onrender.com; commits 8e900ed y siguiente | Funciona |
 | 14:45 | Defecto: la variable `IA_API_KEY` no existía en Render (el tutor usaba la explicación predefinida). Se agrega el registro del motivo de falla del proveedor | Registro de Render: «No hay clave de API configurada»; commit 8e900ed | Corregido al crear la variable |
