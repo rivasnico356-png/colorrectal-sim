@@ -20,7 +20,7 @@ Estados: **Implementado** (código y prueba automática), **Parcial** (falta alg
 | 2.6 | Catálogo con filtros y estado | Implementado | `casos/router.py` | `test_flujo` |
 | 3.1 / 3.2 | Aviso de alcance y etapas en orden | Implementado | `simulacion/service.py` | `test_flujo` |
 | 3.3 / 3.3b | Visor de imagen con zoom y reproductor de video cuadro a cuadro | Implementado | `Simulacion.tsx` (`VisorVideo`), `casos/medios.py` (peticiones parciales) | `test_flujo` (Range) y pruebas de sistema en `e2e/` |
-| 3.4 | Resultado del modelo de visión | Implementado* | `estudios/vision.py`, `simulacion/service.py` | `test_estudios::test_resultado_del_modelo_desde_mascara` |
+| 3.4 | Resultado del modelo de visión | Implementado | `estudios/vision.py`, `simulacion/service.py`; modelo `polipos-unet-mobilenet_v2-20261112` (release `modelo-vision`) | `test_estudios::test_resultado_del_modelo_desde_mascara`, `test_preparar::test_imagen_de_ejemplo_en_el_caso_de_demostracion` |
 | 3.5 / 3.6 | Decisión con confianza 1–5; retomar sin modificar | Implementado | `simulacion/service.py` | `test_flujo` |
 | 4.1–4.5 | Recomendación, explicación, preguntas con límite, siguió/rechazó, respaldo | Implementado | `tutor/`, `simulacion/service.py` | `test_tutor`, `test_flujo` |
 | 5.1–5.4 | Evaluación, puntaje, retroalimentación y resumen | Implementado | `simulacion/service.py` | `test_flujo` |
@@ -28,9 +28,9 @@ Estados: **Implementado** (código y prueba automática), **Parcial** (falta alg
 | 7.1 / 7.2 | Registro de decisiones y exportación seudonimizada | Implementado | `simulacion/service.py`, `progreso/router.py` | `test_flujo` |
 | 8.1–8.4 | Historial, progreso, panel agregado y avance individual | Implementado | `progreso/router.py` | `test_flujo` |
 | 9.1–9.3 | Autorizaciones, consulta, rectificación y supresión | Implementado | `privacidad/router.py` | `test_flujo::test_privacidad_rectificar_y_suprimir` |
-| 10.1–10.5 | Estudios propios: carga, desidentificación, interpretación, compartir, eliminar | Implementado* | `estudios/` | `test_estudios` |
+| 10.1–10.5 | Estudios propios: carga, desidentificación, interpretación, compartir, eliminar | Implementado | `estudios/` | `test_estudios` (en el enlace público de demostración la carga está desactivada, Ley 1581) |
 
-\* Funciona con el modelo de visión entrenado (`vision/README.md`). Sin el archivo del modelo, la plataforma informa que no está disponible.
+Modelo de visión entrenado el 12-11-2026 con Kvasir-SEG (800/100/100 imágenes, semilla 2026, 30 épocas en CPU): **Dice 0,872 e IoU 0,805** en la partición de prueba. Falta medir la generalización con PolypGen (requiere registro). Sin el archivo del modelo, la plataforma informa que no está disponible (`vision/README.md`).
 
 ## No funcionales
 

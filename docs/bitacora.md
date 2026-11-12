@@ -15,6 +15,7 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 
 | Hora | Qué | Evidencia | Resultado |
 |---|---|---|---|
+| 16:45 | Modelo de visión entrenado: U-Net con MobileNetV2, Kvasir-SEG 800/100/100, semilla 2026, 30 épocas en CPU. Prueba: Dice 0,872, IoU 0,805. ONNX de 26 MB verificado con onnxruntime y publicado en el release `modelo-vision` | Corrida 43298585293 (prueba corta previa: 43297514297, 1 época, Dice 0,658) | Hecho |
 | 15:35 | Rama `main` vaciada por indicación del profesor: queda solo un README y recibe la versión 1.0 al cierre. La rama principal de GitHub sigue siendo `develop` | Commit 719af89 en `main` (el historial anterior se conserva) | Hecho |
 | 15:20 | Licencia de Kvasir-SEG verificada en la fuente oficial (uso educativo permitido, con cita). Se agrega el flujo «Entrenar modelo de visión» en GitHub Actions (CPU, U-Net con MobileNetV2) | https://datasets.simula.no/kvasir-seg; `.github/workflows/entrenar-vision.yml` | En curso |
 | 14:55 | Tutor con IA real en el enlace público: responde `openai/gpt-oss-120b` en 767 ms (1,7 s con la red). Se ajusta para responder en texto plano (prompt tutor-v0.3) | Prueba en https://colorrectal-sim.onrender.com; commits 8e900ed y siguiente | Funciona |

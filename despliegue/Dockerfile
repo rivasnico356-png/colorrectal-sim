@@ -16,7 +16,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/app ./app
 COPY db ./db
 COPY --from=web /web/dist ./web
-RUN useradd -m appuser && mkdir -p media estudios && chown appuser media estudios
+# Modelo de visión experimental y su imagen de ejemplo, publicados por el flujo «Entrenar modelo de visión» (IE-04).
+# ADD descarga de nuevo en cada construcción, así Render toma la versión más reciente del release.
+ADD https://github.com/rivasnico356-png/colorrectal-sim/releases/download/modelo-vision/vision.onnx modelos/vision.onnx
+ADD https://github.com/rivasnico356-png/colorrectal-sim/releases/download/modelo-vision/vision.json modelos/vision.json
+ADD https://github.com/rivasnico356-png/colorrectal-sim/releases/download/modelo-vision/ejemplo-kvasir.jpg modelos/ejemplo-kvasir.jpg
+RUN useradd -m appuser && mkdir -p media estudios && chown appuser media estudios && chmod -R a+rX modelos
 USER appuser
 EXPOSE 8000
 # Prepara la base (esquema, administrador inicial y caso de demostración) y arranca la API.

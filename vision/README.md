@@ -28,6 +28,9 @@ Las imágenes van en `data/`, que está en `.gitignore`.
    partición de prueba (`ejemplo-kvasir.jpg`).
 4. El despliegue en Render (`despliegue/Dockerfile`) descarga esos archivos del release en cada construcción.
 
+Versión publicada: `polipos-unet-mobilenet_v2-20261112` (12-11-2026, corrida 43298585293). Prueba con 100 imágenes que
+el modelo no vio al entrenar: **Dice 0,872 · IoU 0,805**. Pendiente: medirlo en PolypGen (otros centros).
+
 ## 3. Entrenar en Google Colab (con GPU, opcional)
 
 1. Abre un cuaderno nuevo y elige **Entorno de ejecución → Cambiar tipo → GPU**.
