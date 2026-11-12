@@ -1,7 +1,7 @@
 # 🩺 Colorrectal-Sim
 
 ![Estado](https://img.shields.io/badge/estado-en%20desarrollo-yellow)
-![Versión](https://img.shields.io/badge/versión-0.1.0-blue)
+![Versión](https://img.shields.io/badge/versión-0.5.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
@@ -23,7 +23,8 @@ Proyecto ONCO-AI_USC 2026 B · Línea 2 ONCO-SIM · Universidad Santiago de Cali
 - **Agente tutor de IA** que explica cada etapa en lenguaje sencillo, con respaldo automático si el servicio de IA falla.
 - **Vínculo con el profesional de la salud**: la persona decide si comparte su avance.
 - **Progreso y niveles** (Explorador, Analista, Experto).
-- **Protección de datos** según la Ley 1581 de 2012: autorizaciones registradas, contraseñas cifradas y exportación seudonimizada.
+- **Estudios propios**: la persona puede cargar imágenes de su colonoscopia; se quitan los datos personales, se guardan cifradas y un modelo experimental marca regiones de interés.
+- **Protección de datos** según la Ley 1581 de 2012: autorizaciones que se pueden revocar, contraseñas con hash, supresión de la cuenta y exportación seudonimizada.
 - **Accesible y en español**, pensado para personas con cáncer colorrectal y sus familias.
 
 ## 🚀 Tecnologías
@@ -127,21 +128,30 @@ colorrectal-sim/
 │   ├── app/
 │   │   ├── core/              # configuración, base de datos, seguridad
 │   │   ├── modules/
-│   │   │   ├── usuarios/      # M01 registro, autorizaciones e inicio de sesión
-│   │   │   ├── casos/         # M02 biblioteca de casos
-│   │   │   └── tutor/         # M04 agente tutor de IA
+│   │   │   ├── usuarios/      # M01 registro, sesión, recuperación y administración
+│   │   │   ├── vinculos/      # M01 vínculo con el profesional de la salud
+│   │   │   ├── casos/         # M02 casos clínicos, editor y revisión
+│   │   │   ├── simulacion/    # M03 simulación, M05 evaluación y M07 registro
+│   │   │   ├── tutor/         # M04 agente tutor de IA
+│   │   │   ├── gamificacion/  # M06 niveles e insignias (Observer)
+│   │   │   ├── progreso/      # M08 progreso, panel del profesional y exportación
+│   │   │   ├── privacidad/    # M09 autorizaciones y derechos del titular
+│   │   │   └── estudios/      # M10 estudios propios y modelo de visión
 │   │   └── main.py
 │   ├── tests/
 │   └── Dockerfile
 ├── frontend/
 │   ├── src/
-│   │   ├── paginas/           # Ingreso, Registro, Catálogo
+│   │   ├── paginas/           # pantallas 01 a 13
 │   │   └── api.ts
 │   └── Dockerfile
 ├── db/
 │   ├── 01_schema.sql          # 19 tablas, índices y vista de exportación
-│   └── 02_catalogos.sql       # roles, niveles y datasets
-├── docs/                      # datasets, tutor de IA
+│   ├── 02_catalogos.sql       # roles, niveles y datasets
+│   ├── 03_ajustes_srs.sql     # campos que pide el SRS
+│   └── 04_estudios_recuperacion.sql
+├── vision/                    # entrenamiento del modelo de visión (Colab)
+├── docs/                      # datasets, tutor de IA y estado de los requisitos
 ├── .github/                   # CI, plantillas de PR y defectos
 └── docker-compose.yml
 ```
