@@ -51,5 +51,5 @@ def test_cabeceras_de_seguridad(cliente):
     """RNF-003: cabeceras que pidió el escaneo de OWASP ZAP."""
     r = cliente.get("/api/v1/salud")
     assert r.headers["X-Content-Type-Options"] == "nosniff"
-    assert r.headers["Cross-Origin-Resource-Policy"] == "same-site"
+    assert r.headers["Cross-Origin-Resource-Policy"] == "same-origin"
     assert r.headers["X-Frame-Options"] == "DENY"

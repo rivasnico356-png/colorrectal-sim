@@ -29,7 +29,10 @@ async def cabeceras_seguridad(request, call_next):
     """RNF-003: cabeceras de seguridad (hallazgos del escaneo OWASP ZAP)."""
     respuesta = await call_next(request)
     respuesta.headers.setdefault("X-Content-Type-Options", "nosniff")
-    respuesta.headers.setdefault("Cross-Origin-Resource-Policy", "same-site")
+    # Las imágenes y videos de los casos (/media) se muestran con <img> y <video> desde el frontend, que corre en otro
+    # puerto del mismo sitio; el resto de respuestas solo se leen con fetch (CORS) y pueden ser same-origin.
+    politica = "same-site" if request.url.path.startswith("/media/") else "same-origin"
+    respuesta.headers.setdefault("Cross-Origin-Resource-Policy", politica)
     respuesta.headers.setdefault("X-Frame-Options", "DENY")
     respuesta.headers.setdefault("Referrer-Policy", "no-referrer")
     return respuesta
