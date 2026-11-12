@@ -45,3 +45,11 @@ def test_bloqueo_tras_cinco_intentos(cliente):
         cliente.post("/api/v1/auth/login", json={"correo": correo, "contrasena": "mala12345"})
     r = cliente.post("/api/v1/auth/login", json={"correo": correo, "contrasena": "Segura123"})
     assert r.status_code == 423
+
+
+def test_cabeceras_de_seguridad(cliente):
+    """RNF-003: cabeceras que pidió el escaneo de OWASP ZAP."""
+    r = cliente.get("/api/v1/salud")
+    assert r.headers["X-Content-Type-Options"] == "nosniff"
+    assert r.headers["Cross-Origin-Resource-Policy"] == "same-site"
+    assert r.headers["X-Frame-Options"] == "DENY"

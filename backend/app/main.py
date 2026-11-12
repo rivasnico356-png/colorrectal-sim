@@ -22,6 +22,19 @@ app = FastAPI(title=s.app_nombre, version="0.5.0",
 app.add_middleware(CORSMiddleware, allow_origins=[o.strip() for o in s.cors_origenes.split(",")],
                    allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
+
+
+@app.middleware("http")
+async def cabeceras_seguridad(request, call_next):
+    """RNF-003: cabeceras de seguridad (hallazgos del escaneo OWASP ZAP)."""
+    respuesta = await call_next(request)
+    respuesta.headers.setdefault("X-Content-Type-Options", "nosniff")
+    respuesta.headers.setdefault("Cross-Origin-Resource-Policy", "same-site")
+    respuesta.headers.setdefault("X-Frame-Options", "DENY")
+    respuesta.headers.setdefault("Referrer-Policy", "no-referrer")
+    return respuesta
+
+
 for r in (usuarios_router, privacidad_router, vinculos_router, casos_router, simulacion_router, tutor_router, progreso_router,
           estudios_router):
     app.include_router(r, prefix="/api/v1")
