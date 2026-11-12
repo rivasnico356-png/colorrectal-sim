@@ -9,4 +9,4 @@ select = ["E", "F", "I", "B", "UP"]
 testpaths = ["tests"]
 
 [tool.ruff.lint.flake8-bugbear]
-extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.File", "fastapi.Form"]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.File", "fastapi.Form", "app.core.deps.requiere_rol"]
