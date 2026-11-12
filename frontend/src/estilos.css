@@ -12,7 +12,10 @@
   background: var(--fondo);
 }
 * { box-sizing: border-box; }
-body { margin: 0; }
+body { margin: 0; overflow-wrap: anywhere; }
+img, video { max-width: 100%; }
+/* RNF-005: que ningún contenido ensanche la pantalla en teléfonos */
+.columnas > *, .rejilla > * { min-width: 0; }
 .app { min-height: 100vh; display: flex; flex-direction: column; }
 .cabecera { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px;
   background: var(--superficie); border-bottom: 1px solid var(--borde); }

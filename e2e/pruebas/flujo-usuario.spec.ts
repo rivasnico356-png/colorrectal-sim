@@ -48,6 +48,9 @@ test("registro, simulación completa, progreso y privacidad", async ({ page }) =
     await expect(page.getByText(`Etapa ${etapa} de 2`)).toBeVisible();
     await expect(page.getByText(/Resultado experimental de apoyo a la detección e interpretación/)).toBeVisible();
     if (etapa === 1) await revisarAccesibilidad(page, "05-etapa");
+    // RNF-005: la pantalla no se desborda a lo ancho en el teléfono (sin desplazamiento horizontal).
+    const desborde = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(desborde, "Ancho que sobra en la etapa").toBeLessThanOrEqual(1);
     await page.getByRole("button", { name: "¿Por qué sugiere esto?" }).click();
     await expect(page.locator(".chat .ia").first()).toBeVisible();
     await page.getByLabel("Opción A").check();

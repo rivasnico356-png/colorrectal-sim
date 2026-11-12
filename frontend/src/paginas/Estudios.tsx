@@ -66,7 +66,8 @@ export default function Estudios() {
       <div className="tarjeta">
         <h2>Cargar un estudio</h2>
         <p className="meta">JPG, PNG o DICOM, hasta 20 MB. Antes de guardarlo quitamos los datos personales del archivo y lo guardamos cifrado.</p>
-        <input type="file" accept=".jpg,.jpeg,.png,.dcm" onChange={(e) => setArchivo(e.target.files?.[0] ?? null)} />
+        <label>Archivo del estudio
+          <input type="file" accept=".jpg,.jpeg,.png,.dcm" onChange={(e) => setArchivo(e.target.files?.[0] ?? null)} /></label>
         <label className="casilla"><input type="checkbox" checked={confirma} onChange={(e) => setConfirma(e.target.checked)} />
           Confirmo que la imagen no muestra mi nombre, documento ni otros datos escritos sobre ella.</label>
         <button className="primario" onClick={subir} disabled={!archivo || cargando}>{cargando ? "Analizando… (puede tardar unos segundos)" : "Cargar"}</button>

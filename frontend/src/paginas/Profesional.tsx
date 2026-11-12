@@ -191,7 +191,7 @@ function EditorEtapa({ idCaso, alGuardar }: { idCaso: number; alGuardar: (m: str
       <button type="button" onClick={() => setOpciones([...opciones, { ...OPCION_VACIA }])}>Agregar opción</button>
       <fieldset>
         <legend>Imagen o video (JPG, PNG o MP4)</legend>
-        <input type="file" accept=".jpg,.jpeg,.png,.mp4" onChange={(e) => setArchivo(e.target.files?.[0] ?? null)} />
+        <input type="file" aria-label="Archivo de imagen o video" accept=".jpg,.jpeg,.png,.mp4" onChange={(e) => setArchivo(e.target.files?.[0] ?? null)} />
         <label>Dataset público<select value={dataset} onChange={(e) => {
           setDataset(e.target.value);
           setLicencia(datasets.find((d) => String(d.id_dataset) === e.target.value)?.licencia ?? "");
