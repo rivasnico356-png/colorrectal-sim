@@ -132,7 +132,7 @@ def solicitar_recuperacion(db: Session, correo: str) -> None:
     db.execute(text("""INSERT INTO recuperacion_contrasena (id_usuario, hash_token, expira)
                        VALUES (CAST(:u AS uuid), :h, now() + make_interval(mins => :m))"""),
                {"u": fila["id_usuario"], "h": _hash_token(token), "m": s.minutos_enlace_recuperacion})
-    bitacora(db, fila["id_usuario"], "usuario", fila["id_usuario"], "solicitar_recuperacion")
+    bitacora(db, fila["id_usuario"], "usuario", fila["id_usuario"], "pedir_recuperacion")
     db.commit()
     enlace = f"{s.frontend_url}/#restablecer={token}"
     enviar_correo(correo, "Restablece tu contraseña de Colorrectal-Sim",
@@ -149,5 +149,5 @@ def restablecer(db: Session, token: str, contrasena: str) -> None:
     db.execute(text("UPDATE recuperacion_contrasena SET usado = TRUE WHERE id_recuperacion = :i"), {"i": fila["id_recuperacion"]})
     db.execute(text("""UPDATE usuario SET hash_contrasena = :h, intentos_fallidos = 0, bloqueado_hasta = NULL
                        WHERE id_usuario = CAST(:u AS uuid)"""), {"h": hash_contrasena(contrasena), "u": fila["id_usuario"]})
-    bitacora(db, fila["id_usuario"], "usuario", fila["id_usuario"], "restablecer_contrasena")
+    bitacora(db, fila["id_usuario"], "usuario", fila["id_usuario"], "nueva_contrasena")
     db.commit()
