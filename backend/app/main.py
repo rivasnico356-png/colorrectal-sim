@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
+from app.modules.casos.medios import router as medios_router
 from app.modules.casos.router import router as casos_router
 from app.modules.estudios.router import router as estudios_router
 from app.modules.gamificacion import service as gamificacion  # noqa: F401  registra el observador de M06
@@ -41,6 +42,9 @@ async def cabeceras_seguridad(request, call_next):
 for r in (usuarios_router, privacidad_router, vinculos_router, casos_router, simulacion_router, tutor_router, progreso_router,
           estudios_router):
     app.include_router(r, prefix="/api/v1")
+
+# Imágenes y videos de los casos guardados en la base; va antes de la carpeta /media para tener prioridad.
+app.include_router(medios_router)
 
 # Imágenes y videos de los datasets públicos asociados a las etapas (RF-002 2.2).
 Path(s.media_dir).mkdir(parents=True, exist_ok=True)

@@ -149,7 +149,8 @@ colorrectal-sim/
 │   ├── 01_schema.sql          # 19 tablas, índices y vista de exportación
 │   ├── 02_catalogos.sql       # roles, niveles y datasets
 │   ├── 03_ajustes_srs.sql     # campos que pide el SRS
-│   └── 04_estudios_recuperacion.sql
+│   ├── 04_estudios_recuperacion.sql
+│   └── 05_recursos_en_base.sql # imágenes y videos de los casos en la base
 ├── vision/                    # entrenamiento del modelo de visión (Colab)
 ├── docs/                      # datasets, tutor de IA y estado de los requisitos
 ├── .github/                   # CI, plantillas de PR y defectos
@@ -184,7 +185,7 @@ colorrectal-sim/
 2. Escribe en el panel `ADMIN_CORREO` y `ADMIN_CONTRASENA` (primer administrador) y, si se tiene, `IA_API_KEY`.
 3. Al arrancar, `python -m app.preparar` carga el esquema, crea el administrador y publica un caso de demostración con texto de prueba. La contraseña del administrador inicial siempre queda igual a `ADMIN_CONTRASENA`: para cambiarla, se cambia la variable en Render.
 
-Limitaciones del plan gratuito: el servicio se duerme tras 15 minutos sin uso y tarda cerca de un minuto en despertar; la base gratuita vence a los 30 días; los archivos subidos (imágenes de los casos) no se conservan al reiniciar. En la demostración (`ENTORNO=demostracion`) no se pueden cargar estudios propios, para no recibir datos reales de personas en un servidor de pruebas (Ley 1581 de 2012).
+Limitaciones del plan gratuito: el servicio se duerme tras 15 minutos sin uso y tarda cerca de un minuto en despertar; la base gratuita vence a los 30 días. Las imágenes y videos de los casos se guardan en la base, así que no se pierden al reiniciar. En la demostración (`ENTORNO=demostracion`) no se pueden cargar estudios propios, para no recibir datos reales de personas en un servidor de pruebas (Ley 1581 de 2012).
 
 ### Versión 1.0
 

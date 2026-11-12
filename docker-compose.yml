@@ -21,8 +21,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      ESQUEMA_DIR: /app/db
     volumes:
       - ./data/media:/app/media
+      - ./db:/app/db:ro
     ports:
       - "8000:8000"
 

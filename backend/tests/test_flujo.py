@@ -192,4 +192,19 @@ def test_recurso_multimedia_exige_formato_dataset_y_licencia(cliente, admin, tmp
                         data={"id_dataset": "999", "licencia": "CC BY 4.0"}).status_code == 422
     r = cliente.post(url, headers=autor, files={"archivo": ("a.png", png, "image/png")}, data={"id_dataset": "1", "licencia": "CC BY 4.0"})
     assert r.status_code == 201, r.text
-    assert (tmp_path / "casos" / str(id_caso) / f"{r.json()['id_recurso']}.png").exists()
+    # El contenido queda en la base (sobrevive a reinicios del servidor) y se publica en /media/recursos/.
+    assert not any(tmp_path.iterdir())
+    url_recurso = f"/media/recursos/{r.json()['id_recurso']}.png"
+    publicado = cliente.get(url_recurso)
+    assert publicado.status_code == 200 and publicado.content == png
+    assert publicado.headers["content-type"] == "image/png"
+    assert publicado.headers["cross-origin-resource-policy"] == "same-site"
+    # Peticiones parciales para el visor de video cuadro a cuadro (RF-003 3.3b).
+    parcial = cliente.get(url_recurso, headers={"Range": "bytes=0-7"})
+    assert parcial.status_code == 206 and parcial.content == png[:8]
+    assert parcial.headers["content-range"] == f"bytes 0-7/{len(png)}"
+    assert cliente.get(url_recurso, headers={"Range": "bytes=-4"}).content == png[-4:]
+    assert cliente.get(url_recurso, headers={"Range": "bytes=9999-"}).status_code == 416
+    assert cliente.get("/media/recursos/999999999.png").status_code == 404
+    etapa = cliente.get(f"{API}/editor/casos/{id_caso}", headers=revisor).json()["etapas"][0]
+    assert [x["ruta_almacenamiento"] for x in etapa["recursos"]] == [url_recurso.removeprefix("/media/")]

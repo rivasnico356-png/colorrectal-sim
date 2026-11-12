@@ -1,17 +1,18 @@
 """Reglas de negocio de M02 Casos clínicos (RF-002) y desbloqueo por nivel (RF-006 6.1)."""
+import hashlib
 import json
 from pathlib import Path
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.core.config import get_settings
 from app.core.errores import ErrorNegocio
 from app.modules.casos.schemas import CasoIn, EtapaIn
 from app.modules.usuarios.service import bitacora
 
 FORMATOS = {".jpg": "imagen", ".jpeg": "imagen", ".png": "imagen", ".mp4": "video"}
 MAX_BYTES = {"imagen": 10 * 1024 * 1024, "video": 100 * 1024 * 1024}
+TIPOS_MIME = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".mp4": "video/mp4"}
 
 
 def dificultad_maxima(db: Session, id_usuario: str) -> int:
@@ -126,12 +127,13 @@ def guardar_recurso(db: Session, editor: str, id_etapa: int, nombre: str, conten
     id_recurso = db.execute(text("""INSERT INTO recurso_multimedia (id_etapa, id_dataset, tipo, ruta_almacenamiento, licencia)
                                     VALUES (:e, :d, :t, '', :l) RETURNING id_recurso"""),
                             {"e": id_etapa, "d": id_dataset, "t": tipo, "l": licencia}).scalar_one()
-    ruta = Path("casos") / str(id_caso) / f"{id_recurso}{extension}"
-    destino = Path(get_settings().media_dir) / ruta
-    destino.parent.mkdir(parents=True, exist_ok=True)
-    destino.write_bytes(contenido_archivo)
+    # El contenido se guarda en la base para que no se pierda si el servidor se reinicia; se publica en /media/recursos/.
+    db.execute(text("""INSERT INTO recurso_contenido (id_recurso, tipo_mime, tamano_bytes, sha256, datos)
+                       VALUES (:i, :m, :t, :h, :d)"""),
+               {"i": id_recurso, "m": TIPOS_MIME[extension], "t": len(contenido_archivo),
+                "h": hashlib.sha256(contenido_archivo).hexdigest(), "d": contenido_archivo})
     db.execute(text("UPDATE recurso_multimedia SET ruta_almacenamiento = :r WHERE id_recurso = :i"),
-               {"r": ruta.as_posix(), "i": id_recurso})
+               {"r": f"recursos/{id_recurso}{extension}", "i": id_recurso})
     bitacora(db, editor, "recurso_multimedia", str(id_recurso), "crear")
     db.commit()
     return id_recurso

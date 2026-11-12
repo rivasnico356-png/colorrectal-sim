@@ -24,21 +24,31 @@ from app.modules.usuarios.schemas import validar_contrasena
 TITULO_DEMO = "Caso de demostración del simulador"
 
 
+# Scripts de la versión inicial (01 a 04): solo se ejecutan sobre una base vacía. Del 05 en adelante los scripts son
+# idempotentes y se aplican en cada arranque, así las bases que ya existen reciben los cambios nuevos.
+ULTIMO_SCRIPT_INICIAL = "04"
+
+
 def aplicar_esquema() -> bool:
-    """Ejecuta los scripts de db/ en orden solo si la tabla usuario no existe."""
+    """Carga el esquema completo en una base vacía o aplica los scripts nuevos a una base existente.
+
+    Devuelve True si la base estaba vacía.
+    """
     with engine.connect() as c:
-        if c.execute(text("SELECT to_regclass('public.usuario')")).scalar():
-            return False
+        vacia = not c.execute(text("SELECT to_regclass('public.usuario')")).scalar()
+    scripts = sorted(Path(get_settings().esquema_dir).glob("*.sql"))
+    if not vacia:
+        scripts = [a for a in scripts if a.name[:2] > ULTIMO_SCRIPT_INICIAL]
     crudo = engine.raw_connection()
     try:
         crudo.driver_connection.autocommit = True
         with crudo.driver_connection.cursor() as cur:
-            for archivo in sorted(Path(get_settings().esquema_dir).glob("*.sql")):
+            for archivo in scripts:
                 cur.execute(archivo.read_text(encoding="utf-8"))
                 print(f"Esquema: {archivo.name} aplicado.")
     finally:
         crudo.close()
-    return True
+    return vacia
 
 
 def _crear_usuario(db: Session, rol: str, nombre: str, correo: str, contrasena: str) -> str:

@@ -8,6 +8,7 @@ from app.core.config import get_settings
 from app.core.errores import ErrorNegocio
 from app.core.eventos import DecisionRegistrada, publicar
 from app.core.textos import AVISO_ALCANCE, ROTULO_IA
+from app.modules.casos.medios import bytes_de_ruta
 from app.modules.casos.service import dificultad_maxima, niveles_por_dificultad
 from app.modules.estudios.vision import obtener_modelo
 
@@ -94,20 +95,29 @@ def estado(db: Session, id_usuario: str, id_intento: int) -> dict:
         "opciones": [{"id_opcion": o["id_opcion"], "texto": o["texto"]} for o in opciones],
         "recomendacion_ia": {"texto": etapa["recomendacion_ia"], "id_opcion": recomendada["id_opcion"] if recomendada else None,
                              "rotulo": ROTULO_IA},
-        "modelo_vision": _vision_etapa(recursos) if etapa["usa_modelo_vision"] else None,
+        "modelo_vision": _vision_etapa(db, recursos) if etapa["usa_modelo_vision"] else None,
         "tutor": {"consultas_restantes": max(0, maximo - consultas_usadas(db, id_intento, etapa["id_etapa"])), "maximo": maximo},
     }
     return salida
 
 
-def _vision_etapa(recursos) -> dict:
+def _bytes_imagen(db: Session, ruta: str) -> bytes | None:
+    """Contenido de la imagen: en la base (recursos nuevos) o en la carpeta /media (recursos anteriores)."""
+    datos = bytes_de_ruta(db, ruta)
+    if datos is not None:
+        return datos
+    archivo = Path(get_settings().media_dir) / ruta
+    return archivo.read_bytes() if archivo.is_file() else None
+
+
+def _vision_etapa(db: Session, recursos) -> dict:
     """RF-003 3.4: región de interés, clasificación experimental y confianza del modelo sobre la imagen de la etapa."""
     modelo = obtener_modelo()
     imagen = next((r for r in recursos if r["tipo"] == "imagen"), None)
-    archivo = Path(get_settings().media_dir) / imagen["ruta_almacenamiento"] if imagen else None
-    if modelo is None or archivo is None or not archivo.exists():
+    datos = _bytes_imagen(db, imagen["ruta_almacenamiento"]) if imagen else None
+    if modelo is None or datos is None:
         return {"disponible": False}
-    r = modelo.analizar(archivo.read_bytes())
+    r = modelo.analizar(datos)
     return {"disponible": True, "roi": r.roi, "clasificacion": r.clasificacion, "confianza": r.confianza,
             "version_modelo": r.version_modelo, "rotulo": ROTULO_IA,
             "que_significa": "La confianza indica qué tan parecido es lo que ve el modelo a los ejemplos con que fue entrenado; "
