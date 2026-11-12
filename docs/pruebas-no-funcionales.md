@@ -1,11 +1,13 @@
 # Resultados de las pruebas no funcionales
 
-Ejecutadas el 11/11/2026 con el flujo **Pruebas no funcionales** de GitHub Actions sobre la versión 0.5 (`develop` = `qa`).
+Ejecutadas el 11/11/2026 con el flujo **Pruebas no funcionales** de GitHub Actions sobre la versión 0.5 (`develop` = `qa`). Desde el commit f00ac55 los flujos corren en Ubuntu 24.04, porque Playwright 1.48 no instala sus dependencias en Ubuntu 26.04.
 Los reportes completos (HTML y CSV) quedan como artefactos de cada corrida en la pestaña *Actions*.
 
 | Corrida | Commit | Qué incluye |
 |---|---|---|
 | [43135272242](https://github.com/rivasnico356-png/colorrectal-sim/actions/runs/43135272242) | 55bbe30 | Carga, estrés, seguridad y accesibilidad |
+| [43139845153](https://github.com/rivasnico356-png/colorrectal-sim/actions/runs/43139845153) | 8118158 | Sistema de punta a punta en 5 navegadores con axe en cada pantalla |
+| [43139882779](https://github.com/rivasnico356-png/colorrectal-sim/actions/runs/43139882779) | 8118158 | Seguridad repetida tras las correcciones |
 | [43135084289](https://github.com/rivasnico356-png/colorrectal-sim/actions/runs/43135084289) | c9c14e9 | Seguridad y accesibilidad (la carga falló por datos sintéticos con dominio inválido; se corrigió) |
 
 ## Carga (RNF-001) · Locust, 30 usuarios concurrentes durante 10 minutos
@@ -41,7 +43,13 @@ Con 150 usuarios (5 veces la carga del requisito) no se alcanzó el punto de qui
 | npm audit (dependencias de producción del frontend) | 0 vulnerabilidades | Las herramientas de compilación se actualizan a la última versión 5.x de Vite |
 | gitleaks (secretos en el repositorio) | 0 secretos | — |
 
-Pendiente: repetir el escaneo de ZAP y pip-audit para confirmar que no quedan avisos tras las correcciones.
+### Repetición tras las correcciones (corrida 43139882779, commit 8118158)
+
+| Prueba | Resultado |
+|---|---|
+| OWASP ZAP sobre la API | 0 fallas, 0 avisos, 120 reglas aprobadas. En la repetición intermedia (43139144736) quedó un aviso: ZAP solo acepta `Cross-Origin-Resource-Policy: same-origin`; se dejó `same-origin` en la API y `same-site` solo en `/media`, que el frontend muestra con `<img>` y `<video>` desde otro puerto |
+| pip-audit | Sin vulnerabilidades conocidas |
+| npm audit (producción) | 0 vulnerabilidades. La instalación completa reporta 2 avisos (1 moderado, 1 alto) en herramientas de desarrollo que no se incluyen en la aplicación compilada |
 
 ## Accesibilidad y compatibilidad (RNF-005, RNF-008) · Lighthouse 12 sobre la pantalla de inicio
 
@@ -50,7 +58,26 @@ Pendiente: repetir el escaneo de ZAP y pip-audit para confirmar que no quedan av
 | Escritorio | 100 | 96 | 100 |
 | Móvil | 100 | 96 | 100 |
 
-Pendiente: revisar con axe las pantallas que requieren sesión y probar en Chrome, Firefox, Edge, Chrome Android y Safari iOS.
+## Sistema de punta a punta y accesibilidad por pantalla (RNF-005, RNF-008) · Playwright 1.48 y axe-core 4.10
+
+La prueba `e2e/pruebas/flujo-usuario.spec.ts` recorre el flujo completo de la persona usuaria con el caso sintético: registro, inicio de sesión, catálogo, aviso de alcance, dos etapas con consulta al tutor, decisión y retroalimentación, resumen, progreso, estudios propios y privacidad. En cada pantalla revisa WCAG 2.1 A y AA con axe y falla si hay errores críticos. En la etapa también verifica que la página no se desborde a lo ancho.
+
+| Navegador | Resultado | Hallazgos de axe (10 pantallas) |
+|---|---|---|
+| Chrome (escritorio) | Pasa | Ninguno |
+| Firefox (escritorio) | Pasa | Ninguno |
+| Safari, motor WebKit (escritorio) | Pasa | Ninguno |
+| Chrome Android (Pixel 5) | Pasa | Ninguno |
+| Safari iPhone (iPhone 12) | Pasa | Ninguno |
+
+Defectos encontrados y corregidos en el camino:
+
+| Corrida | Hallazgo | Corrección |
+|---|---|---|
+| [43138423496](https://github.com/rivasnico356-png/colorrectal-sim/actions/runs/43138423496) | Error crítico de axe en *Mis estudios*: el campo de archivo no tenía etiqueta (en los 5 navegadores) | Etiqueta “Archivo del estudio”; también se etiquetó el campo de archivo del editor de casos |
+| [43138423496](https://github.com/rivasnico356-png/colorrectal-sim/actions/runs/43138423496) | En Safari iPhone el botón “¿Por qué sugiere esto?” quedaba fuera de la pantalla | Las columnas y rejillas ya no se ensanchan por contenido largo (`min-width: 0`, imágenes y videos con ancho máximo); la prueba verifica que no haya desborde horizontal |
+
+Edge usa el mismo motor que Chrome (Chromium), por eso no se prueba aparte. Las pruebas en teléfonos son emulaciones de Playwright (tamaño de pantalla, toque y agente de usuario); falta confirmarlas en un teléfono físico durante la prueba de usabilidad.
 
 ## Alcance y limitaciones
 

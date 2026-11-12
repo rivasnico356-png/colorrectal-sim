@@ -38,12 +38,12 @@ Estados: **Implementado** (código y prueba automática), **Parcial** (falta alg
 |------|--------|-----------------------|
 | RNF-001 Rendimiento | Implementado | Carga con 30 usuarios: p90 10 ms y 0 % de errores; estrés hasta 150 usuarios sin fallas ([resultados](pruebas-no-funcionales.md)) |
 | RNF-002 Disponibilidad | Pendiente | Medición durante el periodo de pruebas |
-| RNF-003 Seguridad | Parcial | bcrypt, roles, secretos en variables de entorno, gitleaks, estudios cifrados, cabeceras de seguridad, OWASP ZAP sin fallas y dependencias actualizadas. Falta HTTPS en el despliegue |
+| RNF-003 Seguridad | Parcial | bcrypt, roles, secretos en variables de entorno, gitleaks, estudios cifrados, cabeceras de seguridad, OWASP ZAP sin fallas ni avisos (120 reglas), pip-audit y npm audit de producción sin vulnerabilidades. Falta HTTPS en el despliegue |
 | RNF-004 Usabilidad | Pendiente | Cuestionario SUS con 5 personas |
-| RNF-005 Web y móvil | Parcial | Diseño adaptable; falta prueba en navegadores y teléfonos |
+| RNF-005 Web y móvil | Implementado | Flujo completo aprobado en Chrome, Firefox, Safari (WebKit), Chrome Android y Safari iPhone, sin desborde horizontal ([resultados](pruebas-no-funcionales.md)). Falta confirmarlo en un teléfono físico |
 | RNF-006 Mantenibilidad | Parcial | Docker, CI y pruebas; faltan los tags v0.5, v0.9 y v1.0 |
 | RNF-007 Transparencia de la IA | Implementado | Rótulo exacto del SRS (`core/textos.py`); versiones de modelo y prompt guardadas en `interaccion_ia` |
-| RNF-008 Accesibilidad | Parcial | Lighthouse: 100 en accesibilidad (escritorio y móvil) en la pantalla de inicio; falta revisar las pantallas con sesión |
+| RNF-008 Accesibilidad | Implementado | Lighthouse: 100 en accesibilidad (escritorio y móvil); axe sin hallazgos en las 10 pantallas del flujo en los 5 navegadores |
 
 ## Cambios que deben reflejarse en los documentos
 
