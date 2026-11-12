@@ -36,14 +36,14 @@ Estados: **Implementado** (código y prueba automática), **Parcial** (falta alg
 
 | Req. | Estado | Evidencia o pendiente |
 |------|--------|-----------------------|
-| RNF-001 Rendimiento | Pendiente | Prueba de carga con 30 usuarios (p90 < 3 s) |
+| RNF-001 Rendimiento | Implementado | Carga con 30 usuarios: p90 10 ms y 0 % de errores; estrés hasta 150 usuarios sin fallas ([resultados](pruebas-no-funcionales.md)) |
 | RNF-002 Disponibilidad | Pendiente | Medición durante el periodo de pruebas |
-| RNF-003 Seguridad | Parcial | bcrypt, roles, secretos en variables de entorno, gitleaks, estudios cifrados. Falta HTTPS en el despliegue |
+| RNF-003 Seguridad | Parcial | bcrypt, roles, secretos en variables de entorno, gitleaks, estudios cifrados, cabeceras de seguridad, OWASP ZAP sin fallas y dependencias actualizadas. Falta HTTPS en el despliegue |
 | RNF-004 Usabilidad | Pendiente | Cuestionario SUS con 5 personas |
 | RNF-005 Web y móvil | Parcial | Diseño adaptable; falta prueba en navegadores y teléfonos |
 | RNF-006 Mantenibilidad | Parcial | Docker, CI y pruebas; faltan los tags v0.5, v0.9 y v1.0 |
 | RNF-007 Transparencia de la IA | Implementado | Rótulo exacto del SRS (`core/textos.py`); versiones de modelo y prompt guardadas en `interaccion_ia` |
-| RNF-008 Accesibilidad | Pendiente | Revisión con Lighthouse o axe (WCAG 2.1 AA) |
+| RNF-008 Accesibilidad | Parcial | Lighthouse: 100 en accesibilidad (escritorio y móvil) en la pantalla de inicio; falta revisar las pantallas con sesión |
 
 ## Cambios que deben reflejarse en los documentos
 
