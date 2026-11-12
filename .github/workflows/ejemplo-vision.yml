@@ -5,6 +5,9 @@ name: Publicar imagen de ejemplo del modelo de visión
 
 on:
   workflow_dispatch:
+  push:
+    branches: [develop]
+    paths: [.github/workflows/ejemplo-vision.yml]
 
 permissions:
   contents: write
