@@ -4,6 +4,8 @@
 2. Crea el primer administrador con ADMIN_CORREO, ADMIN_NOMBRE y ADMIN_CONTRASENA si aún no existe.
 3. Con CASO_DEMO=1 publica un caso de demostración con texto de prueba (sin contenido clínico) para recorrer el flujo
    mientras los profesionales de la salud escriben los casos reales.
+4. Si existe la imagen de ejemplo de Kvasir-SEG (partición de prueba del modelo de visión), la agrega a la etapa 1 del
+   caso de demostración con el modelo de visión activado, para mostrar su resultado en el enlace público.
 
 Cada paso es idempotente: se puede ejecutar en cada arranque. Uso: python -m app.preparar
 """
@@ -110,11 +112,32 @@ def publicar_caso_demo(db: Session) -> bool:
     return True
 
 
+def agregar_imagen_demo(db: Session, ruta: str | None = None) -> bool:
+    """Agrega la imagen de ejemplo de Kvasir-SEG a la etapa 1 del caso de demostración (una sola vez)."""
+    archivo = Path(ruta or os.getenv("IMAGEN_DEMO", "modelos/ejemplo-kvasir.jpg"))
+    if not archivo.is_file():
+        return False
+    etapa = db.execute(text("""SELECT e.id_etapa, c.id_autor FROM etapa e JOIN caso c ON c.id_caso = e.id_caso
+                               WHERE c.titulo = :t AND NOT c.eliminado AND e.orden = 1"""), {"t": TITULO_DEMO}).first()
+    if etapa is None or db.execute(text("SELECT 1 FROM recurso_multimedia WHERE id_etapa = :e"), {"e": etapa.id_etapa}).first():
+        return False
+    id_dataset = db.execute(text("SELECT id_dataset FROM dataset WHERE nombre = 'Kvasir-SEG'")).scalar()
+    if id_dataset is None:
+        return False
+    casos.guardar_recurso(db, str(etapa.id_autor), etapa.id_etapa, archivo.name, archivo.read_bytes(), id_dataset,
+                          "Kvasir-SEG: uso educativo con cita (Jha et al., 2020)")
+    db.execute(text("UPDATE etapa SET usa_modelo_vision = TRUE WHERE id_etapa = :e"), {"e": etapa.id_etapa})
+    db.commit()
+    print("Imagen de ejemplo de Kvasir-SEG agregada al caso de demostración.")
+    return True
+
+
 def main() -> None:
     aplicar_esquema()
     with SessionLocal() as db:
         crear_admin_inicial(db)
         publicar_caso_demo(db)
+        agregar_imagen_demo(db)
 
 
 if __name__ == "__main__":

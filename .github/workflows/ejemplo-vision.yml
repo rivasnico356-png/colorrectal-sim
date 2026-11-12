@@ -1,0 +1,29 @@
+# Publica en el release «modelo-vision» una imagen de ejemplo de Kvasir-SEG tomada de la partición de PRUEBA del modelo
+# (imágenes que el modelo no vio al entrenar). La plataforma la usa en el caso de demostración del enlace público para
+# mostrar el resultado del modelo de visión, con su dataset y licencia (uso educativo; Jha et al., 2020).
+name: Publicar imagen de ejemplo del modelo de visión
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ejemplo:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar Kvasir-SEG
+        run: bash vision/descargar_kvasir.sh data
+      - name: Elegir la primera imagen de la partición de prueba y publicarla
+        run: |
+          gh release download modelo-vision -p particiones.json -D salidas
+          nombre=$(python3 -c "import json,os;print(os.path.basename(json.load(open('salidas/particiones.json'))['prueba'][0]))")
+          echo "Imagen de prueba: $nombre"
+          cp "data/Kvasir-SEG/images/$nombre" salidas/ejemplo-kvasir.jpg
+          echo "{\"archivo\": \"$nombre\", \"particion\": \"prueba\", \"dataset\": \"Kvasir-SEG\"}" > salidas/ejemplo-kvasir.json
+          gh release upload modelo-vision salidas/ejemplo-kvasir.jpg salidas/ejemplo-kvasir.json --clobber

@@ -38,20 +38,7 @@ jobs:
           pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cpu
           pip install segmentation-models-pytorch==0.3.4 "numpy<2.2" pillow onnx==1.17.0 onnxruntime==1.20.1
       - name: Descargar Kvasir-SEG desde la fuente oficial
-        run: |
-          mkdir -p data && cd data
-          # El servidor oficial no envía el certificado intermedio. Se descarga desde la dirección que publica el propio
-          # certificado (AIA) y se verifica la cadena completa contra las autoridades del sistema (sin desactivar TLS).
-          aia=$(echo | openssl s_client -connect datasets.simula.no:443 -servername datasets.simula.no 2>/dev/null \
-                | openssl x509 -noout -ext authorityInfoAccess | grep -o 'CA Issuers - URI:[^ ]*' | sed 's/CA Issuers - URI://')
-          echo "Intermedio: $aia"
-          curl -fsSL "$aia" -o intermedio.crt
-          (openssl x509 -inform DER -in intermedio.crt 2>/dev/null || openssl x509 -in intermedio.crt) > intermedio.pem
-          cat /etc/ssl/certs/ca-certificates.crt intermedio.pem > cadena.pem
-          curl -fsSL --retry 3 --cacert cadena.pem -o kvasir-seg.zip https://datasets.simula.no/downloads/kvasir-seg.zip
-          sha256sum kvasir-seg.zip | tee kvasir-seg.sha256
-          unzip -q kvasir-seg.zip
-          ls Kvasir-SEG | head; echo "Imágenes: $(ls Kvasir-SEG/images | wc -l) · Máscaras: $(ls Kvasir-SEG/masks | wc -l)"
+        run: bash vision/descargar_kvasir.sh data
       - name: Entrenar
         working-directory: vision
         run: |
@@ -59,6 +46,9 @@ jobs:
             --datasets Kvasir-SEG --codificador "${{ inputs.codificador }}" --epocas "${{ inputs.epocas }}" \
             --tamano "${{ inputs.tamano }}" --lote 8 --trabajadores 2 --salida salidas
           cp ../data/kvasir-seg.sha256 salidas/
+          nombre=$(python -c "import json,os;print(os.path.basename(json.load(open('salidas/particiones.json'))['prueba'][0]))")
+          cp "../data/Kvasir-SEG/images/$nombre" salidas/ejemplo-kvasir.jpg
+          echo "{\"archivo\": \"$nombre\", \"particion\": \"prueba\", \"dataset\": \"Kvasir-SEG\"}" > salidas/ejemplo-kvasir.json
           ls -la salidas
       - name: Verificar que la plataforma puede cargar el modelo
         working-directory: vision/salidas
@@ -93,4 +83,4 @@ jobs:
             gh release create modelo-vision --title "Modelo de visión (experimental)" --prerelease \
               --notes "Modelo experimental de segmentación de pólipos entrenado con Kvasir-SEG (Jha et al., 2020), uso educativo. Resultado experimental de apoyo a la detección e interpretación; no reemplaza la valoración de su médico."
           fi
-          gh release upload modelo-vision vision.onnx vision.json particiones.json kvasir-seg.sha256 --clobber
+          gh release upload modelo-vision vision.onnx vision.json particiones.json kvasir-seg.sha256 ejemplo-kvasir.jpg ejemplo-kvasir.json --clobber
