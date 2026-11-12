@@ -37,13 +37,15 @@ class AdaptadorOpenAICompatible:
         if not self.api_key:
             raise ErrorProveedor("No hay clave de API configurada.")
         inicio = time.perf_counter()
+        cuerpo = {"model": self.modelo, "temperature": 0.3, "max_tokens": 350,
+                  "messages": [{"role": "system", "content": sistema}, {"role": "user", "content": mensaje}]}
+        if "gpt-oss" in self.modelo:
+            # Modelos de razonamiento: el razonamiento interno gasta tokens antes de la respuesta, por eso se pide
+            # esfuerzo bajo, más tokens y que no se incluya en la respuesta (parámetros de Groq para gpt-oss).
+            cuerpo.pop("max_tokens")
+            cuerpo |= {"max_completion_tokens": 1024, "reasoning_effort": "low", "include_reasoning": False}
         try:
-            r = self._cliente.post(
-                self.url,
-                headers={"Authorization": f"Bearer {self.api_key}"},
-                json={"model": self.modelo, "temperature": 0.3, "max_tokens": 350,
-                      "messages": [{"role": "system", "content": sistema}, {"role": "user", "content": mensaje}]},
-            )
+            r = self._cliente.post(self.url, headers={"Authorization": f"Bearer {self.api_key}"}, json=cuerpo)
             r.raise_for_status()
             texto = r.json()["choices"][0]["message"]["content"].strip()
         except (httpx.HTTPError, KeyError, IndexError, ValueError) as exc:

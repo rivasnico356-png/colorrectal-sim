@@ -15,6 +15,7 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 
 | Hora | Qué | Evidencia | Resultado |
 |---|---|---|---|
+| 14:20 | Defecto: Groq retiró los modelos del tutor (`llama-3.3-70b-versatile` y `llama-3.1-8b-instant`, 16-08-2026). Se cambian por `openai/gpt-oss-120b` y `openai/gpt-oss-20b` con razonamiento bajo | Página de modelos retirados de Groq; rama fix/modelos-groq | En revisión de CI |
 | 14:05 | Inicia el monitoreo de disponibilidad del enlace público (RNF-002): una consulta cada 2 horas | `.github/workflows/monitoreo.yml` | Muestras en la pestaña Actions › Monitoreo de disponibilidad |
 | 13:50 | Borrador del protocolo de la prueba SUS (consentimiento, 6 tareas, cuestionario, tabla de resultados) | Documento en Claude Docs | Borrador; se aplica del 23 al 25-11 |
 | 13:30 | Ciclo 2 (regresión) de la Matriz de Pruebas Unitarias: 48 casos repetidos y 4 nuevos (CP049–CP052) | Corrida 43275023226, commit 067dc1d | 52 de 52 exitosos |

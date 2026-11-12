@@ -34,7 +34,7 @@ Proyecto ONCO-AI_USC 2026 B · Línea 2 ONCO-SIM · Universidad Santiago de Cali
 | Frontend | React 18 + TypeScript (Vite) |
 | Backend | FastAPI, SQLAlchemy 2, Pydantic |
 | Base de datos | PostgreSQL 16 |
-| IA | Groq (`llama-3.3-70b-versatile` y `llama-3.1-8b-instant`), API compatible con OpenAI |
+| IA | Groq (`openai/gpt-oss-120b` y `openai/gpt-oss-20b`), API compatible con OpenAI |
 | Infraestructura | Docker Compose |
 | Calidad | pytest + cobertura, ruff, gitleaks, GitHub Actions |
 

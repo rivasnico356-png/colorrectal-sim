@@ -1,4 +1,6 @@
 """PU-03 a PU-05: cadena de respaldo del agente tutor (RF-004, ADR-04)."""
+import json
+
 import httpx
 
 from app.modules.tutor.proveedores import AdaptadorOpenAICompatible, ErrorProveedor, RespuestaIA
@@ -56,6 +58,20 @@ def test_adaptador_lee_respuesta_formato_openai():
     a = AdaptadorOpenAICompatible("principal", "http://x/v1", "k", "m",
                                   cliente=httpx.Client(transport=httpx.MockTransport(manejador)))
     assert a.completar("s", "m").texto == "hola"
+
+
+def test_adaptador_pide_razonamiento_bajo_a_gpt_oss():
+    """Los modelos gpt-oss de Groq razonan antes de responder: esfuerzo bajo y sin el razonamiento en la respuesta."""
+    enviado = {}
+
+    def manejador(request):
+        enviado.update(json.loads(request.content))
+        return httpx.Response(200, json={"choices": [{"message": {"content": "listo"}}]})
+    a = AdaptadorOpenAICompatible("principal", "http://x/v1", "k", "openai/gpt-oss-120b",
+                                  cliente=httpx.Client(transport=httpx.MockTransport(manejador)))
+    assert a.completar("s", "m").texto == "listo"
+    assert enviado["reasoning_effort"] == "low" and enviado["include_reasoning"] is False
+    assert enviado["max_completion_tokens"] == 1024 and "max_tokens" not in enviado
 
 
 def test_adaptador_convierte_error_http():

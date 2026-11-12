@@ -25,8 +25,8 @@ class Settings(BaseSettings):
     # Agente tutor (RF-004). Proveedor principal y alternativo con API compatible con OpenAI.
     ia_api_url: str = "https://api.groq.com/openai/v1/chat/completions"
     ia_api_key: str = ""
-    ia_modelo_principal: str = "llama-3.3-70b-versatile"
-    ia_modelo_alternativo: str = "llama-3.1-8b-instant"
+    ia_modelo_principal: str = "openai/gpt-oss-120b"
+    ia_modelo_alternativo: str = "openai/gpt-oss-20b"
     ia_timeout_segundos: float = 8.0
     ia_version_prompt: str = "tutor-v0.2"
 
