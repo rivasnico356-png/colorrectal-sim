@@ -14,12 +14,12 @@ Estados: **Implementado** (código y prueba automática), **Parcial** (falta alg
 | 1.5 | Administración de usuarios | Implementado | `usuarios/router.py`, `Admin.tsx` | `test_flujo::test_administracion_de_usuarios` |
 | 1.6 | Vínculo directo Usuario–Profesional | Implementado | `vinculos/router.py` | `test_flujo::test_simulacion_completa…` |
 | 2.1 / 2.1b / 2.1c | Crear, editar (con versiones) y eliminar casos | Implementado | `casos/service.py` | `test_flujo::test_borrador_no_aparece_y_editar_conserva_version` |
-| 2.2 | Recursos multimedia con dataset y licencia | Implementado | `casos/service.py::guardar_recurso` | Pendiente prueba automática |
+| 2.2 | Recursos multimedia con dataset y licencia, guardados en la base | Implementado | `casos/service.py::guardar_recurso`, `casos/medios.py`, `db/05` | `test_flujo::test_recurso_multimedia_exige_formato_dataset_y_licencia` |
 | 2.3 / 2.4 | Opciones, puntaje, explicación, fuente y recomendación de la IA | Implementado | `casos/schemas.py` | `test_reglas` |
 | 2.5 | Revisión por persona distinta al autor y publicación | Implementado | `casos/service.py::revisar` | `test_flujo` |
 | 2.6 | Catálogo con filtros y estado | Implementado | `casos/router.py` | `test_flujo` |
 | 3.1 / 3.2 | Aviso de alcance y etapas en orden | Implementado | `simulacion/service.py` | `test_flujo` |
-| 3.3 / 3.3b | Visor de imagen con zoom y reproductor de video | Parcial | `Simulacion.tsx` | Falta avance cuadro a cuadro del video |
+| 3.3 / 3.3b | Visor de imagen con zoom y reproductor de video cuadro a cuadro | Implementado | `Simulacion.tsx` (`VisorVideo`), `casos/medios.py` (peticiones parciales) | `test_flujo` (Range) y pruebas de sistema en `e2e/` |
 | 3.4 | Resultado del modelo de visión | Implementado* | `estudios/vision.py`, `simulacion/service.py` | `test_estudios::test_resultado_del_modelo_desde_mascara` |
 | 3.5 / 3.6 | Decisión con confianza 1–5; retomar sin modificar | Implementado | `simulacion/service.py` | `test_flujo` |
 | 4.1–4.5 | Recomendación, explicación, preguntas con límite, siguió/rechazó, respaldo | Implementado | `tutor/`, `simulacion/service.py` | `test_tutor`, `test_flujo` |
@@ -37,8 +37,8 @@ Estados: **Implementado** (código y prueba automática), **Parcial** (falta alg
 | Req. | Estado | Evidencia o pendiente |
 |------|--------|-----------------------|
 | RNF-001 Rendimiento | Implementado | Carga con 30 usuarios: p90 10 ms y 0 % de errores; estrés hasta 150 usuarios sin fallas ([resultados](pruebas-no-funcionales.md)) |
-| RNF-002 Disponibilidad | Pendiente | Medición durante el periodo de pruebas |
-| RNF-003 Seguridad | Parcial | bcrypt, roles, secretos en variables de entorno, gitleaks, estudios cifrados, cabeceras de seguridad, OWASP ZAP sin fallas ni avisos (120 reglas), pip-audit y npm audit de producción sin vulnerabilidades. Falta HTTPS en el despliegue |
+| RNF-002 Disponibilidad | Parcial | Monitoreo automático del enlace público cada 2 horas (`.github/workflows/monitoreo.yml`); disponibilidad = corridas exitosas / totales, meta más de 95 %. Falta el cálculo al cierre del periodo de pruebas |
+| RNF-003 Seguridad | Implementado | bcrypt, roles, secretos en variables de entorno, gitleaks, estudios cifrados, cabeceras de seguridad, OWASP ZAP sin fallas ni avisos (120 reglas), pip-audit y npm audit de producción sin vulnerabilidades. HTTPS en el enlace público de Render. La demostración no recibe estudios propios (Ley 1581) |
 | RNF-004 Usabilidad | Pendiente | Cuestionario SUS con 5 personas |
 | RNF-005 Web y móvil | Implementado | Flujo completo aprobado en Chrome, Firefox, Safari (WebKit), Chrome Android y Safari iPhone, sin desborde horizontal ([resultados](pruebas-no-funcionales.md)). Falta confirmarlo en un teléfono físico |
 | RNF-006 Mantenibilidad | Parcial | Docker, CI y pruebas; faltan los tags v0.5, v0.9 y v1.0 |

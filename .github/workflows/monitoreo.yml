@@ -1,0 +1,34 @@
+# RNF-002: mide la disponibilidad del enlace público. Cada corrida es una muestra: éxito = disponible.
+# Disponibilidad del periodo = corridas exitosas / corridas totales (meta del Plan de Calidad: más de 95 %).
+# El plan gratuito de Render duerme el servicio tras 15 minutos sin uso; despertarlo tarda cerca de un minuto,
+# por eso se espera hasta 120 s y se registra el tiempo de respuesta.
+# GitHub solo ejecuta los flujos programados desde la rama principal del repositorio.
+name: Monitoreo de disponibilidad
+
+on:
+  schedule:
+    - cron: "17 */2 * * *"   # cada 2 horas (minuto 17 para no coincidir con la hora en punto)
+  workflow_dispatch:
+
+jobs:
+  salud:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Consultar /api/v1/salud del enlace público
+        env:
+          URL: https://colorrectal-sim.onrender.com/api/v1/salud
+        run: |
+          set +e
+          salida=$(curl -sS -o cuerpo.json -w "%{http_code} %{time_total}" --max-time 120 "$URL")
+          estado=$?
+          set -e
+          codigo=${salida%% *}; tiempo=${salida##* }
+          echo "Código HTTP: $codigo · tiempo: ${tiempo}s · curl: $estado"
+          {
+            echo "### Disponibilidad del enlace público"
+            echo "| Fecha (UTC) | Código | Tiempo (s) | Respuesta |"
+            echo "|---|---|---|---|"
+            echo "| $(date -u '+%Y-%m-%d %H:%M') | $codigo | $tiempo | $(head -c 120 cuerpo.json 2>/dev/null) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          test "$estado" -eq 0 && test "$codigo" = "200" && grep -q '"ok"' cuerpo.json

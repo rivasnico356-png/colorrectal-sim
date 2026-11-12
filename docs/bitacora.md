@@ -15,6 +15,7 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 
 | Hora | Qué | Evidencia | Resultado |
 |---|---|---|---|
+| 14:05 | Inicia el monitoreo de disponibilidad del enlace público (RNF-002): una consulta cada 2 horas | `.github/workflows/monitoreo.yml` | Muestras en la pestaña Actions › Monitoreo de disponibilidad |
 | 13:50 | Borrador del protocolo de la prueba SUS (consentimiento, 6 tareas, cuestionario, tabla de resultados) | Documento en Claude Docs | Borrador; se aplica del 23 al 25-11 |
 | 13:30 | Ciclo 2 (regresión) de la Matriz de Pruebas Unitarias: 48 casos repetidos y 4 nuevos (CP049–CP052) | Corrida 43275023226, commit 067dc1d | 52 de 52 exitosos |
 | 13:15 | Copia local en el PC de Nicolás actualizada con `git pull` y `docker compose up -d --build` | Registro del backend en Docker Desktop | Script 05 aplicado; 3 contenedores en funcionamiento |
