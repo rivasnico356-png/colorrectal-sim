@@ -16,7 +16,7 @@ on:
 jobs:
   carga-y-estres:
     if: inputs.pruebas == 'todas' || inputs.pruebas == 'carga-y-estres'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -74,7 +74,7 @@ jobs:
 
   seguridad:
     if: inputs.pruebas == 'todas' || inputs.pruebas == 'seguridad'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -124,7 +124,7 @@ jobs:
 
   accesibilidad:
     if: inputs.pruebas == 'todas' || inputs.pruebas == 'accesibilidad'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -154,7 +154,7 @@ jobs:
   sistema:
     # Pruebas de sistema de punta a punta en 5 navegadores con revisión de accesibilidad (axe, WCAG 2.1 AA).
     if: inputs.pruebas == 'todas' || inputs.pruebas == 'sistema'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
