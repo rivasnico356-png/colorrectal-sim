@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     ia_modelo_principal: str = "openai/gpt-oss-120b"
     ia_modelo_alternativo: str = "openai/gpt-oss-20b"
     ia_timeout_segundos: float = 8.0
-    ia_version_prompt: str = "tutor-v0.2"
+    ia_version_prompt: str = "tutor-v0.3"
 
     # RF-004 4.3: número máximo de consultas al tutor por etapa (configurable).
     tutor_max_consultas_etapa: int = 3

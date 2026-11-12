@@ -72,6 +72,7 @@ fieldset { border: 1px solid var(--borde); border-radius: 8px; display: flex; fl
 .escala button.activa { background: var(--primario); color: #fff; border-color: var(--primario); }
 .escala button.activa small { color: #fff; }
 .tutor .chat { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow: auto; }
+.tutor .chat p { white-space: pre-line; }
 .chat p { margin: 0; padding: 8px 10px; border-radius: 8px; } .chat .tu { background: #e7eef2; align-self: flex-end; }
 .chat .ia { background: #f2f7f4; } .cargando { font-style: italic; }
 .retro.correcto { border-top: 6px solid #2e8b57; } .retro.parcial { border-top: 6px solid #d99a1e; } .retro.incorrecto { border-top: 6px solid var(--error); }

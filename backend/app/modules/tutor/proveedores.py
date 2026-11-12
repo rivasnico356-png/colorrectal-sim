@@ -1,4 +1,5 @@
 """Patrón Adapter (ADR-04): cada proveedor de IA implementa la misma interfaz ProveedorLLM."""
+import re
 import time
 from dataclasses import dataclass
 from typing import Protocol
@@ -23,6 +24,14 @@ class ProveedorLLM(Protocol):
     modelo: str
 
     def completar(self, sistema: str, mensaje: str) -> RespuestaIA: ...
+
+
+def texto_plano(texto: str) -> str:
+    """Quita marcas de Markdown que el modelo deje a pesar de la regla 8 del prompt (el panel muestra texto plano)."""
+    texto = re.sub(r"(\*\*|__)(.+?)\1", r"\2", texto or "")
+    texto = re.sub(r"^[ \t]{0,3}#{1,6}[ \t]*", "", texto, flags=re.MULTILINE)
+    texto = re.sub(r"^[ \t]*[-*][ \t]+", "• ", texto, flags=re.MULTILINE)
+    return re.sub(r"[ \t]+\n", "\n", texto).strip()
 
 
 class AdaptadorOpenAICompatible:
@@ -50,7 +59,7 @@ class AdaptadorOpenAICompatible:
             if r.status_code >= 400:
                 # El mensaje del proveedor explica el rechazo (clave inválida, modelo retirado, límite de uso).
                 raise ErrorProveedor(f"HTTP {r.status_code}: {r.text[:300]}")
-            texto = r.json()["choices"][0]["message"]["content"].strip()
+            texto = texto_plano(r.json()["choices"][0]["message"]["content"])
             if not texto:
                 raise ErrorProveedor("Respuesta vacía del modelo.")
         except (httpx.HTTPError, KeyError, IndexError, ValueError, TypeError, AttributeError) as exc:

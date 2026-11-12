@@ -3,7 +3,7 @@ import json
 
 import httpx
 
-from app.modules.tutor.proveedores import AdaptadorOpenAICompatible, ErrorProveedor, RespuestaIA
+from app.modules.tutor.proveedores import AdaptadorOpenAICompatible, ErrorProveedor, RespuestaIA, texto_plano
 from app.modules.tutor.servicio import ServicioTutor
 
 
@@ -85,6 +85,11 @@ def test_adaptador_explica_el_rechazo_del_proveedor_y_limpia_la_clave():
         raise AssertionError("debía fallar")
     except ErrorProveedor as e:
         assert "401" in str(e) and "Invalid API Key" in str(e)
+
+
+def test_respuesta_del_modelo_queda_en_texto_plano():
+    texto = "## Pista\n\nEn esta etapa hay una **sugerencia**:\n- Revisa la imagen  \n* Compara opciones"
+    assert texto_plano(texto) == "Pista\n\nEn esta etapa hay una sugerencia:\n• Revisa la imagen\n• Compara opciones"
 
 
 def test_adaptador_convierte_error_http():

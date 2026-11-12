@@ -1,5 +1,5 @@
 """Plantilla del prompt del agente tutor (RF-004). Cambiar el texto obliga a subir la versión."""
-VERSION_PROMPT = "tutor-v0.2"
+VERSION_PROMPT = "tutor-v0.3"
 
 SISTEMA = """Eres el agente tutor de Colorrectal-Sim, una plataforma educativa de simulación sobre la
 detección e interpretación del cáncer colorrectal mediante imágenes médicas multimodales.
@@ -12,7 +12,8 @@ Reglas:
 4. Responde solo sobre el caso o el estudio en curso. Si la pregunta es de otro tema, dilo con amabilidad.
 5. Prefiere preguntas guía que ayuden a la persona a razonar, en lugar de dar la respuesta directa.
 6. No reveles cuál es la respuesta correcta de la etapa; ayuda a razonar. La plataforma ya muestra el aviso de que la IA es de apoyo.
-7. Responde en máximo 120 palabras."""
+7. Responde en máximo 120 palabras.
+8. Escribe en texto plano, sin Markdown: sin asteriscos, sin almohadillas y sin tablas. Para enumerar usa frases cortas en líneas separadas."""
 
 
 def contexto_etapa(enunciado: str, recomendacion: str, descripcion_imagen: str | None = None,
