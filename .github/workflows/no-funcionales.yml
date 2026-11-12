@@ -1,0 +1,144 @@
+name: Pruebas no funcionales
+
+# Se ejecutan a mano (Actions → Pruebas no funcionales → Run workflow) sobre la rama qa.
+on:
+  workflow_dispatch:
+    inputs:
+      duracion_carga:
+        description: "Duración de la prueba de carga con 30 usuarios"
+        default: "10m"
+
+jobs:
+  carga-y-estres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: colorrectal_sim
+          POSTGRES_USER: colorrectal
+          POSTGRES_PASSWORD: colorrectal
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U colorrectal" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://colorrectal:colorrectal@localhost:5432/colorrectal_sim
+      JWT_SECRETO: secreto-solo-para-pruebas
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt locust==2.32.4
+      - name: Crear esquema
+        run: for f in ../db/*.sql; do PGPASSWORD=colorrectal psql -h localhost -U colorrectal -d colorrectal_sim -v ON_ERROR_STOP=1 -f "$f"; done
+      - name: Levantar la API (2 procesos)
+        run: |
+          nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2 > api.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:8000/api/v1/salud && break; sleep 1; done
+      - name: Datos sintéticos
+        run: python -m pruebas_carga.sembrar http://localhost:8000/api/v1
+      - name: Prueba de carga (30 usuarios concurrentes, RNF-001)
+        run: |
+          mkdir -p resultados
+          locust -f pruebas_carga/locustfile.py --headless -u 30 -r 5 -t ${{ inputs.duracion_carga }} \
+            --host http://localhost:8000 --csv resultados/carga --html resultados/carga.html --only-summary
+          python pruebas_carga/verificar.py resultados/carga_stats.csv
+      - name: Prueba de estrés (30 a 150 usuarios)
+        if: always()
+        env:
+          ESTRES: "1"
+        run: |
+          locust -f pruebas_carga/locustfile.py --headless --host http://localhost:8000 \
+            --csv resultados/estres --html resultados/estres.html --only-summary || true
+          python pruebas_carga/verificar.py resultados/estres_stats.csv || echo "El límite de 3 s se supera bajo estrés (esperado: se busca el punto de quiebre)"
+      - name: La API sigue respondiendo después del estrés
+        if: always()
+        run: curl -sf http://localhost:8000/api/v1/salud
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: carga-y-estres
+          path: |
+            backend/resultados/
+            backend/api.log
+
+  seguridad:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: colorrectal_sim
+          POSTGRES_USER: colorrectal
+          POSTGRES_PASSWORD: colorrectal
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U colorrectal" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://colorrectal:colorrectal@localhost:5432/colorrectal_sim
+      JWT_SECRETO: secreto-solo-para-pruebas
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Auditoría de dependencias de Python
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt pip-audit
+          mkdir -p ../resultados && pip-audit -r requirements.txt -f markdown -o ../resultados/pip-audit.md || true
+          cat ../resultados/pip-audit.md
+      - name: Auditoría de dependencias del frontend
+        working-directory: frontend
+        run: npm install && (npm audit --omit=dev > ../resultados/npm-audit.txt || true) && cat ../resultados/npm-audit.txt
+      - name: Esquema y API
+        working-directory: backend
+        run: |
+          for f in ../db/*.sql; do PGPASSWORD=colorrectal psql -h localhost -U colorrectal -d colorrectal_sim -v ON_ERROR_STOP=1 -f "$f"; done
+          nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > api.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:8000/api/v1/salud && break; sleep 1; done
+      - name: Escaneo de la API con OWASP ZAP
+        run: |
+          chmod 777 resultados
+          docker run --network host -v "$PWD/resultados:/zap/wrk:rw" ghcr.io/zaproxy/zaproxy:stable \
+            zap-api-scan.py -t http://localhost:8000/openapi.json -f openapi -r zap.html -w zap.md -I
+          cat resultados/zap.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: seguridad
+          path: resultados/
+
+  accesibilidad:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Compilar y servir el frontend
+        working-directory: frontend
+        run: |
+          npm install && npm run build
+          nohup npx vite preview --port 4173 --strictPort > preview.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4173 && break; sleep 1; done
+      - name: Lighthouse (accesibilidad, buenas prácticas y rendimiento)
+        run: |
+          mkdir -p resultados
+          for vista in escritorio movil; do
+            extra=$([ "$vista" = escritorio ] && echo "--preset=desktop" || echo "")
+            npx --yes lighthouse@12.2.1 http://localhost:4173 $extra --only-categories=accessibility,best-practices,performance \
+              --chrome-flags="--headless=new --no-sandbox" --output html --output json --output-path resultados/lighthouse-$vista --quiet
+            node -e "const r=require('./resultados/lighthouse-$vista.report.json');for(const[k,c]of Object.entries(r.categories))console.log('$vista',k,Math.round(c.score*100))"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: accesibilidad
+          path: resultados/
