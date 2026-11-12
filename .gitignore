@@ -25,8 +25,9 @@ datasets/
 *.nii.gz
 modelos/*.pt
 modelos/*.onnx
-media/
-estudios/
+/backend/media/
+/data/
+/backend/estudios/
 vision/salidas/
 
 # Sistema y editores
