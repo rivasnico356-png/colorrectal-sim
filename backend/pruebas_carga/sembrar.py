@@ -18,7 +18,7 @@ CLAVE = "Carga12345"
 
 def main() -> None:
     api = sys.argv[1]
-    admin = f"admin_{uuid.uuid4().hex[:6]}@carga.test"
+    admin = f"admin_{uuid.uuid4().hex[:6]}@carga.ejemplo.com"
     with SessionLocal() as db:
         db.execute(text("""INSERT INTO usuario (id_rol, nombre, correo, hash_contrasena, rango_edad)
                            VALUES ((SELECT id_rol FROM rol WHERE nombre = 'Administrador'), 'Admin carga', :c, :h, '30-39')"""),
@@ -34,7 +34,7 @@ def main() -> None:
     cab_admin = token(admin)
     profes = []
     for i in range(2):
-        correo = f"prof{i}_{uuid.uuid4().hex[:6]}@carga.test"
+        correo = f"prof{i}_{uuid.uuid4().hex[:6]}@carga.ejemplo.com"
         c.post("/admin/usuarios", headers=cab_admin, json={"nombre": f"Profesional carga {i}", "correo": correo,
                                                            "contrasena": CLAVE, "rol": "Profesional de la salud"}).raise_for_status()
         profes.append(token(correo))

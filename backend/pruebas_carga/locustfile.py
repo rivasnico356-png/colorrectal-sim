@@ -16,7 +16,7 @@ class PersonaUsuaria(HttpUser):
     wait_time = between(1, 3)
 
     def on_start(self):
-        correo = f"carga_{uuid.uuid4().hex}@carga.test"
+        correo = f"carga_{uuid.uuid4().hex}@carga.ejemplo.com"
         self.client.post(f"{API}/auth/registro", name="registro", json={
             "nombre": "Persona de carga", "correo": correo, "contrasena": "Carga12345", "rango_edad": "50-59", "acepta_politica": True})
         r = self.client.post(f"{API}/auth/login", name="login", json={"correo": correo, "contrasena": "Carga12345"})
