@@ -69,3 +69,27 @@ def test_imagen_de_ejemplo_en_el_caso_de_demostracion(cliente, monkeypatch, tmp_
                                   JOIN recurso_multimedia r ON r.id_etapa = e.id_etapa JOIN dataset d ON d.id_dataset = r.id_dataset
                                   WHERE c.titulo = :t AND NOT c.eliminado AND e.orden = 1"""), {"t": preparar.TITULO_DEMO}).one()
     assert fila.usa_modelo_vision is True and fila.nombre == "Kvasir-SEG"
+
+    # De punta a punta: la imagen guardada en la base llega al modelo de visión y su resultado aparece en la etapa.
+    from app.modules.estudios.vision import CON_REGION, ResultadoVision, fijar_modelo
+
+    recibido = {}
+
+    class ModeloFalso:
+        version = "prueba-demo"
+
+        def analizar(self, datos: bytes) -> ResultadoVision:
+            recibido["bytes"] = datos
+            return ResultadoVision({"x": 0.2, "y": 0.2, "ancho": 0.4, "alto": 0.3}, CON_REGION, 81.0, self.version)
+
+    fijar_modelo(ModeloFalso())
+    try:
+        _, cab = registrar_usuario(cliente)
+        id_caso = next(c["id_caso"] for c in cliente.get("/api/v1/casos", headers=cab).json() if c["titulo"] == preparar.TITULO_DEMO)
+        intento = cliente.post("/api/v1/intentos", headers=cab, json={"id_caso": id_caso, "acepto_aviso": True}).json()
+        etapa = cliente.get(f"/api/v1/intentos/{intento['id_intento']}", headers=cab).json()["etapa"]
+    finally:
+        fijar_modelo(None)
+    assert recibido["bytes"] == imagen.read_bytes()
+    assert etapa["modelo_vision"]["disponible"] is True and etapa["modelo_vision"]["version_modelo"] == "prueba-demo"
+    assert etapa["recursos"][0]["dataset"] == "Kvasir-SEG" and etapa["recursos"][0]["tipo"] == "imagen"
