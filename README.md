@@ -176,7 +176,19 @@ colorrectal-sim/
 
 ## 🚀 Despliegue
 
-La versión 1.0 se entrega como contenedores Docker. El despliegue en un servidor se define en el Ciclo 3.
+### Enlace público de demostración (Render)
+
+`render.yaml` crea en Render, con el plan gratuito, la base PostgreSQL 16 y un solo servicio web (`despliegue/Dockerfile`) que sirve la API y el frontend en la misma dirección. Cada cambio en `develop` se publica solo.
+
+1. En [Render](https://render.com) entra con GitHub y elige **New › Blueprint** sobre este repositorio.
+2. Escribe en el panel `ADMIN_CORREO` y `ADMIN_CONTRASENA` (primer administrador) y, si se tiene, `IA_API_KEY`.
+3. Al arrancar, `python -m app.preparar` carga el esquema, crea el administrador y publica un caso de demostración con texto de prueba.
+
+Limitaciones del plan gratuito: el servicio se duerme tras 15 minutos sin uso y tarda cerca de un minuto en despertar; la base gratuita vence a los 30 días; los archivos subidos (imágenes de los casos) no se conservan al reiniciar. En la demostración (`ENTORNO=demostracion`) no se pueden cargar estudios propios, para no recibir datos reales de personas en un servidor de pruebas (Ley 1581 de 2012).
+
+### Versión 1.0
+
+Se entrega como contenedores Docker (`docker-compose.yml`).
 
 ## 🤝 Contribuir
 

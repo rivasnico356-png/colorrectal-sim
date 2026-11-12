@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.db import get_db
 from app.core.deps import PROFESIONAL, USUARIO, requiere_rol, usuario_actual
 from app.core.errores import ErrorNegocio
@@ -76,6 +77,10 @@ def _estudio(db: Session, id_estudio: int, quien: dict) -> dict:
 async def cargar(archivo: UploadFile = File(...), confirma_sin_datos_visibles: bool = Form(False), db: Session = Depends(get_db),
                  usuario: dict = Depends(requiere_rol(USUARIO))) -> dict:
     """RF-010 10.1 y 10.2."""
+    if get_settings().entorno == "demostracion":
+        # Ley 1581: el enlace público de demostración no recibe estudios reales de personas.
+        raise HTTPException(403, "En la versión de demostración no se pueden cargar estudios. Esta función se habilita en la "
+                                 "instalación oficial de la plataforma.")
     sensibles = db.execute(text("""SELECT aceptada FROM autorizacion_datos WHERE id_usuario = CAST(:u AS uuid)
                                    AND tipo = 'datos_sensibles'"""), {"u": usuario["sub"]}).scalar()
     if not sensibles:

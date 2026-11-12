@@ -1,6 +1,8 @@
 """Configuración leída de variables de entorno (ADR-08). Nunca se escriben secretos en el código."""
+import os
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -44,9 +46,22 @@ class Settings(BaseSettings):
     smtp_usuario: str = ""
     smtp_contrasena: str = ""
     smtp_remitente: str = "no-responder@colorrectal-sim.local"
-    frontend_url: str = "http://localhost:5173"
+    # En Render se usa la dirección pública del servicio para los enlaces de recuperación.
+    frontend_url: str = os.getenv("RENDER_EXTERNAL_URL", "http://localhost:5173")
     minutos_enlace_recuperacion: int = 30
     cors_origenes: str = "http://localhost:5173"
+    # Despliegue público: scripts del esquema y frontend compilado que sirve la misma API (un solo enlace).
+    esquema_dir: str = "../db"
+    web_dir: str = "web"
+
+    @field_validator("database_url")
+    @classmethod
+    def usar_psycopg(cls, v: str) -> str:
+        """Los proveedores entregan postgres:// o postgresql://; SQLAlchemy necesita el controlador psycopg 3."""
+        for prefijo in ("postgres://", "postgresql://"):
+            if v.startswith(prefijo):
+                return "postgresql+psycopg://" + v[len(prefijo):]
+        return v
 
 
 @lru_cache

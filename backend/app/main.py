@@ -50,3 +50,9 @@ app.mount("/media", StaticFiles(directory=s.media_dir), name="media")
 @app.get("/api/v1/salud", tags=["Sistema"])
 def salud() -> dict:
     return {"estado": "ok", "version": app.version}
+
+
+# Despliegue público: la API sirve también el frontend compilado, así la aplicación tiene un solo enlace.
+# Se monta al final para que /api, /docs y /media tengan prioridad.
+if Path(s.web_dir).is_dir():
+    app.mount("/", StaticFiles(directory=s.web_dir, html=True), name="web")

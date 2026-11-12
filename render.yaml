@@ -1,0 +1,42 @@
+# Despliegue del enlace público en Render (plan gratuito). Se crea desde Render con "New > Blueprint".
+# Los valores marcados con sync: false los escribe el equipo en el panel de Render; nunca van en el repositorio.
+databases:
+  - name: colorrectal-sim-db
+    plan: free
+    databaseName: colorrectal_sim
+    user: colorrectal
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: colorrectal-sim
+    runtime: docker
+    plan: free
+    dockerfilePath: ./despliegue/Dockerfile
+    dockerContext: .
+    branch: develop
+    autoDeploy: true
+    healthCheckPath: /api/v1/salud
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: colorrectal-sim-db
+          property: connectionString
+      - key: ENTORNO
+        value: demostracion
+      - key: JWT_SECRETO
+        generateValue: true
+      - key: CLAVE_CIFRADO_ESTUDIOS
+        generateValue: true
+      - key: SAL_SEUDONIMO
+        generateValue: true
+      - key: CASO_DEMO
+        value: "1"
+      - key: ADMIN_NOMBRE
+        value: Nicolás Rivas Castillo
+      - key: ADMIN_CORREO
+        sync: false
+      - key: ADMIN_CONTRASENA
+        sync: false
+      - key: IA_API_KEY
+        sync: false
