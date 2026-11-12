@@ -1,4 +1,5 @@
 """Hash de contraseñas (bcrypt) y tokens JWT (RF-001, RNF-003)."""
+import uuid
 from datetime import UTC, datetime, timedelta
 
 import bcrypt
@@ -21,7 +22,8 @@ def verificar_contrasena(contrasena: str, hash_guardado: str) -> bool:
 def crear_token(sujeto: str, rol: str) -> str:
     s = get_settings()
     ahora = datetime.now(UTC)
-    datos = {"sub": sujeto, "rol": rol, "iat": ahora, "exp": ahora + timedelta(minutes=s.jwt_minutos_expiracion)}
+    datos = {"sub": sujeto, "rol": rol, "jti": str(uuid.uuid4()), "iat": ahora,
+             "exp": ahora + timedelta(minutes=s.jwt_minutos_expiracion)}
     return jwt.encode(datos, s.jwt_secreto, algorithm=s.jwt_algoritmo)
 
 

@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { api } from "../api";
+import { enviar } from "../api";
 
 const RANGOS = ["18-29", "30-39", "40-49", "50-59", "60-69", "70+"];
 
@@ -11,11 +11,11 @@ export default function Registro({ alTerminar }: { alTerminar: () => void }) {
   const [error, setError] = useState("");
   const cambiar = (campo: string, valor: string | boolean) => setF({ ...f, [campo]: valor });
 
-  const enviar = async (e: FormEvent) => {
+  const registrar = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     try {
-      await api("/auth/registro", { method: "POST", body: JSON.stringify(f) });
+      await enviar("/auth/registro", "POST", f);
       alTerminar();
     } catch (err) {
       setError((err as Error).message);
@@ -23,11 +23,11 @@ export default function Registro({ alTerminar }: { alTerminar: () => void }) {
   };
 
   return (
-    <form className="tarjeta" onSubmit={enviar}>
+    <form className="tarjeta estrecha" onSubmit={registrar}>
       <h1>Crear cuenta</h1>
       <label>Nombre<input value={f.nombre} onChange={(e) => cambiar("nombre", e.target.value)} required /></label>
       <label>Correo<input type="email" value={f.correo} onChange={(e) => cambiar("correo", e.target.value)} required /></label>
-      <label>Contraseña (mínimo 8 caracteres)
+      <label>Contraseña (mínimo 8 caracteres, con letras y números)
         <input type="password" minLength={8} maxLength={72} value={f.contrasena}
           onChange={(e) => cambiar("contrasena", e.target.value)} required />
       </label>

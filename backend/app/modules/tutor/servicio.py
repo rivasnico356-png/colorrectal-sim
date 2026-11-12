@@ -1,11 +1,11 @@
 """Patrón Strategy (RF-004 4.5): IA principal → modelo alternativo → recomendación predefinida.
 La simulación nunca se bloquea si la IA falla."""
 from app.core.config import get_settings
+from app.core.textos import ROTULO_IA
 from app.modules.tutor import prompt
 from app.modules.tutor.proveedores import AdaptadorOpenAICompatible, ErrorProveedor, ProveedorLLM, RespuestaIA
 
-MENSAJE_PREDEFINIDA = ("El tutor no está disponible en este momento. Esta es la explicación preparada para la etapa. "
-                       "Resultado experimental de apoyo; no reemplaza la valoración de su médico.")
+MENSAJE_PREDEFINIDA = f"El tutor no está disponible en este momento. Esta es la explicación preparada para la etapa. {ROTULO_IA}"
 
 
 class ServicioTutor:
@@ -14,8 +14,9 @@ class ServicioTutor:
         self.errores: list[str] = []
 
     def explicar(self, enunciado: str, recomendacion: str, explicacion_predefinida: str,
-                 pregunta: str | None = None, descripcion_imagen: str | None = None) -> RespuestaIA:
-        mensaje = prompt.contexto_etapa(enunciado, recomendacion, descripcion_imagen)
+                 pregunta: str | None = None, descripcion_imagen: str | None = None,
+                 contexto_caso: str | None = None) -> RespuestaIA:
+        mensaje = prompt.contexto_etapa(enunciado, recomendacion, descripcion_imagen, contexto_caso)
         mensaje += f"\n\nPregunta de la persona: {pregunta}" if pregunta else "\n\nExplica la sugerencia de esta etapa."
         self.errores.clear()
         for proveedor in self.proveedores:

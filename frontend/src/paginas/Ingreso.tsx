@@ -1,8 +1,8 @@
 import { FormEvent, useState } from "react";
-import { api } from "../api";
+import { enviar, Rol } from "../api";
 
 interface Props {
-  alEntrar: (token: string) => void;
+  alEntrar: (token: string, rol: Rol) => void;
   irARegistro: () => void;
 }
 
@@ -12,16 +12,13 @@ export default function Ingreso({ alEntrar, irARegistro }: Props) {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
 
-  const enviar = async (e: FormEvent) => {
+  const entrar = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setCargando(true);
     try {
-      const r = await api<{ access_token: string }>("/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ correo, contrasena }),
-      });
-      alEntrar(r.access_token);
+      const r = await enviar<{ access_token: string; rol: Rol }>("/auth/login", "POST", { correo, contrasena });
+      alEntrar(r.access_token, r.rol);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -30,7 +27,7 @@ export default function Ingreso({ alEntrar, irARegistro }: Props) {
   };
 
   return (
-    <form className="tarjeta" onSubmit={enviar}>
+    <form className="tarjeta estrecha" onSubmit={entrar}>
       <h1>Iniciar sesión</h1>
       <label>Correo<input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required /></label>
       <label>Contraseña<input type="password" value={contrasena} onChange={(e) => setContrasena(e.target.value)} required /></label>

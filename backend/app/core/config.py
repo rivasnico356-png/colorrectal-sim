@@ -26,8 +26,12 @@ class Settings(BaseSettings):
     ia_modelo_principal: str = "llama-3.3-70b-versatile"
     ia_modelo_alternativo: str = "llama-3.1-8b-instant"
     ia_timeout_segundos: float = 8.0
-    ia_version_prompt: str = "tutor-v0.1"
+    ia_version_prompt: str = "tutor-v0.2"
 
+    # RF-004 4.3: número máximo de consultas al tutor por etapa (configurable).
+    tutor_max_consultas_etapa: int = 3
+    # Carpeta local con las imágenes de los datasets públicos (no se sube al repositorio).
+    media_dir: str = "media"
     cors_origenes: str = "http://localhost:5173"
 
 
