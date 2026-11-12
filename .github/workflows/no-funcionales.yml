@@ -99,8 +99,8 @@ jobs:
         working-directory: backend
         run: |
           pip install -r requirements.txt pip-audit
-          mkdir -p ../resultados && pip-audit -r requirements.txt -f markdown -o ../resultados/pip-audit.md || true
-          cat ../resultados/pip-audit.md
+          mkdir -p ../resultados
+          pip-audit -r requirements.txt 2>&1 | tee ../resultados/pip-audit.txt || true
       - name: Auditoría de dependencias del frontend
         working-directory: frontend
         run: npm install && (npm audit --omit=dev > ../resultados/npm-audit.txt || true) && cat ../resultados/npm-audit.txt
