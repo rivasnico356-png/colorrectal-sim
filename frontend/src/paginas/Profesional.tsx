@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
-import { api, enviar, TEMAS } from "../api";
+import { api, enviar, fecha, TEMAS } from "../api";
+import { Detalle, VistaEstudio } from "./Estudios";
 import { DatosProgreso, Intento, VistaProgreso } from "./Progreso";
 
 type Panel = { usuarios: number; puntaje_promedio: number | null; casos_completados: number;
@@ -202,5 +203,36 @@ function EditorEtapa({ idCaso, alGuardar }: { idCaso: number; alGuardar: (m: str
       </fieldset>
       <button className="primario">Guardar etapa</button>
     </form>
+  );
+}
+
+type Compartido = { id_estudio: number; usuario: string; fecha_carga: string; comentarios: number };
+
+// RF-010 10.4 · estudios que los usuarios vinculados compartieron
+export function EstudiosCompartidos() {
+  const [filas, setFilas] = useState<Compartido[]>([]);
+  const [detalle, setDetalle] = useState<Detalle | null>(null);
+  const [msg, setMsg] = useState("");
+  const cargar = () => api<Compartido[]>("/profesional/estudios").then(setFilas).catch((e) => setMsg(e.message));
+  useEffect(() => { cargar(); }, []);
+  const abrir = async (id: number) => setDetalle(await api<Detalle>(`/estudios/${id}`));
+  const comentar = async (texto: string) => {
+    if (!detalle) return;
+    try { await enviar(`/estudios/${detalle.id_estudio}/comentarios`, "POST", { texto }); await abrir(detalle.id_estudio); cargar(); }
+    catch (e) { setMsg((e as Error).message); }
+  };
+  return (
+    <section>
+      <h1>Estudios compartidos</h1>
+      {msg && <p className="aviso">{msg}</p>}
+      {filas.length === 0 && <p>Nadie ha compartido estudios contigo todavía.</p>}
+      <table>
+        <tbody>{filas.map((f) => (
+          <tr key={f.id_estudio}><td>{f.usuario}</td><td>{fecha(f.fecha_carga)}</td><td>{f.comentarios} comentarios</td>
+            <td><button onClick={() => abrir(f.id_estudio)}>Ver</button></td></tr>
+        ))}</tbody>
+      </table>
+      {detalle && <VistaEstudio d={detalle} comentar={comentar} />}
+    </section>
   );
 }

@@ -1,4 +1,6 @@
 """M03 Simulación, M05 Evaluación y M07 Interacción humano-IA (RF-003, RF-004 4.1 y 4.4, RF-005, RF-007)."""
+from pathlib import Path
+
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -7,6 +9,7 @@ from app.core.errores import ErrorNegocio
 from app.core.eventos import DecisionRegistrada, publicar
 from app.core.textos import AVISO_ALCANCE, ROTULO_IA
 from app.modules.casos.service import dificultad_maxima, niveles_por_dificultad
+from app.modules.estudios.vision import obtener_modelo
 
 
 def _intento(db: Session, id_usuario: str, id_intento: int) -> dict:
@@ -71,7 +74,8 @@ def estado(db: Session, id_usuario: str, id_intento: int) -> dict:
         return salida
     opciones = db.execute(text("SELECT id_opcion, texto, recomendada_ia FROM opcion_decision WHERE id_etapa = :e ORDER BY id_opcion"),
                           {"e": etapa["id_etapa"]}).mappings().all()
-    recursos = db.execute(text("""SELECT r.tipo, '/media/' || r.ruta_almacenamiento AS url, r.licencia, d.nombre AS dataset, d.fuente_url
+    recursos = db.execute(text("""SELECT r.tipo, '/media/' || r.ruta_almacenamiento AS url, r.ruta_almacenamiento, r.licencia,
+                                         d.nombre AS dataset, d.fuente_url
                                   FROM recurso_multimedia r LEFT JOIN dataset d ON d.id_dataset = r.id_dataset
                                   WHERE r.id_etapa = :e ORDER BY r.id_recurso"""), {"e": etapa["id_etapa"]}).mappings().all()
     recomendada = next((o for o in opciones if o["recomendada_ia"]), None)
@@ -86,15 +90,28 @@ def estado(db: Session, id_usuario: str, id_intento: int) -> dict:
     maximo = get_settings().tutor_max_consultas_etapa
     salida["etapa"] = {
         "id_etapa": etapa["id_etapa"], "orden": etapa["orden"], "enunciado": etapa["enunciado"],
-        "recursos": [dict(r) for r in recursos],
+        "recursos": [{k: v for k, v in r.items() if k != "ruta_almacenamiento"} for r in recursos],
         "opciones": [{"id_opcion": o["id_opcion"], "texto": o["texto"]} for o in opciones],
         "recomendacion_ia": {"texto": etapa["recomendacion_ia"], "id_opcion": recomendada["id_opcion"] if recomendada else None,
                              "rotulo": ROTULO_IA},
-        # RF-003 3.4: el resultado del modelo de visión se integra cuando el modelo esté entrenado (RF-010, IE-04).
-        "modelo_vision": {"disponible": False} if etapa["usa_modelo_vision"] else None,
+        "modelo_vision": _vision_etapa(recursos) if etapa["usa_modelo_vision"] else None,
         "tutor": {"consultas_restantes": max(0, maximo - consultas_usadas(db, id_intento, etapa["id_etapa"])), "maximo": maximo},
     }
     return salida
+
+
+def _vision_etapa(recursos) -> dict:
+    """RF-003 3.4: región de interés, clasificación experimental y confianza del modelo sobre la imagen de la etapa."""
+    modelo = obtener_modelo()
+    imagen = next((r for r in recursos if r["tipo"] == "imagen"), None)
+    archivo = Path(get_settings().media_dir) / imagen["ruta_almacenamiento"] if imagen else None
+    if modelo is None or archivo is None or not archivo.exists():
+        return {"disponible": False}
+    r = modelo.analizar(archivo.read_bytes())
+    return {"disponible": True, "roi": r.roi, "clasificacion": r.clasificacion, "confianza": r.confianza,
+            "version_modelo": r.version_modelo, "rotulo": ROTULO_IA,
+            "que_significa": "La confianza indica qué tan parecido es lo que ve el modelo a los ejemplos con que fue entrenado; "
+                             "no es una probabilidad de enfermedad."}
 
 
 def decidir(db: Session, id_usuario: str, id_intento: int, id_etapa: int, id_opcion: int, confianza: int,

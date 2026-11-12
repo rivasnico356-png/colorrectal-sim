@@ -70,3 +70,14 @@ class CambioUsuarioIn(BaseModel):
     """RF-001 1.5: cambiar rol o activar/desactivar una cuenta."""
     rol: Rol | None = None
     estado: Literal["activo", "inactivo"] | None = None
+
+
+class RecuperarIn(BaseModel):
+    correo: EmailStr
+
+
+class RestablecerIn(BaseModel):
+    token: str = Field(min_length=20)
+    contrasena: str = Field(min_length=8, max_length=72)
+
+    _contrasena = field_validator("contrasena")(validar_contrasena)

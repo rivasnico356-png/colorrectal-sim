@@ -55,7 +55,11 @@ fieldset { border: 1px solid var(--borde); border-radius: 8px; display: flex; fl
 .etapa header { margin-bottom: 12px; } .etapa progress { width: 100%; }
 .columnas { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 16px; align-items: start; }
 .visor { margin: 0 0 12px; } .lienzo { overflow: auto; max-height: 420px; border-radius: 8px; background: #000; }
-.lienzo img { display: block; width: 100%; transform-origin: top left; transition: transform .2s; }
+.lienzo img, .roi-contenedor img { display: block; width: 100%; }
+.roi-contenedor { position: relative; transition: transform .2s; }
+.roi { position: absolute; border: 3px solid #ffd400; border-radius: 4px; box-shadow: 0 0 0 2px rgba(0,0,0,.4); pointer-events: none; }
+.columnas.dos { grid-template-columns: 1fr 1fr; }
+.contador { background: var(--error); color: #fff; border-radius: 999px; padding: 0 7px; font-size: 12px; margin-left: 4px; }
 .visor video { width: 100%; border-radius: 8px; }
 .controles { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
 .controles button { min-width: 44px; min-height: 44px; font-size: 18px; }

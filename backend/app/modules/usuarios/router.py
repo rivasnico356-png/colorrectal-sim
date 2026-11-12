@@ -8,7 +8,16 @@ from app.core.db import get_db
 from app.core.deps import ADMIN, esquema, requiere_rol, usuario_actual
 from app.core.errores import ErrorNegocio
 from app.modules.usuarios import service
-from app.modules.usuarios.schemas import CambioUsuarioIn, CuentaNuevaIn, LoginIn, RegistroIn, TokenOut, UsuarioOut
+from app.modules.usuarios.schemas import (
+    CambioUsuarioIn,
+    CuentaNuevaIn,
+    LoginIn,
+    RecuperarIn,
+    RegistroIn,
+    RestablecerIn,
+    TokenOut,
+    UsuarioOut,
+)
 
 router = APIRouter(tags=["Usuarios y acceso"])
 
@@ -34,6 +43,21 @@ def login(datos: LoginIn, db: Session = Depends(get_db)) -> TokenOut:
 def logout(cred: HTTPAuthorizationCredentials | None = Depends(esquema), _: dict = Depends(usuario_actual),
            db: Session = Depends(get_db)) -> None:
     service.cerrar_sesion(db, cred.credentials)
+
+
+@router.post("/auth/recuperar", status_code=status.HTTP_202_ACCEPTED)
+def recuperar(datos: RecuperarIn, db: Session = Depends(get_db)) -> dict:
+    """RF-001 1.3: la respuesta es igual exista o no el correo."""
+    service.solicitar_recuperacion(db, datos.correo)
+    return {"mensaje": "Si el correo está registrado, te enviamos un enlace para restablecer la contraseña."}
+
+
+@router.post("/auth/restablecer", status_code=status.HTTP_204_NO_CONTENT)
+def restablecer(datos: RestablecerIn, db: Session = Depends(get_db)) -> None:
+    try:
+        service.restablecer(db, datos.token, datos.contrasena)
+    except ErrorNegocio as e:
+        raise HTTPException(e.codigo, e.mensaje) from e
 
 
 @router.get("/usuarios/me", response_model=UsuarioOut)

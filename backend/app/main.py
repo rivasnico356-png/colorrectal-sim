@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
 from app.modules.casos.router import router as casos_router
+from app.modules.estudios.router import router as estudios_router
 from app.modules.gamificacion import service as gamificacion  # noqa: F401  registra el observador de M06
 from app.modules.privacidad.router import router as privacidad_router
 from app.modules.progreso.router import router as progreso_router
@@ -21,7 +22,8 @@ app = FastAPI(title=s.app_nombre, version="0.5.0",
 app.add_middleware(CORSMiddleware, allow_origins=[o.strip() for o in s.cors_origenes.split(",")],
                    allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
-for r in (usuarios_router, privacidad_router, vinculos_router, casos_router, simulacion_router, tutor_router, progreso_router):
+for r in (usuarios_router, privacidad_router, vinculos_router, casos_router, simulacion_router, tutor_router, progreso_router,
+          estudios_router):
     app.include_router(r, prefix="/api/v1")
 
 # Imágenes y videos de los datasets públicos asociados a las etapas (RF-002 2.2).

@@ -32,6 +32,20 @@ class Settings(BaseSettings):
     tutor_max_consultas_etapa: int = 3
     # Carpeta local con las imágenes de los datasets públicos (no se sube al repositorio).
     media_dir: str = "media"
+    # RNF-003: clave para cifrar en reposo los estudios propios (Fernet). Si está vacía se deriva de jwt_secreto
+    # solo en desarrollo; en producción debe definirse.
+    clave_cifrado_estudios: str = ""
+    estudios_dir: str = "estudios"
+    # IE-04: modelo de visión exportado a ONNX (lo entrena el equipo con vision/entrenar.py).
+    modelo_vision_ruta: str = "modelos/vision.onnx"
+    # IE-05: correo SMTP para la recuperación de contraseña. Sin servidor configurado no se envía (desarrollo).
+    smtp_servidor: str = ""
+    smtp_puerto: int = 587
+    smtp_usuario: str = ""
+    smtp_contrasena: str = ""
+    smtp_remitente: str = "no-responder@colorrectal-sim.local"
+    frontend_url: str = "http://localhost:5173"
+    minutos_enlace_recuperacion: int = 30
     cors_origenes: str = "http://localhost:5173"
 
 

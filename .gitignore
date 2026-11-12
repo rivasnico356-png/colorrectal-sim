@@ -25,6 +25,9 @@ datasets/
 *.nii.gz
 modelos/*.pt
 modelos/*.onnx
+media/
+estudios/
+vision/salidas/
 
 # Sistema y editores
 .DS_Store

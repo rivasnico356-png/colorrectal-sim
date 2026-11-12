@@ -1,11 +1,14 @@
 """Reglas de negocio de M01: registro con autorizaciones (RF-001, RF-009), sesión y administración de usuarios."""
+import hashlib
 import json
+import secrets
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
+from app.core.correo import enviar_correo
 from app.core.errores import ErrorNegocio
 from app.core.security import crear_token, hash_contrasena, leer_token, verificar_contrasena
 from app.modules.usuarios.schemas import CambioUsuarioIn, CuentaNuevaIn, RegistroIn
@@ -13,7 +16,8 @@ from app.modules.usuarios.schemas import CambioUsuarioIn, CuentaNuevaIn, Registr
 VERSION_POLITICA = "1.0"
 TIPOS_AUTORIZACION = ("politica_tratamiento", "datos_sensibles", "compartir_avance")
 
-__all__ = ["ErrorNegocio", "registrar", "iniciar_sesion", "cerrar_sesion", "crear_cuenta", "cambiar_usuario", "bitacora"]
+__all__ = ["ErrorNegocio", "registrar", "iniciar_sesion", "cerrar_sesion", "crear_cuenta", "cambiar_usuario", "bitacora",
+           "solicitar_recuperacion", "restablecer"]
 
 
 def bitacora(db: Session, id_usuario: str, entidad: str, id_entidad: str | None, accion: str, detalle: dict | None = None):
@@ -110,4 +114,40 @@ def cambiar_usuario(db: Session, admin: str, id_usuario: str, cambio: CambioUsua
     if cambio.estado:
         db.execute(text("UPDATE usuario SET estado = :e WHERE id_usuario = CAST(:u AS uuid)"), {"e": cambio.estado, "u": id_usuario})
         bitacora(db, admin, "usuario", id_usuario, "cambiar_estado", {"antes": actual["estado"], "despues": cambio.estado})
+    db.commit()
+
+
+def _hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def solicitar_recuperacion(db: Session, correo: str) -> None:
+    """RF-001 1.3: envía un enlace de un solo uso que expira. No revela si el correo existe."""
+    s = get_settings()
+    fila = db.execute(text("SELECT id_usuario::text, nombre FROM usuario WHERE lower(correo) = lower(:c) AND estado = 'activo'"),
+                      {"c": correo}).mappings().first()
+    if fila is None:
+        return
+    token = secrets.token_urlsafe(32)
+    db.execute(text("""INSERT INTO recuperacion_contrasena (id_usuario, hash_token, expira)
+                       VALUES (CAST(:u AS uuid), :h, now() + make_interval(mins => :m))"""),
+               {"u": fila["id_usuario"], "h": _hash_token(token), "m": s.minutos_enlace_recuperacion})
+    bitacora(db, fila["id_usuario"], "usuario", fila["id_usuario"], "solicitar_recuperacion")
+    db.commit()
+    enlace = f"{s.frontend_url}/#restablecer={token}"
+    enviar_correo(correo, "Restablece tu contraseña de Colorrectal-Sim",
+                  f"Hola, {fila['nombre']}.\n\nPara crear una nueva contraseña abre este enlace:\n{enlace}\n\n"
+                  f"El enlace sirve una sola vez y vence en {s.minutos_enlace_recuperacion} minutos. "
+                  "Si no lo pediste, ignora este correo.")
+
+
+def restablecer(db: Session, token: str, contrasena: str) -> None:
+    fila = db.execute(text("""SELECT id_recuperacion, id_usuario::text FROM recuperacion_contrasena
+                              WHERE hash_token = :h AND NOT usado AND expira > now()"""), {"h": _hash_token(token)}).mappings().first()
+    if fila is None:
+        raise ErrorNegocio("El enlace no es válido o ya venció. Solicita uno nuevo.", 400)
+    db.execute(text("UPDATE recuperacion_contrasena SET usado = TRUE WHERE id_recuperacion = :i"), {"i": fila["id_recuperacion"]})
+    db.execute(text("""UPDATE usuario SET hash_contrasena = :h, intentos_fallidos = 0, bloqueado_hasta = NULL
+                       WHERE id_usuario = CAST(:u AS uuid)"""), {"h": hash_contrasena(contrasena), "u": fila["id_usuario"]})
+    bitacora(db, fila["id_usuario"], "usuario", fila["id_usuario"], "restablecer_contrasena")
     db.commit()

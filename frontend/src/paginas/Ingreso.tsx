@@ -4,9 +4,10 @@ import { enviar, Rol } from "../api";
 interface Props {
   alEntrar: (token: string, rol: Rol) => void;
   irARegistro: () => void;
+  irARecuperar: () => void;
 }
 
-export default function Ingreso({ alEntrar, irARegistro }: Props) {
+export default function Ingreso({ alEntrar, irARegistro, irARecuperar }: Props) {
   const [correo, setCorreo] = useState("");
   const [contrasena, setContrasena] = useState("");
   const [error, setError] = useState("");
@@ -33,6 +34,7 @@ export default function Ingreso({ alEntrar, irARegistro }: Props) {
       <label>Contraseña<input type="password" value={contrasena} onChange={(e) => setContrasena(e.target.value)} required /></label>
       {error && <p className="error" role="alert">{error}</p>}
       <button className="primario" disabled={cargando}>{cargando ? "Ingresando…" : "Ingresar"}</button>
+      <button type="button" className="enlace" onClick={irARecuperar}>¿Olvidaste tu contraseña?</button>
       <button type="button" className="enlace" onClick={irARegistro}>Crear una cuenta</button>
     </form>
   );

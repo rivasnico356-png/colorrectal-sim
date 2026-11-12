@@ -73,7 +73,7 @@ export default function Simulacion({ idCaso, volver }: { idCaso: number; volver:
   );
 }
 
-function Visor({ recurso }: { recurso: Recurso }) {
+function Visor({ recurso, roi }: { recurso: Recurso; roi?: { x: number; y: number; ancho: number; alto: number } | null }) {
   const [zoom, setZoom] = useState(1);
   const fuente = (
     <p className="meta">Fuente: {recurso.dataset ?? "dataset público"}{recurso.licencia ? ` · Licencia: ${recurso.licencia}` : ""}</p>
@@ -88,7 +88,10 @@ function Visor({ recurso }: { recurso: Recurso }) {
   return (
     <figure className="visor">
       <div className="lienzo">
-        <img src={MEDIA + recurso.url} alt="Imagen de colonoscopia de la etapa" style={{ transform: `scale(${zoom})` }} />
+        <div className="roi-contenedor" style={{ transform: `scale(${zoom})`, transformOrigin: "top left" }}>
+          <img src={MEDIA + recurso.url} alt="Imagen de colonoscopia de la etapa" />
+          {roi && <div className="roi" style={{ left: `${roi.x * 100}%`, top: `${roi.y * 100}%`, width: `${roi.ancho * 100}%`, height: `${roi.alto * 100}%` }} />}
+        </div>
       </div>
       <div className="controles">
         <button onClick={() => setZoom((z) => Math.max(1, z - 0.5))} aria-label="Alejar">−</button>
@@ -133,9 +136,16 @@ function EtapaVista({ estado, alDecidir }: { estado: EstadoIntento; alDecidir: (
       )}
       <div className="columnas">
         <div>
-          {etapa.recursos.map((r) => <Visor key={r.url} recurso={r} />)}
+          {etapa.recursos.map((r, i) => <Visor key={r.url} recurso={r} roi={i === 0 ? etapa.modelo_vision?.roi : null} />)}
           {etapa.modelo_vision && !etapa.modelo_vision.disponible && (
             <p className="aviso">El resultado del modelo de visión estará disponible cuando el modelo experimental esté listo.</p>
+          )}
+          {etapa.modelo_vision?.disponible && (
+            <div className="tarjeta">
+              <strong>Modelo de visión: {etapa.modelo_vision.clasificacion} · confianza {etapa.modelo_vision.confianza} %</strong>
+              <p className="meta">{etapa.modelo_vision.que_significa}</p>
+              <p className="rotulo">{etapa.modelo_vision.rotulo}</p>
+            </div>
           )}
         </div>
         <form className="tarjeta" onSubmit={confirmar}>

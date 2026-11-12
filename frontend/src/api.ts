@@ -12,6 +12,7 @@ let token: string | null = null;
 export const fijarToken = (t: string | null) => {
   token = t;
 };
+export const tokenActual = () => token;
 
 export async function api<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
   const esFormulario = opciones.body instanceof FormData;
@@ -65,7 +66,14 @@ export interface Etapa {
   recursos: Recurso[];
   opciones: { id_opcion: number; texto: string }[];
   recomendacion_ia: { texto: string; id_opcion: number | null; rotulo: string };
-  modelo_vision: { disponible: boolean } | null;
+  modelo_vision: {
+    disponible: boolean;
+    roi?: { x: number; y: number; ancho: number; alto: number } | null;
+    clasificacion?: string;
+    confianza?: number;
+    rotulo?: string;
+    que_significa?: string;
+  } | null;
   tutor: { consultas_restantes: number; maximo: number };
 }
 
