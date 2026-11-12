@@ -78,13 +78,7 @@ function Visor({ recurso, roi }: { recurso: Recurso; roi?: { x: number; y: numbe
   const fuente = (
     <p className="meta">Fuente: {recurso.dataset ?? "dataset público"}{recurso.licencia ? ` · Licencia: ${recurso.licencia}` : ""}</p>
   );
-  if (recurso.tipo === "video")
-    return (
-      <figure className="visor">
-        <video src={MEDIA + recurso.url} controls preload="metadata" />
-        {fuente}
-      </figure>
-    );
+  if (recurso.tipo === "video") return <VisorVideo recurso={recurso} fuente={fuente} />;
   return (
     <figure className="visor">
       <div className="lienzo">
@@ -97,6 +91,29 @@ function Visor({ recurso, roi }: { recurso: Recurso; roi?: { x: number; y: numbe
         <button onClick={() => setZoom((z) => Math.max(1, z - 0.5))} aria-label="Alejar">−</button>
         <span>{Math.round(zoom * 100)} %</span>
         <button onClick={() => setZoom((z) => Math.min(4, z + 0.5))} aria-label="Acercar">+</button>
+      </div>
+      {fuente}
+    </figure>
+  );
+}
+
+// RF-003 3.3b: reproducir, pausar y avanzar cuadro a cuadro (se asumen 25 cuadros por segundo)
+function VisorVideo({ recurso, fuente }: { recurso: Recurso; fuente: JSX.Element }) {
+  const video = useRef<HTMLVideoElement>(null);
+  const CUADRO = 1 / 25;
+  const mover = (cuadros: number) => {
+    const v = video.current;
+    if (!v) return;
+    v.pause();
+    v.currentTime = Math.min(Math.max(0, v.currentTime + cuadros * CUADRO), v.duration || v.currentTime);
+  };
+  return (
+    <figure className="visor">
+      <video ref={video} src={MEDIA + recurso.url} controls preload="metadata" playsInline />
+      <div className="controles">
+        <button type="button" onClick={() => mover(-1)} aria-label="Cuadro anterior">⏮</button>
+        <button type="button" onClick={() => (video.current?.paused ? video.current.play() : video.current?.pause())} aria-label="Reproducir o pausar">⏯</button>
+        <button type="button" onClick={() => mover(1)} aria-label="Cuadro siguiente">⏭</button>
       </div>
       {fuente}
     </figure>

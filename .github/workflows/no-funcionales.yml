@@ -4,12 +4,18 @@ name: Pruebas no funcionales
 on:
   workflow_dispatch:
     inputs:
+      pruebas:
+        description: "Qué pruebas ejecutar"
+        type: choice
+        options: [todas, carga-y-estres, seguridad, accesibilidad, sistema]
+        default: todas
       duracion_carga:
         description: "Duración de la prueba de carga con 30 usuarios"
         default: "10m"
 
 jobs:
   carga-y-estres:
+    if: inputs.pruebas == 'todas' || inputs.pruebas == 'carga-y-estres'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -44,7 +50,7 @@ jobs:
       - name: Prueba de carga (30 usuarios concurrentes, RNF-001)
         run: |
           mkdir -p resultados
-          locust -f pruebas_carga/locustfile.py --headless -u 30 -r 5 -t ${{ inputs.duracion_carga }} \
+          locust -f pruebas_carga/locustfile.py --headless -u 30 -r 5 -t ${{ inputs.duracion_carga || '10m' }} \
             --host http://localhost:8000 --csv resultados/carga --html resultados/carga.html --only-summary
           python pruebas_carga/verificar.py resultados/carga_stats.csv
       - name: Prueba de estrés (30 a 150 usuarios)
@@ -67,6 +73,7 @@ jobs:
             backend/api.log
 
   seguridad:
+    if: inputs.pruebas == 'todas' || inputs.pruebas == 'seguridad'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -116,6 +123,7 @@ jobs:
           path: resultados/
 
   accesibilidad:
+    if: inputs.pruebas == 'todas' || inputs.pruebas == 'accesibilidad'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -142,3 +150,69 @@ jobs:
         with:
           name: accesibilidad
           path: resultados/
+
+  sistema:
+    # Pruebas de sistema de punta a punta en 5 navegadores con revisión de accesibilidad (axe, WCAG 2.1 AA).
+    if: inputs.pruebas == 'todas' || inputs.pruebas == 'sistema'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: colorrectal_sim
+          POSTGRES_USER: colorrectal
+          POSTGRES_PASSWORD: colorrectal
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U colorrectal" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://colorrectal:colorrectal@localhost:5432/colorrectal_sim
+      JWT_SECRETO: secreto-solo-para-pruebas-de-sistema-e2e
+      CORS_ORIGENES: http://localhost:4173
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: API con datos sintéticos
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          for f in ../db/*.sql; do PGPASSWORD=colorrectal psql -h localhost -U colorrectal -d colorrectal_sim -v ON_ERROR_STOP=1 -f "$f"; done
+          nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > api.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:8000/api/v1/salud && break; sleep 1; done
+          python -m pruebas_carga.sembrar http://localhost:8000/api/v1
+      - name: Frontend
+        working-directory: frontend
+        run: |
+          npm install && npm run build
+          nohup npx vite preview --port 4173 --strictPort > preview.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4173 && break; sleep 1; done
+      - name: Playwright en Chrome, Firefox, Safari (WebKit), Chrome Android y Safari iPhone
+        working-directory: e2e
+        run: |
+          npm install
+          npx playwright install --with-deps
+          npx playwright test
+      - name: Resumen de accesibilidad por pantalla
+        if: always()
+        working-directory: e2e
+        run: |
+          node -e "
+            const r=require('./resultados.json'); const filas=[];
+            const rec=s=>{(s.specs||[]).forEach(sp=>sp.tests.forEach(t=>{const res=t.results.at(-1)||{};
+              filas.push(t.projectName+': '+(res.status||'?'));
+              (res.attachments||[]).filter(a=>a.name.startsWith('axe-')).forEach(a=>{const v=JSON.parse(Buffer.from(a.body,'base64').toString());
+                filas.push('   '+a.name.slice(4)+': '+(v.length?v.join(' | '):'sin hallazgos'));});}));(s.suites||[]).forEach(rec);};
+            r.suites.forEach(rec); console.log(filas.join('\n'));"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sistema
+          path: |
+            e2e/reporte/
+            e2e/resultados.json
+            backend/api.log
