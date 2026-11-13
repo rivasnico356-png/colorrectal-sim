@@ -53,3 +53,31 @@ def test_cabeceras_de_seguridad(cliente):
     assert r.headers["X-Content-Type-Options"] == "nosniff"
     assert r.headers["Cross-Origin-Resource-Policy"] == "same-origin"
     assert r.headers["X-Frame-Options"] == "DENY"
+
+
+def test_correo_por_api_de_brevo():
+    """IE-05: el correo sale por HTTPS (Render gratuito bloquea SMTP) y un rechazo del proveedor se informa con su motivo."""
+    import json as _json
+
+    import httpx
+
+    from app.core import correo
+
+    enviado = {}
+
+    def ok(request):
+        enviado.update(url=str(request.url), clave=request.headers["api-key"], cuerpo=_json.loads(request.content))
+        return httpx.Response(201, json={"messageId": "<1@brevo>"})
+    correo._por_brevo(" clave\n", "equipo@ejemplo.com", "persona@ejemplo.com", "Asunto", "Hola",
+                      httpx.Client(transport=httpx.MockTransport(ok)))
+    assert enviado["url"] == correo.URL_BREVO and enviado["clave"] == "clave"
+    assert enviado["cuerpo"]["to"] == [{"email": "persona@ejemplo.com"}] and enviado["cuerpo"]["textContent"] == "Hola"
+    assert enviado["cuerpo"]["sender"]["email"] == "equipo@ejemplo.com"
+
+    def rechazo(request):
+        return httpx.Response(401, json={"code": "unauthorized", "message": "Key not found"})
+    try:
+        correo._por_brevo("x", "a@ejemplo.com", "b@ejemplo.com", "s", "c", httpx.Client(transport=httpx.MockTransport(rechazo)))
+        raise AssertionError("debía fallar")
+    except correo.ErrorCorreo as e:
+        assert "401" in str(e) and "Key not found" in str(e)

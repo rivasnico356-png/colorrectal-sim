@@ -1,6 +1,7 @@
 """Reglas de negocio de M01: registro con autorizaciones (RF-001, RF-009), sesión y administración de usuarios."""
 import hashlib
 import json
+import logging
 import secrets
 from datetime import UTC, datetime, timedelta
 
@@ -8,11 +9,12 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.core.correo import enviar_correo
+from app.core.correo import ErrorCorreo, enviar_correo
 from app.core.errores import ErrorNegocio
 from app.core.security import crear_token, hash_contrasena, leer_token, verificar_contrasena
 from app.modules.usuarios.schemas import CambioUsuarioIn, CuentaNuevaIn, RegistroIn
 
+registro = logging.getLogger("colorrectal.usuarios")
 VERSION_POLITICA = "1.0"
 TIPOS_AUTORIZACION = ("politica_tratamiento", "datos_sensibles", "compartir_avance")
 
@@ -135,10 +137,14 @@ def solicitar_recuperacion(db: Session, correo: str) -> None:
     bitacora(db, fila["id_usuario"], "usuario", fila["id_usuario"], "pedir_recuperacion")
     db.commit()
     enlace = f"{s.frontend_url}/#restablecer={token}"
-    enviar_correo(correo, "Restablece tu contraseña de Colorrectal-Sim",
-                  f"Hola, {fila['nombre']}.\n\nPara crear una nueva contraseña abre este enlace:\n{enlace}\n\n"
-                  f"El enlace sirve una sola vez y vence en {s.minutos_enlace_recuperacion} minutos. "
-                  "Si no lo pediste, ignora este correo.")
+    try:
+        enviar_correo(correo, "Restablece tu contraseña de Colorrectal-Sim",
+                      f"Hola, {fila['nombre']}.\n\nPara crear una nueva contraseña abre este enlace:\n{enlace}\n\n"
+                      f"El enlace sirve una sola vez y vence en {s.minutos_enlace_recuperacion} minutos. "
+                      "Si no lo pediste, ignora este correo.")
+    except (ErrorCorreo, OSError) as exc:
+        # La respuesta al usuario no cambia (no revela si la cuenta existe); el motivo queda en el registro del servidor.
+        registro.warning("No se pudo enviar el correo de recuperación: %s", exc)
 
 
 def restablecer(db: Session, token: str, contrasena: str) -> None:

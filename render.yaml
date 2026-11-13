@@ -40,3 +40,8 @@ services:
         sync: false
       - key: IA_API_KEY
         sync: false
+      # Correo de recuperación: el plan gratuito bloquea SMTP, por eso se usa la API HTTPS de Brevo.
+      - key: BREVO_API_KEY
+        sync: false
+      - key: SMTP_REMITENTE
+        sync: false

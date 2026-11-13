@@ -41,6 +41,8 @@ class Settings(BaseSettings):
     # IE-04: modelo de visión exportado a ONNX (lo entrena el equipo con vision/entrenar.py).
     modelo_vision_ruta: str = "modelos/vision.onnx"
     # IE-05: correo SMTP para la recuperación de contraseña. Sin servidor configurado no se envía (desarrollo).
+    # Correo por API HTTPS (Brevo). El remitente (SMTP_REMITENTE) debe estar verificado en Brevo.
+    brevo_api_key: str = ""
     smtp_servidor: str = ""
     smtp_puerto: int = 587
     smtp_usuario: str = ""
