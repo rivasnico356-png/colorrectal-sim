@@ -38,7 +38,7 @@ El detalle, con los defectos que se encontraron y cómo se corrigieron, está en
 | Prueba | Fecha |
 |---|---|
 | Usabilidad SUS con al menos 5 usuarios (criterio C-04: SUS ≥ 68) | 23 al 25/11/2026 |
-| Modelo de visión en PolypGen (otros centros) y latencia de inferencia | Antes del cierre |
+| Latencia de inferencia del modelo de visión en el servidor | Antes del cierre |
 | Informe de Pruebas y Calidad | 29/11/2026 |
 
 ## Flujo de ramas

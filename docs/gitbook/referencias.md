@@ -12,4 +12,4 @@ Jha, D., Smedsrud, P. H., Riegler, M. A., Halvorsen, P., de Lange, T., Johansen,
 
 Project Management Institute. (2017). *Guía de los fundamentos para la dirección de proyectos (Guía del PMBOK)* (6.ª ed.). PMI.
 
-Las fuentes y licencias de los datasets públicos se registran en `docs/datasets.md` después de verificarlas. Kvasir-SEG (Jha et al., 2020) ya está verificado: se permite su uso en investigación y educación citando el artículo. HyperKvasir, CVC-ClinicDB y PolypGen están pendientes de verificar.
+La fuente y la licencia del dataset usado (Kvasir-SEG, verificada) están en `docs/datasets.md`.
