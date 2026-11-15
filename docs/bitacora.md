@@ -15,6 +15,7 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 
 | Hora | Qué | Evidencia | Resultado |
 |---|---|---|---|
+| 14:10 | GitBook actualizado con el estado real: enlace de la demostración en la portada, 23 tablas y scripts 05–06, arquitectura con despliegue en Render y correo por Brevo, variables nuevas, modelo MobileNetV2 (Dice 0,872) con sus limitaciones, 47 pruebas y 90 % de cobertura, roles PMBOK y TSP, herramientas y riesgos. Invitados a GitBook los 4 integrantes como editores | Rama `feature/gitbook-actualizado` con Pull Request | En revisión |
 | 13:00 | Limpieza de ramas: quedan las permanentes `main`, `develop` y `qa`, más `feature/desarrollo` creada desde `develop` para el trabajo nuevo. Las 23 ramas temporales (docs/, feature/, fix/) ya estaban fusionadas en `develop` y se borraron desde GitHub › Branches | Revisión con `git merge-base --is-ancestor`; `git ls-remote` muestra solo 4 ramas | Hecho |
 | 12:30 | GitBook publicado con Git Sync en la rama `develop` (espacio en español sobre `docs/gitbook/`). Se agregó `gitbook-docs.yaml`, que pide el nuevo Git Sync de sitios de GitBook | https://colorrectal-sim.gitbook.io/colorrectal-sim-docs/; commit f8128d4 | Publicado |
 
