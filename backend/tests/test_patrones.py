@@ -7,8 +7,15 @@ from app.core.errores import ErrorNegocio
 from app.modules.casos import estados
 from app.modules.estudios.procesamiento import ProcesadorCasoSimulado, ProcesadorEstudioPropio
 from app.modules.estudios.vision import ResultadoVision
-from app.modules.tutor.validacion import (Consulta, ConsultaRechazada, ValidadorLimite, ValidadorLongitud,
-                                          ValidadorSeguridad, ValidadorTema, crear_cadena)
+from app.modules.tutor.validacion import (
+    Consulta,
+    ConsultaRechazada,
+    ValidadorLimite,
+    ValidadorLongitud,
+    ValidadorSeguridad,
+    ValidadorTema,
+    crear_cadena,
+)
 
 
 # ---- Chain of Responsibility: validación de consultas al tutor (RF-004 4.3, RNF-003) ----
