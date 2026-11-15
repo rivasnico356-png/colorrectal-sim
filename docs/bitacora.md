@@ -15,7 +15,7 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 
 | Hora | Qué | Evidencia | Resultado |
 |---|---|---|---|
-| 13:00 | Limpieza de ramas: quedan las permanentes `main`, `develop` y `qa`, más `feature/desarrollo` creada desde `develop` para el trabajo nuevo. Las 23 ramas temporales (docs/, feature/, fix/) ya estaban fusionadas en `develop`; su borrado lo hace Nicolás desde GitHub › Branches | Revisión con `git merge-base --is-ancestor` | Rama nueva creada; borrado pendiente en GitHub |
+| 13:00 | Limpieza de ramas: quedan las permanentes `main`, `develop` y `qa`, más `feature/desarrollo` creada desde `develop` para el trabajo nuevo. Las 23 ramas temporales (docs/, feature/, fix/) ya estaban fusionadas en `develop` y se borraron desde GitHub › Branches | Revisión con `git merge-base --is-ancestor`; `git ls-remote` muestra solo 4 ramas | Hecho |
 | 12:30 | GitBook publicado con Git Sync en la rama `develop` (espacio en español sobre `docs/gitbook/`). Se agregó `gitbook-docs.yaml`, que pide el nuevo Git Sync de sitios de GitBook | https://colorrectal-sim.gitbook.io/colorrectal-sim-docs/; commit f8128d4 | Publicado |
 
 ## 14-11-2026
