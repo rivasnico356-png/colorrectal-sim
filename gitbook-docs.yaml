@@ -1,0 +1,16 @@
+# Estructura del sitio de documentación en GitBook (Git Sync de "Docs sites").
+# Esquema: https://api.gitbook.com/gitbook-docs.yaml
+# El sitio tiene un solo espacio, en español, con las páginas de docs/gitbook/ (índice en SUMMARY.md).
+$schema: https://api.gitbook.com/gitbook-docs.yaml
+version: 1
+site:
+  title: Colorrectal-Sim
+  structure:
+    - type: space
+      key: space-documentacion
+      title: Documentación de Colorrectal-Sim
+      path: documentacion
+      default: true
+      content:
+        directory: ./docs/gitbook
+        language: es
