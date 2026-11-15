@@ -6,12 +6,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 from PIL import Image
+from sqlalchemy import create_engine, text
 
 from app.core.correo import buzon_desarrollo
 from app.core.textos import ROTULO_IA
 from app.modules.estudios import seguridad
 from app.modules.estudios.vision import CON_REGION, SIN_REGION, ResultadoVision, fijar_modelo, resultado_desde_mascara
-from tests.conftest import correo, crear_profesional, registrar_usuario, requiere_db, token
+from tests.conftest import DB_URL, correo, crear_profesional, registrar_usuario, requiere_db, token
 
 API = "/api/v1"
 
@@ -154,3 +155,25 @@ def test_estudio_completo_compartir_comentar_y_eliminar(cliente, admin, modelo_f
     assert cliente.delete(f"{API}/estudios/{id_estudio}", headers=cab).status_code == 204
     assert not list(tmp_path.iterdir())
     assert cliente.get(f"{API}/estudios", headers=cab).json() == []
+
+
+@requiere_db
+def test_suprimir_la_cuenta_borra_los_estudios(cliente, modelo_falso, tmp_path, monkeypatch):
+    """RF-009 9.3 (Ley 1581): al suprimir la cuenta, los estudios propios se eliminan del almacenamiento."""
+    monkeypatch.setattr(seguridad.get_settings(), "estudios_dir", str(tmp_path))
+    _, cab = registrar_usuario(cliente)
+    assert cliente.put(f"{API}/privacidad/autorizaciones/datos_sensibles", headers=cab, json={"aceptada": True}).status_code == 204
+    r = cliente.post(f"{API}/estudios", headers=cab, files={"archivo": ("a.jpg", jpg_con_exif(), "image/jpeg")},
+                     data={"confirma_sin_datos_visibles": "true"})
+    assert r.status_code == 201, r.text
+    id_estudio = r.json()["id_estudio"]
+    assert list(tmp_path.iterdir())  # el archivo cifrado existe antes de suprimir
+
+    assert cliente.request("DELETE", f"{API}/usuarios/me", headers=cab,
+                           json={"contrasena": "Segura123", "confirmar": True}).status_code == 204
+    assert not list(tmp_path.iterdir())
+    with create_engine(DB_URL).connect() as c:
+        fila = c.execute(text("""SELECT eliminado, ruta_cifrada,
+                                        (SELECT count(*) FROM interpretacion_estudio WHERE id_estudio = :e) AS interpretaciones
+                                 FROM estudio_propio WHERE id_estudio = :e"""), {"e": id_estudio}).mappings().one()
+    assert fila["eliminado"] and fila["ruta_cifrada"] == "" and fila["interpretaciones"] == 0

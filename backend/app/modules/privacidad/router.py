@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.core.deps import usuario_actual
 from app.core.security import hash_contrasena, verificar_contrasena
+from app.modules.estudios.router import borrar_del_almacenamiento
 from app.modules.usuarios.schemas import RangoEdad
 from app.modules.usuarios.service import VERSION_POLITICA, bitacora
 
@@ -93,8 +94,9 @@ def rectificar(datos: RectificacionIn, usuario: dict = Depends(usuario_actual), 
 
 @router.delete("/usuarios/me", status_code=status.HTTP_204_NO_CONTENT)
 def suprimir(datos: SupresionIn, usuario: dict = Depends(usuario_actual), db: Session = Depends(get_db)) -> None:
-    """RF-009 9.3: supresión de la cuenta. Se borran los datos que identifican a la persona; las decisiones quedan
-    solo con el identificador interno, que la exportación seudonimiza."""
+    """RF-009 9.3: supresión de la cuenta. Se borran los datos que identifican a la persona y sus estudios propios
+    (archivo cifrado, interpretación y comentarios); las decisiones quedan solo con el identificador interno,
+    que la exportación seudonimiza."""
     u = usuario["sub"]
     hash_actual = db.execute(text("SELECT hash_contrasena FROM usuario WHERE id_usuario = CAST(:u AS uuid)"), {"u": u}).scalar()
     if not datos.confirmar or not verificar_contrasena(datos.contrasena, hash_actual or ""):
@@ -106,6 +108,9 @@ def suprimir(datos: SupresionIn, usuario: dict = Depends(usuario_actual), db: Se
                        WHERE id_usuario = CAST(:u AS uuid)"""), {"u": u})
     db.execute(text("UPDATE vinculo SET fecha_fin = now() WHERE (id_usuario = CAST(:u AS uuid) OR id_profesional = CAST(:u AS uuid)) "
                     "AND fecha_fin IS NULL"), {"u": u})
-    db.execute(text("UPDATE estudio_propio SET eliminado = TRUE WHERE id_usuario = CAST(:u AS uuid)"), {"u": u})
+    estudios = db.execute(text("""SELECT id_estudio, ruta_cifrada FROM estudio_propio
+                                  WHERE id_usuario = CAST(:u AS uuid) AND NOT eliminado"""), {"u": u}).all()
+    for id_estudio, ruta_cifrada in estudios:
+        borrar_del_almacenamiento(db, id_estudio, ruta_cifrada)
     bitacora(db, u, "usuario", u, "suprimir")
     db.commit()

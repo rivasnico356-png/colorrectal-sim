@@ -159,15 +159,24 @@ def compartir(id_estudio: int, datos: CompartirIn, db: Session = Depends(get_db)
     db.commit()
 
 
-@router.delete("/estudios/{id_estudio}", status_code=status.HTTP_204_NO_CONTENT)
-def eliminar(id_estudio: int, db: Session = Depends(get_db), usuario: dict = Depends(requiere_rol(USUARIO))) -> None:
-    """RF-010 10.5: borra el archivo y su interpretación del almacenamiento."""
-    e = _estudio(db, id_estudio, usuario)
-    seguridad.borrar(e["ruta_cifrada"])
+def borrar_del_almacenamiento(db: Session, id_estudio: int, ruta_cifrada: str) -> None:
+    """RF-010 10.5 y RF-009 9.3: borra el archivo cifrado, su interpretación y sus comentarios.
+
+    No hace commit: quien la llama decide cuándo confirmar la transacción.
+    """
+    if ruta_cifrada:
+        seguridad.borrar(ruta_cifrada)
     db.execute(text("DELETE FROM interpretacion_estudio WHERE id_estudio = :e"), {"e": id_estudio})
     db.execute(text("DELETE FROM comentario_estudio WHERE id_estudio = :e"), {"e": id_estudio})
     db.execute(text("""UPDATE estudio_propio SET eliminado = TRUE, ruta_cifrada = '', id_profesional_compartido = NULL
                        WHERE id_estudio = :e"""), {"e": id_estudio})
+
+
+@router.delete("/estudios/{id_estudio}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar(id_estudio: int, db: Session = Depends(get_db), usuario: dict = Depends(requiere_rol(USUARIO))) -> None:
+    """RF-010 10.5: borra el archivo y su interpretación del almacenamiento."""
+    e = _estudio(db, id_estudio, usuario)
+    borrar_del_almacenamiento(db, id_estudio, e["ruta_cifrada"])
     bitacora(db, usuario["sub"], "estudio_propio", str(id_estudio), "eliminar")
     db.commit()
 
