@@ -6,10 +6,22 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 
 | Fecha | Qué |
 |---|---|
-| 15-11-2026 | Publicar el GitBook (pendiente: cuenta de GitBook de Nicolás) |
+| 15-11-2026 | GitBook publicado: https://colorrectal-sim.gitbook.io/colorrectal-sim-docs/ |
 | 23 al 25-11-2026 | Prueba de usabilidad SUS con 5 personas (Plan de Pruebas) |
 | 29-11-2026 | Entrega del Informe de Pruebas y Calidad |
 | Hacia el 12-12-2026 | Vence la base de datos gratuita de Render (30 días desde su creación) |
+
+## 15-11-2026
+
+| Hora | Qué | Evidencia | Resultado |
+|---|---|---|---|
+| 12:30 | GitBook publicado con Git Sync en la rama `develop` (espacio en español sobre `docs/gitbook/`). Se agregó `gitbook-docs.yaml`, que pide el nuevo Git Sync de sitios de GitBook | https://colorrectal-sim.gitbook.io/colorrectal-sim-docs/; commit f8128d4 | Publicado |
+
+## 14-11-2026
+
+| Hora | Qué | Evidencia | Resultado |
+|---|---|---|---|
+| 21:00 | PR #5 de David (supresión de la cuenta borra los estudios, RF-009 9.3) revisado y fusionado en `develop` | PR #5; commit 7ff2961 | Fusionado |
 
 ## 12-11-2026
 

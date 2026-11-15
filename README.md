@@ -13,6 +13,11 @@ Plataforma educativa de simulación sobre la **detección e interpretación del 
 
 Proyecto ONCO-AI_USC 2026 B · Línea 2 ONCO-SIM · Universidad Santiago de Cali.
 
+| Enlace | Dirección |
+|---|---|
+| Simulador (demostración) | https://colorrectal-sim.onrender.com |
+| Documentación (GitBook) | https://colorrectal-sim.gitbook.io/colorrectal-sim-docs/ |
+
 > ⚠️ Colorrectal-Sim es una herramienta educativa. Sus resultados son experimentales de apoyo y **no reemplazan la valoración de un médico**.
 
 ---
