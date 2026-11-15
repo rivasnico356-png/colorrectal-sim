@@ -44,7 +44,7 @@ Desde su cuenta se crean los profesionales de la salud en *Usuarios y roles*.
 
 ## Modelo de visión en local
 
-Descarga `vision.onnx` y `vision.json` del release **modelo-vision** del repositorio y cópialos a `backend/modelos/`. Sin ellos la plataforma funciona igual y avisa que el modelo no está disponible. Los pasos para Windows están en [Modelo de visión](modelo-vision.md#4-usarlo-en-la-plataforma).
+Descarga `vision.onnx` y `vision.json` del release **modelo-vision** del repositorio y cópialos a `backend/modelos/`. Sin ellos la plataforma funciona igual y avisa que el modelo no está disponible. Los pasos para Windows están en [Modelo de visión](modelo-vision.md#usarlo-en-el-entorno-local).
 
 ## Demostración pública (Render)
 

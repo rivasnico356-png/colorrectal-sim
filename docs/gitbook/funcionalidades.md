@@ -12,7 +12,7 @@
 
 ## Profesional de la salud
 
-* Crea y edita casos con etapas, opciones, puntajes, explicaciones con fuente, imágenes de datasets públicos y la recomendación de la IA (incluida la errónea a propósito).
+* Crea y edita casos con etapas, opciones, puntajes, explicaciones con fuente, imágenes y videos de HyperKvasir y la recomendación de la IA (incluida la errónea a propósito).
 * Revisa y publica casos de otros autores: nadie revisa su propio caso.
 * Consulta indicadores agregados y el avance individual solo de quienes lo autorizaron; cada consulta queda registrada.
 * Comenta los estudios que le comparten y exporta datos seudonimizados.

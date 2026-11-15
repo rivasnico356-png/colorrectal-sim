@@ -5,11 +5,11 @@ PostgreSQL 16 con **23 tablas**. El esquema se crea con seis scripts numerados q
 | Script | Contenido |
 |---|---|
 | `db/01_schema.sql` | 19 tablas del modelo de datos, restricciones, índices y vista de exportación |
-| `db/02_catalogos.sql` | Roles, niveles y datasets públicos |
+| `db/02_catalogos.sql` | Roles, niveles, insignias y catálogo de datasets |
 | `db/03_ajustes_srs.sql` | Campos que pide el SRS (descripción del caso, puntaje y fuente por opción, insignias) y las tablas `caso_version` y `sesion_revocada` |
 | `db/04_estudios_recuperacion.sql` | Tabla `recuperacion_contrasena` y avisos de comentarios |
 | `db/05_recursos_en_base.sql` | Tabla `recurso_contenido`: las imágenes y videos de los casos se guardan en la base para que no se pierdan al redesplegar |
-| `db/06_kvasir_seg.sql` | Registra el dataset Kvasir-SEG en el catálogo |
+| `db/06_kvasir_seg.sql` | Registra en el catálogo las 1.000 imágenes segmentadas de pólipos de HyperKvasir (publicadas por Simula como Kvasir-SEG) |
 
 ## Protección de datos (Congreso de la República de Colombia, 2012)
 

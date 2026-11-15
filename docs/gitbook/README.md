@@ -13,7 +13,7 @@ Colorrectal-Sim es una herramienta educativa. Todo resultado generado por la IA 
 | | |
 |---|---|
 | **Para quién** | Personas con cáncer colorrectal (Usuario), profesionales de la salud y administradores |
-| **Qué hace** | Casos de simulación por etapas con imágenes de colonoscopia de datasets públicos, tutor de IA, retroalimentación, progreso y estudios propios |
+| **Qué hace** | Casos de simulación por etapas con imágenes y videos de colonoscopia del dataset público HyperKvasir, tutor de IA, retroalimentación, progreso y estudios propios |
 | **Cómo está hecho** | React + TypeScript, FastAPI (Python 3.12), PostgreSQL 16, Docker, GitHub Actions |
 | **Versión** | 0.5 (noviembre de 2026), camino a la Release 1.0 |
 | **Probarlo** | [colorrectal-sim.onrender.com](https://colorrectal-sim.onrender.com) (versión de demostración de la rama `develop`) |

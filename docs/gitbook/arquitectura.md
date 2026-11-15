@@ -46,21 +46,27 @@ flowchart LR
 |---|---|---|
 | M01 Usuarios y acceso | `usuarios/`, `vinculos/` | Registro, sesión, recuperación, roles, administración y vínculo |
 | M02 Casos clínicos | `casos/` | Editor, versiones, recursos, revisión y catálogo |
-| M03 Simulación · M05 Evaluación · M07 Interacción | `simulacion/` | Intentos, etapas, decisiones, puntaje y registro |
+| M03 Simulación · M05 Evaluación · M07 Interacción | `simulacion/` | Intentos, etapas y evaluación de decisiones; los observadores registran la decisión humano-IA y cierran el intento |
 | M04 Tutor de IA | `tutor/` | Tutor con Groq (`gpt-oss-120b`) y respaldo (`gpt-oss-20b`), luego recomendación predefinida |
-| M06 Gamificación | `gamificacion/` | Niveles e insignias |
+| M06 Gamificación | `gamificacion/` | Puntaje, niveles e insignias (observador de cada decisión) |
 | M08 Reportes | `progreso/` | Historial, progreso, panel y exportación |
 | M09 Privacidad | `privacidad/` | Autorizaciones y derechos del titular |
 | M10 Estudios propios | `estudios/` | Desidentificación, cifrado, modelo de visión y comentarios |
 
 ## Patrones de diseño
 
-| Patrón | Dónde | Para qué |
+Los ocho patrones del documento de patrones de diseño (1.3.2.2) están implementados en el backend, cada uno con pruebas automáticas en `backend/tests/test_patrones.py`:
+
+| Patrón | Dónde (`backend/app/`) | Para qué |
 |---|---|---|
-| Adapter | `tutor/proveedores.py`, `estudios/vision.py` | Mismo contrato para cualquier proveedor de IA o modelo |
-| Strategy | `tutor/servicio.py` | Cadena IA principal → alternativo → recomendación predefinida |
-| Factory Method | `tutor/servicio.py::crear_servicio` | Arma la cadena desde la configuración |
-| Observer | `core/eventos.py` | La evaluación publica *DecisionRegistrada* y la gamificación reacciona sin acoplarse |
+| Adapter | `modules/tutor/proveedores.py` (`AdaptadorIAGenerativa`, `AdaptadorModeloAlternativo`) | Mismo contrato `ProveedorLLM` para cualquier proveedor de IA |
+| Factory Method | `modules/tutor/proveedores.py` (`FabricaProveedores`) | Crea el adaptador según la configuración |
+| Strategy | `modules/tutor/servicio.py` (`ServicioTutor` y sus estrategias) | IA principal → modelo alternativo → recomendación predefinida |
+| Facade | `modules/tutor/fachada.py` (`FachadaTutor`) | Una sola entrada al tutor: contexto, validación, respuesta, rótulo y registro |
+| Chain of Responsibility | `modules/tutor/validacion.py` | Longitud → límite → tema → seguridad; lo que no cumple no llega a la IA |
+| State | `modules/casos/estados.py` (`CasoClinico` y sus estados) | Borrador → revisado → publicado, con revisor distinto del autor |
+| Observer | `core/eventos.py` (`BusEventos`) | La evaluación publica *DecisionRegistrada*; reaccionan la interacción humano-IA, el progreso y la gamificación |
+| Template Method | `modules/estudios/procesamiento.py` (`ProcesadorImagen`) | Pasos fijos para procesar imágenes: calidad → desidentificación → normalización → análisis → registro |
 
 ## Reglas
 

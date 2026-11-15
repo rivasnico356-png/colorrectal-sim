@@ -26,6 +26,7 @@ Base: `/api/v1`. La documentación interactiva está en `/docs` (Swagger) al eje
 | POST | `/estudios/{id_estudio}/comentarios` |
 | PUT | `/estudios/{id_estudio}/compartir` |
 | GET | `/estudios/{id_estudio}/imagen` |
+| GET | `/media/recursos/{nombre}` (imágenes y videos de los casos; admite rangos para el video) |
 | DELETE | `/estudios/{id_estudio}` |
 | GET | `/estudios/{id_estudio}` |
 | GET | `/estudios` |
