@@ -21,6 +21,13 @@
 
 * Busca cuentas, crea profesionales, cambia roles y activa o desactiva cuentas, con registro en la bitácora.
 
+## Módulos pendientes de aprobación
+
+| Requisito | Estado | Qué falta |
+|---|---|---|
+| RF-010 Estudios propios | Construido, **pendiente de aprobación** del propietario del proyecto (hito 004) | La decisión registrada del propietario. Mientras tanto está bloqueado en la demostración pública; si no se aprueba, se desactiva y pasa a *Won't have* |
+| RF-001 1.6 Vínculo con el profesional | Construido con vínculo por correo, **pendiente de aprobación** de la solicitud de cambio | El SRS describe grupos y código de vinculación; la solicitud de cambio propone el vínculo por correo |
+
 ## Pantallas
 
 | # | Pantalla | # | Pantalla |

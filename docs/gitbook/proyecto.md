@@ -2,7 +2,14 @@
 
 ## Problema
 
-Las personas que reciben información sobre el cáncer colorrectal suelen encontrarse con imágenes y términos médicos difíciles de entender, y con herramientas de inteligencia artificial cuyos resultados aceptan sin cuestionarlos. Hace falta un espacio seguro para aprender a interpretar imágenes de colonoscopia y a usar la IA con criterio, sin exponer datos personales.
+**¿Cuál es el problema?** Las personas que reciben información sobre el cáncer colorrectal suelen encontrarse con imágenes y términos médicos difíciles de entender, y con herramientas de inteligencia artificial cuyos resultados aceptan sin cuestionarlos. Hace falta un espacio seguro para aprender a interpretar imágenes de colonoscopia y a usar la IA con criterio, sin exponer datos personales.
+
+## Justificación
+
+* **Para la persona usuaria:** entender sus propios estudios y la información de su enfermedad le permite conversar mejor con su médico. Un simulador deja practicar con casos y recibir retroalimentación sin riesgo, algo que una consulta médica no ofrece.
+* **Para el uso de la IA:** las herramientas de IA ya están al alcance de cualquier persona y sus respuestas pueden ser erróneas. El simulador incluye sugerencias de la IA equivocadas a propósito para enseñar a verificarlas, y registra si la persona las sigue o las detecta.
+* **Para la privacidad:** la práctica se hace con imágenes de datasets públicos y anonimizados, y los estudios propios se desidentifican y cifran, según la Ley 1581 de 2012.
+* **Para la ingeniería de software:** el proyecto integra un modelo de visión, un agente de IA con respaldo y una aplicación web, con prácticas medibles de calidad (TSP, pruebas automáticas e integración continua) dentro de la línea ONCO-SIM de la convocatoria ONCO-AI_USC 2026 B.
 
 ## Objetivo
 
