@@ -17,7 +17,6 @@ from app.modules.tutor.validacion import (
     crear_cadena,
 )
 
-
 # ---- Chain of Responsibility: validación de consultas al tutor (RF-004 4.3, RNF-003) ----
 
 def _rechazo(pregunta: str, usadas: int = 0, maximo: int = 3) -> ConsultaRechazada | None:
