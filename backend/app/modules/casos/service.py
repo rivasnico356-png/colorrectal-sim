@@ -146,7 +146,7 @@ def revisar(db: Session, revisor: str, id_caso: int, accion: str, fuente_clinica
     caso = _caso_editable(db, id_caso)
     if str(caso["id_autor"]) == revisor:
         raise ErrorNegocio("El autor del caso no puede ser su propio revisor.", 403)
-    nuevo = estados.aplicar(caso["estado"], accion, estados.ContextoRevision(db, id_caso, revisor, fuente_clinica)).nombre
+    nuevo = estados.CasoClinico(db, id_caso, str(caso["id_autor"]), caso["estado"]).ejecutar(accion, revisor, fuente_clinica)
     bitacora(db, revisor, "caso", str(id_caso), accion, {"fuente_clinica": fuente_clinica} if fuente_clinica else None)
     db.commit()
     return nuevo

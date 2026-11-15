@@ -31,18 +31,34 @@ class DecisionRegistrada:
     tiempo_ms: int | None = None
 
 
-_suscriptores: dict[type, list[tuple[int, Callable]]] = defaultdict(list)
+class BusEventos:
+    """Bus de eventos de dominio en proceso: guarda los observadores de cada tipo de evento en orden."""
+
+    def __init__(self):
+        self._suscriptores: dict[type, list[tuple[int, Callable]]] = defaultdict(list)
+
+    def suscribir(self, tipo: type, observador: Callable, orden: int = 50) -> None:
+        if all(m is not observador for _, m in self._suscriptores[tipo]):
+            self._suscriptores[tipo].append((orden, observador))
+            self._suscriptores[tipo].sort(key=lambda par: par[0])
+
+    def suscriptores(self, tipo: type) -> list[Callable]:
+        return [m for _, m in self._suscriptores[tipo]]
+
+    def publicar(self, evento: object) -> list:
+        return [m(evento) for m in self.suscriptores(type(evento))]
+
+
+bus = BusEventos()
 
 
 def suscribir(tipo: type, manejador: Callable, orden: int = 50) -> None:
-    if all(m is not manejador for _, m in _suscriptores[tipo]):
-        _suscriptores[tipo].append((orden, manejador))
-        _suscriptores[tipo].sort(key=lambda par: par[0])
+    bus.suscribir(tipo, manejador, orden)
 
 
 def suscriptores(tipo: type) -> list[Callable]:
-    return [m for _, m in _suscriptores[tipo]]
+    return bus.suscriptores(tipo)
 
 
 def publicar(evento: object) -> list:
-    return [m(evento) for m in suscriptores(type(evento))]
+    return bus.publicar(evento)

@@ -1,7 +1,7 @@
 """Patrón Template Method (1.3.2.2, sección 7): procesamiento de imágenes con pasos fijos (RF-003 3.4, RF-010).
 
 ProcesadorImagen.procesar fija el orden: control de calidad → desidentificación → normalización → análisis → registro.
-Las subclases redefinen solo los pasos que cambian:
+Las subclases redefinen solo los pasos que cambian (control de calidad, desidentificación y el análisis, que es abstracto):
 - ProcesadorCasoSimulado: imágenes de datasets públicos de los casos; no tienen datos personales.
 - ProcesadorEstudioPropio: estudios que carga la persona; se quitan los metadatos EXIF y DICOM antes de todo.
 Como el orden está en la clase base, la desidentificación no se puede saltar por error.
@@ -54,7 +54,11 @@ class ProcesadorImagen(ABC):
             raise ErrorNegocio("No pudimos leer la imagen. Verifica que el archivo no esté dañado.", 422) from exc
         return imagen
 
+    @abstractmethod
     def analizar(self, imagen: bytes) -> ResultadoVision | None:
+        """Paso abstracto: cada fuente de imágenes decide cómo se analiza."""
+
+    def _modelo_vision(self, imagen: bytes) -> ResultadoVision | None:
         return self.modelo.analizar(imagen) if self.modelo is not None else None
 
     def registrar(self, resultado: ResultadoVision | None) -> None:
@@ -74,6 +78,11 @@ class ProcesadorCasoSimulado(ProcesadorImagen):
     def desidentificar(self, nombre: str, contenido: bytes) -> tuple[bytes, bool]:
         return contenido, False  # datasets públicos anonimizados en su origen: no hay datos personales que quitar
 
+    def analizar(self, imagen: bytes) -> ResultadoVision | None:
+        """Región de interés, clasificación y confianza del modelo sobre la imagen del dataset (RF-003 3.4).
+        Las regiones de los casos no se guardan precalculadas en la base, así que se obtienen del modelo."""
+        return self._modelo_vision(imagen)
+
 
 class ProcesadorEstudioPropio(ProcesadorImagen):
     """Estudios de la persona (RF-010 10.2 y RNF-003)."""
@@ -88,3 +97,7 @@ class ProcesadorEstudioPropio(ProcesadorImagen):
 
     def desidentificar(self, nombre: str, contenido: bytes) -> tuple[bytes, bool]:
         return seguridad.desidentificar(nombre, contenido)  # PNG nuevo sin EXIF ni etiquetas DICOM
+
+    def analizar(self, imagen: bytes) -> ResultadoVision | None:
+        """El modelo de visión (IE-04) analiza el estudio ya desidentificado (RF-010 10.3)."""
+        return self._modelo_vision(imagen)

@@ -81,27 +81,27 @@ class _SinBase:
         raise AssertionError("No debía llegar a la base")
 
 
-def _ctx():
-    return estados.ContextoRevision(_SinBase(), 1, "revisor", "Guía clínica")
+def _caso(estado: str) -> estados.CasoClinico:
+    return estados.CasoClinico(_SinBase(), 1, "autor", estado)
 
 
 @pytest.mark.parametrize("estado,accion", [("borrador", "publicar"), ("revisado", "aprobar"),
                                            ("publicado", "aprobar"), ("publicado", "publicar")])
 def test_transiciones_no_permitidas_responden_409(estado, accion):
     with pytest.raises(ErrorNegocio) as e:
-        estados.aplicar(estado, accion, _ctx())
+        _caso(estado).ejecutar(accion, "revisor", "Guía clínica")
     assert e.value.codigo == 409
 
 
 def test_aprobar_exige_fuente_clinica():
     with pytest.raises(ErrorNegocio) as e:
-        estados.aplicar("borrador", "aprobar", estados.ContextoRevision(_SinBase(), 1, "revisor", "  "))
+        _caso("borrador").ejecutar("aprobar", "revisor", "  ")
     assert e.value.codigo == 422
 
 
 def test_accion_desconocida():
     with pytest.raises(ErrorNegocio) as e:
-        estados.aplicar("borrador", "archivar", _ctx())
+        _caso("borrador").ejecutar("archivar", "revisor", None)
     assert e.value.codigo == 422
 
 
@@ -181,3 +181,31 @@ def test_fachada_rotula_la_respuesta():
 
     salida = FiltroRotulado().rotular(RespuestaIA("Texto", "principal", "gpt-oss-120b", 120))
     assert salida["rotulo"] == ROTULO_IA and salida["aviso"] is None
+
+
+# ---- Adapter, Factory Method y Strategy (nombres del documento 1.3.2.2) ----
+
+def test_fabrica_crea_el_adaptador_de_cada_tipo():
+    from app.modules.tutor.proveedores import AdaptadorIAGenerativa, AdaptadorModeloAlternativo, FabricaProveedores
+
+    assert isinstance(FabricaProveedores.crear("principal"), AdaptadorIAGenerativa)
+    assert isinstance(FabricaProveedores.crear("alternativo"), AdaptadorModeloAlternativo)
+    with pytest.raises(ValueError):
+        FabricaProveedores.crear("otro")
+
+
+def test_estrategias_en_orden_y_predefinida_al_final():
+    from app.modules.tutor.servicio import EstrategiaIA, EstrategiaPredefinida, crear_servicio
+
+    nombres = [(type(e).__name__, e.nombre) for e in crear_servicio().estrategias]
+    assert nombres == [(EstrategiaIA.__name__, "principal"), (EstrategiaIA.__name__, "alternativo"),
+                       (EstrategiaPredefinida.__name__, "predefinida")]
+
+
+# ---- State: el contexto CasoClinico y la regla revisor distinto del autor ----
+
+def test_borrador_rechaza_revisor_igual_al_autor():
+    caso = estados.CasoClinico(_SinBase(), 1, "autor", "borrador")
+    with pytest.raises(ErrorNegocio) as e:
+        caso.marcar_revisado("autor", "Guía clínica")
+    assert e.value.codigo == 403 and isinstance(caso.estado, estados.EstadoBorrador)
