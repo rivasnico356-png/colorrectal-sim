@@ -10,7 +10,7 @@ from app.core.eventos import DecisionRegistrada, publicar
 from app.core.textos import AVISO_ALCANCE, ROTULO_IA
 from app.modules.casos.medios import bytes_de_ruta
 from app.modules.casos.service import dificultad_maxima, niveles_por_dificultad
-from app.modules.estudios.vision import obtener_modelo
+from app.modules.estudios.procesamiento import ProcesadorCasoSimulado
 
 
 def _intento(db: Session, id_usuario: str, id_intento: int) -> dict:
@@ -111,13 +111,18 @@ def _bytes_imagen(db: Session, ruta: str) -> bytes | None:
 
 
 def _vision_etapa(db: Session, recursos) -> dict:
-    """RF-003 3.4: región de interés, clasificación experimental y confianza del modelo sobre la imagen de la etapa."""
-    modelo = obtener_modelo()
+    """RF-003 3.4: región de interés, clasificación experimental y confianza del modelo sobre la imagen de la etapa.
+    La imagen pasa por el procesador de casos simulados (patrón Template Method)."""
     imagen = next((r for r in recursos if r["tipo"] == "imagen"), None)
     datos = _bytes_imagen(db, imagen["ruta_almacenamiento"]) if imagen else None
-    if modelo is None or datos is None:
+    if datos is None:
         return {"disponible": False}
-    r = modelo.analizar(datos)
+    try:
+        r = ProcesadorCasoSimulado().procesar(imagen["ruta_almacenamiento"], datos).resultado
+    except ErrorNegocio:
+        r = None
+    if r is None:
+        return {"disponible": False}
     return {"disponible": True, "roi": r.roi, "clasificacion": r.clasificacion, "confianza": r.confianza,
             "version_modelo": r.version_modelo, "rotulo": ROTULO_IA,
             "que_significa": "La confianza indica qué tan parecido es lo que ve el modelo a los ejemplos con que fue entrenado; "
