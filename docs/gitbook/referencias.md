@@ -1,6 +1,6 @@
 # Referencias
 
-Bernal, J., Sánchez, F. J., Fernández-Esparrach, G., Gil, D., Rodríguez, C. y Vilariño, F. (2015). WM-DOVA maps for accurate polyp highlighting in colonoscopy: Validation vs. saliency maps from physicians. *Computerized Medical Imaging and Graphics, 43*, 99–111.
+Borgli, H., Thambawita, V., Smedsrud, P. H., Hicks, S., Jha, D., Eskeland, S. L., Randel, K. R., Pogorelov, K., Lux, M., Nguyen, D. T. D., Johansen, D., Griwodz, C., Stensland, H. K., Garcia-Ceja, E., Schmidt, P. T., Hammer, H. L., Riegler, M. A., Halvorsen, P., y de Lange, T. (2020). HyperKvasir, a comprehensive multi-class image and video dataset for gastrointestinal endoscopy. *Scientific Data, 7*, Artículo 283. https://doi.org/10.1038/s41597-020-00622-y
 
 Congreso de la República de Colombia. (2012). *Ley Estatutaria 1581 de 2012, por la cual se dictan disposiciones generales para la protección de datos personales*.
 
@@ -12,4 +12,4 @@ Jha, D., Smedsrud, P. H., Riegler, M. A., Halvorsen, P., de Lange, T., Johansen,
 
 Project Management Institute. (2017). *Guía de los fundamentos para la dirección de proyectos (Guía del PMBOK)* (6.ª ed.). PMI.
 
-La fuente y la licencia del dataset usado (Kvasir-SEG, verificada) están en `docs/datasets.md`.
+El dataset usado es HyperKvasir (CC BY 4.0, verificada); su fuente y licencia están en `docs/datasets.md`.

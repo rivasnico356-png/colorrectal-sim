@@ -6,13 +6,16 @@ Mira una imagen de colonoscopia y **marca con un recuadro la zona que se parece 
 
 > Resultado experimental de apoyo a la detección e interpretación; no reemplaza la valoración de su médico.
 
-## Con qué aprendió: un solo dataset, Kvasir-SEG
+## Con qué aprendió: HyperKvasir
+
+El proyecto usa un solo dataset público: **HyperKvasir** (Borgli et al., 2020), del Hospital de Bærum (Noruega) y Simula Research Laboratory, con licencia CC BY 4.0.
 
 | Dato | Valor |
 |---|---|
-| Dataset | **Kvasir-SEG** (Jha et al., 2020): 1.000 imágenes reales de colonoscopia en las que un experto marcó a mano el pólipo |
-| Fuente | https://datasets.simula.no/kvasir-seg/ |
-| Licencia | Uso en investigación y educación citando el artículo; prohibido el uso comercial (verificada el 12/11/2026) |
+| Dataset | **HyperKvasir**: imágenes y videos reales de endoscopia gastrointestinal |
+| Parte usada para el modelo | Las **1.000 imágenes de pólipos con su máscara de segmentación**, marcadas a mano por expertos. Simula también publica esta parte por separado con el nombre Kvasir-SEG (Jha et al., 2020) |
+| Fuente | https://datasets.simula.no/hyper-kvasir/ |
+| Licencia | CC BY 4.0: se cita el artículo, se enlaza la licencia y se indica si las imágenes se modificaron |
 | Reparto | 800 imágenes para entrenar, 100 para ajustar y 100 para el examen final, con semilla fija 2026 |
 
 ## Qué tipo de modelo es
@@ -24,7 +27,7 @@ Una **U-Net** con codificador **MobileNetV2**: un modelo liviano que primero rec
 En **GitHub Actions**, sin instalar nada:
 
 1. En GitHub, abre **Actions › Entrenar modelo de visión › Run workflow** sobre la rama `develop`.
-2. El flujo descarga Kvasir-SEG de su fuente oficial, entrena 30 épocas en CPU (cerca de 1,5 horas) y comprueba que el modelo ONNX carga bien.
+2. El flujo descarga las 1.000 imágenes segmentadas de pólipos (publicadas por Simula como Kvasir-SEG), entrena 30 épocas en CPU (cerca de 1,5 horas) y comprueba que el modelo ONNX carga bien.
 3. Publica el resultado en el release **modelo-vision** del repositorio: `vision.onnx`, `vision.json`, `particiones.json`, la huella SHA-256 del dataset y una imagen de ejemplo.
 4. La demostración en Render descarga esos archivos cada vez que se construye.
 
@@ -39,7 +42,7 @@ Versión `polipos-unet-mobilenet_v2-20261112`, evaluada con las **100 imágenes 
 
 ## Limitaciones
 
-* **Reparto por imagen, no por paciente:** Kvasir-SEG no dice de qué paciente es cada imagen. Si dos imágenes del mismo paciente quedaron una para entrenar y otra para el examen, el resultado puede ser algo más alto de lo real.
+* **Reparto por imagen, no por paciente:** el dataset no dice de qué paciente es cada imagen. Si dos imágenes del mismo paciente quedaron una para entrenar y otra para el examen, el resultado puede ser algo más alto de lo real.
 * No se ha probado con imágenes de otros hospitales ni se ha medido cuánto tarda en responder en el servidor.
 * No da diagnósticos ni dice si una lesión es cáncer: solo señala una zona.
 

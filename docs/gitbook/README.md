@@ -20,7 +20,7 @@ Colorrectal-Sim es una herramienta educativa. Todo resultado generado por la IA 
 | **Código** | [github.com/rivasnico356-png/colorrectal-sim](https://github.com/rivasnico356-png/colorrectal-sim) |
 
 {% hint style="info" %}
-La demostración usa el plan gratuito de Render: si nadie la abre en 15 minutos se duerme y la primera carga tarda cerca de un minuto. En la demostración pública no se pueden subir estudios propios (Ley 1581 de 2012); se usa el caso de demostración con una imagen pública de Kvasir-SEG.
+La demostración usa el plan gratuito de Render: si nadie la abre en 15 minutos se duerme y la primera carga tarda cerca de un minuto. En la demostración pública no se pueden subir estudios propios (Ley 1581 de 2012); se usa el caso de demostración con una imagen pública de HyperKvasir (de sus imágenes segmentadas de pólipos).
 {% endhint %}
 
 Elaborado por el equipo Medical programmers.
