@@ -95,6 +95,7 @@ def test_imagen_de_ejemplo_en_el_caso_de_demostracion(cliente, monkeypatch, tmp_
     assert etapa["recursos"][0]["dataset"] == "HyperKvasir" and etapa["recursos"][0]["tipo"] == "imagen"
 
 
+@requiere_db
 def test_catalogo_solo_hyperkvasir():
     """El proyecto usa un solo dataset público: HyperKvasir, con su licencia verificada."""
     preparar.aplicar_esquema()
