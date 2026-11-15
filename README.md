@@ -176,7 +176,7 @@ colorrectal-sim/
 | Problema | Solución |
 |----------|----------|
 | `port is already allocated` | Otro programa usa el puerto 5432, 8000 o 5173. Ciérralo o cambia el puerto en `docker-compose.yml`. |
-| La base no tiene tablas | Los scripts de `db/` solo se ejecutan la primera vez. Borra el volumen con `docker compose down -v` y vuelve a levantar. |
+| La base no tiene tablas | Los scripts de `db/` solo se ejecutan la primera vez. Borra el volumen con `docker compose down -v` y vuelve a levantar. Ojo: `-v` también borra los estudios propios cifrados (volumen `estudios_cifrados`). |
 | El tutor siempre muestra la recomendación predefinida | Revisa `IA_API_KEY` en `.env`. |
 | Error de CORS en el navegador | Agrega la dirección del frontend a `CORS_ORIGENES`. |
 
