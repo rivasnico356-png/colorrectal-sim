@@ -1,9 +1,9 @@
 """Patrón Facade (1.3.2.2, sección 3): una sola entrada al subsistema del tutor (RF-004, RF-007, RNF-007).
 
-El router de la API solo llama a FachadaTutor.consultar. Por dentro, la fachada arma el contexto sin datos personales,
-pasa la pregunta por la cadena de validación (Chain of Responsibility), pide la respuesta al servicio con respaldo
-(Strategy + Adapter + Factory Method), la rotula y registra la interacción. Así ninguna salida de la IA llega a la
-persona sin rótulo ni registro.
+La API y el módulo de estudios propios solo usan FachadaTutor. Por dentro, la fachada coordina:
+ConstructorContexto (sin datos personales), la cadena de validación (Chain of Responsibility), el servicio
+con respaldo (Strategy + Adapter + Factory Method), FiltroRotulado (RNF-007) y RegistroInteraccion (RF-007).
+Así ninguna salida de la IA llega a la persona sin rótulo ni registro.
 """
 from dataclasses import dataclass
 
@@ -15,6 +15,7 @@ from app.core.errores import ErrorNegocio
 from app.core.textos import ROTULO_IA
 from app.modules.simulacion.service import consultas_usadas
 from app.modules.tutor.prompt import VERSION_PROMPT
+from app.modules.tutor.proveedores import RespuestaIA
 from app.modules.tutor.servicio import ServicioTutor, crear_servicio
 from app.modules.tutor.validacion import Consulta, ConsultaRechazada, Validador, crear_cadena
 
@@ -41,15 +42,61 @@ class ConstructorContexto:
         return ContextoEtapa(fila["enunciado"], fila["recomendacion_ia"], fila["opcion"], fila["contexto_simulado"])
 
 
+class FiltroRotulado:
+    """RNF-007: toda salida de la IA va con el rótulo de resultado experimental y sus versiones."""
+
+    def rotular(self, r: RespuestaIA) -> dict:
+        return {"texto": r.texto, "proveedor": r.proveedor, "version_modelo": r.version_modelo, "version_prompt": VERSION_PROMPT,
+                "latencia_ms": r.latencia_ms, "rotulo": ROTULO_IA,
+                "aviso": "El tutor no respondió; se muestra la explicación preparada para la etapa."
+                if r.proveedor == "predefinida" else None}
+
+
+class RegistroInteraccion:
+    """RF-007 y RNF-007: cada salida queda con proveedor, versión del modelo, versión del prompt y latencia."""
+
+    def guardar(self, db: Session, id_intento: int, id_etapa: int, pregunta: str | None, r: RespuestaIA) -> None:
+        db.execute(text("""INSERT INTO interaccion_ia (id_intento, id_etapa, tipo, proveedor, version_modelo, version_prompt,
+                                                       consulta, respuesta, latencia_ms)
+                           VALUES (:i, :e, :t, :p, :m, :v, :c, :r, :l)"""),
+                   {"i": id_intento, "e": id_etapa, "t": "respuesta" if pregunta else "recomendacion", "p": r.proveedor,
+                    "m": r.version_modelo, "v": VERSION_PROMPT, "c": pregunta or "explicar sugerencia", "r": r.texto,
+                    "l": r.latencia_ms})
+        db.commit()
+
+
 class FachadaTutor:
     def __init__(self, servicio: ServicioTutor | None = None, validacion: Validador | None = None,
                  contexto: ConstructorContexto | None = None, maximo: int | None = None):
         self.servicio = servicio or crear_servicio()
         self.validacion = validacion or crear_cadena()
         self.contexto = contexto or ConstructorContexto()
+        self.filtro = FiltroRotulado()
+        self.registro = RegistroInteraccion()
         self.maximo = maximo if maximo is not None else get_settings().tutor_max_consultas_etapa
 
+    def recomendar(self, db: Session, id_intento: int, id_etapa: int, id_usuario: str) -> dict:
+        """RF-004 4.2: explica por qué la IA sugiere la opción de la etapa."""
+        return self._atender(db, id_intento, id_etapa, id_usuario, None)
+
+    def responder_pregunta(self, db: Session, id_intento: int, id_etapa: int, id_usuario: str, pregunta: str) -> dict:
+        """RF-004 4.3: responde una pregunta con el límite por etapa."""
+        return self._atender(db, id_intento, id_etapa, id_usuario, pregunta)
+
     def consultar(self, db: Session, id_intento: int, id_etapa: int, id_usuario: str, pregunta: str | None) -> dict:
+        if pregunta is None:
+            return self.recomendar(db, id_intento, id_etapa, id_usuario)
+        return self.responder_pregunta(db, id_intento, id_etapa, id_usuario, pregunta)
+
+    def explicar_estudio(self, clasificacion: str, confianza: float, explicacion_fija: str, pregunta: str) -> str:
+        """RF-010 10.3: explicación del resultado del modelo de visión sobre un estudio propio.
+        Solo recibe el resultado del modelo, nunca la imagen ni datos de la persona (IE-02)."""
+        r = self.servicio.explicar("Estudio de colonoscopia cargado por la persona usuaria.",
+                                   f"El modelo experimental de visión indica: {clasificacion}, con una confianza de {confianza} %.",
+                                   explicacion_fija, pregunta)
+        return r.texto
+
+    def _atender(self, db: Session, id_intento: int, id_etapa: int, id_usuario: str, pregunta: str | None) -> dict:
         etapa = self.contexto.armar(db, id_intento, id_etapa, id_usuario)
         usadas = consultas_usadas(db, id_intento, id_etapa)
         try:
@@ -62,22 +109,9 @@ class FachadaTutor:
                     "latencia_ms": 0, "rotulo": None, "consultas_restantes": max(0, self.maximo - usadas),
                     "aviso": "Tu pregunta no se envió al tutor."}
         recomendacion = etapa.recomendacion_ia + (f" (opción sugerida: {etapa.opcion_sugerida})" if etapa.opcion_sugerida else "")
-        r = self.servicio.explicar(etapa.enunciado, recomendacion, etapa.recomendacion_ia, pregunta,
-                                   contexto_caso=etapa.contexto_caso)
-        self._registrar(db, id_intento, id_etapa, pregunta, r)
+        respuesta = self.servicio.explicar(etapa.enunciado, recomendacion, etapa.recomendacion_ia, pregunta,
+                                           contexto_caso=etapa.contexto_caso)
+        salida = self.filtro.rotular(respuesta)
+        self.registro.guardar(db, id_intento, id_etapa, pregunta, respuesta)
         restantes = self.maximo - usadas - (1 if pregunta else 0)
-        return {"texto": r.texto, "proveedor": r.proveedor, "version_modelo": r.version_modelo, "version_prompt": VERSION_PROMPT,
-                "latencia_ms": r.latencia_ms, "rotulo": ROTULO_IA, "consultas_restantes": max(0, restantes),
-                "aviso": "El tutor no respondió; se muestra la explicación preparada para la etapa."
-                if r.proveedor == "predefinida" else None}
-
-    @staticmethod
-    def _registrar(db: Session, id_intento: int, id_etapa: int, pregunta: str | None, r) -> None:
-        """RF-007 y RNF-007: cada salida queda con proveedor, versión del modelo, versión del prompt y latencia."""
-        db.execute(text("""INSERT INTO interaccion_ia (id_intento, id_etapa, tipo, proveedor, version_modelo, version_prompt,
-                                                       consulta, respuesta, latencia_ms)
-                           VALUES (:i, :e, :t, :p, :m, :v, :c, :r, :l)"""),
-                   {"i": id_intento, "e": id_etapa, "t": "respuesta" if pregunta else "recomendacion", "p": r.proveedor,
-                    "m": r.version_modelo, "v": VERSION_PROMPT, "c": pregunta or "explicar sugerencia", "r": r.texto,
-                    "l": r.latencia_ms})
-        db.commit()
+        return salida | {"consultas_restantes": max(0, restantes)}

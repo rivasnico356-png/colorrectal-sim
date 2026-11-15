@@ -16,7 +16,7 @@ from app.core.textos import ROTULO_IA
 from app.modules.estudios import seguridad
 from app.modules.estudios.procesamiento import ProcesadorEstudioPropio
 from app.modules.estudios.vision import CON_REGION, ResultadoVision
-from app.modules.tutor.servicio import crear_servicio
+from app.modules.tutor.fachada import FachadaTutor
 from app.modules.usuarios.service import bitacora
 
 router = APIRouter(tags=["Estudios propios"])
@@ -47,13 +47,10 @@ def _interpretar(db: Session, id_estudio: int, r: ResultadoVision | None) -> boo
     if r is None:
         return False
     con_region = r.clasificacion == CON_REGION
-    tutor = crear_servicio().explicar(
-        "Estudio de colonoscopia cargado por la persona usuaria.",
-        f"El modelo experimental de visión indica: {r.clasificacion}, con una confianza de {r.confianza} %.",
-        EXPLICACION_FIJA[con_region], PREGUNTA_ESTUDIO)
+    explicacion = FachadaTutor().explicar_estudio(r.clasificacion, r.confianza, EXPLICACION_FIJA[con_region], PREGUNTA_ESTUDIO)
     db.execute(text("""INSERT INTO interpretacion_estudio (id_estudio, roi, clasificacion, confianza, explicacion, version_modelo)
                        VALUES (:e, CAST(:r AS jsonb), :c, :f, :x, :v)"""),
-               {"e": id_estudio, "r": json.dumps(r.roi or {}), "c": r.clasificacion, "f": r.confianza, "x": tutor.texto,
+               {"e": id_estudio, "r": json.dumps(r.roi or {}), "c": r.clasificacion, "f": r.confianza, "x": explicacion,
                 "v": r.version_modelo})
     return True
 

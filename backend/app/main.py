@@ -12,6 +12,7 @@ from app.modules.estudios.router import router as estudios_router
 from app.modules.gamificacion import service as gamificacion  # noqa: F401  registra el observador de M06
 from app.modules.privacidad.router import router as privacidad_router
 from app.modules.progreso.router import router as progreso_router
+from app.modules.simulacion import observadores  # noqa: F401  registra los observadores de M07 y M08
 from app.modules.simulacion.router import router as simulacion_router
 from app.modules.tutor.router import router as tutor_router
 from app.modules.usuarios.router import router as usuarios_router

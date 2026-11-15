@@ -160,3 +160,24 @@ def test_caso_simulado_usa_la_imagen_del_dataset_sin_cambios():
 def test_sin_modelo_el_resultado_es_vacio():
     r = ProcesadorCasoSimulado(None, usar_modelo_por_defecto=False).procesar("recursos/1.jpg", _jpg_con_exif())
     assert r.resultado is None
+
+
+# ---- Observer: tres observadores en orden (RF-006, RF-007, RF-008) ----
+
+def test_observadores_suscritos_en_orden():
+    import app.main  # noqa: F401  registra los observadores como en producción
+    from app.core.eventos import DecisionRegistrada, suscriptores
+
+    nombres = [type(m).__name__ for m in suscriptores(DecisionRegistrada)]
+    assert nombres == ["ObsInteraccionIA", "ObsProgreso", "ObsGamificacion"]
+
+
+# ---- Facade: dos operaciones y el rotulado de toda salida (RNF-007) ----
+
+def test_fachada_rotula_la_respuesta():
+    from app.core.textos import ROTULO_IA
+    from app.modules.tutor.fachada import FiltroRotulado
+    from app.modules.tutor.proveedores import RespuestaIA
+
+    salida = FiltroRotulado().rotular(RespuestaIA("Texto", "principal", "gpt-oss-120b", 120))
+    assert salida["rotulo"] == ROTULO_IA and salida["aviso"] is None
