@@ -8,8 +8,10 @@ Humphrey, W. S. (2000). *Introduction to the Team Software Process*. Addison-Wes
 
 International Organization for Standardization. (2023). *ISO/IEC 25010:2023. Systems and software engineering — SQuaRE — Product quality model*. ISO.
 
+Jha, D., Smedsrud, P. H., Riegler, M. A., Halvorsen, P., de Lange, T., Johansen, D., y Johansen, H. D. (2020). Kvasir-SEG: A segmented polyp dataset. En *MultiMedia Modeling: 26th International Conference, MMM 2020* (pp. 451–462). Springer. https://doi.org/10.1007/978-3-030-37734-2_37
+
 Medical programmers. (2026). *Especificación de requisitos de software (SRS) de Colorrectal-Sim, versión 1.2*. Universidad Santiago de Cali.
 
 Project Management Institute. (2017). *Guía de los fundamentos para la dirección de proyectos (Guía del PMBOK)* (6.ª ed.). PMI.
 
-Las fuentes y licencias de los datasets públicos (HyperKvasir, Kvasir-SEG, CVC-ClinicDB y PolypGen) se registran en `docs/datasets.md` después de verificarlas.
+Las fuentes y licencias de los datasets públicos se registran en `docs/datasets.md` después de verificarlas. Kvasir-SEG (Jha et al., 2020) ya está verificado: se permite su uso en investigación y educación citando el artículo. HyperKvasir, CVC-ClinicDB y PolypGen están pendientes de verificar.
