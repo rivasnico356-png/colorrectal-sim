@@ -218,4 +218,4 @@ Este proyecto usa la licencia [MIT](LICENSE). Los datasets de imágenes conserva
 
 ---
 
-Elaborado por el equipo Medical programmers · Versión 1.0 de la documentación del repositorio.
+Elaborado por el equipo Medical programmers.

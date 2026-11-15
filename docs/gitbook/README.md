@@ -23,4 +23,4 @@ Colorrectal-Sim es una herramienta educativa. Todo resultado generado por la IA 
 La demostración usa el plan gratuito de Render: si nadie la abre en 15 minutos se duerme y la primera carga tarda cerca de un minuto. En la demostración pública no se pueden subir estudios propios (Ley 1581 de 2012); se usa el caso de demostración con una imagen pública de Kvasir-SEG.
 {% endhint %}
 
-Elaborado por el equipo Medical programmers · Versión 1.0 de la documentación.
+Elaborado por el equipo Medical programmers.
