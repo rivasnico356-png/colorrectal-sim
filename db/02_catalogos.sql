@@ -8,8 +8,5 @@ INSERT INTO nivel (nombre, puntaje_minimo) VALUES ('Explorador', 0), ('Analista'
 -- Datasets públicos previstos (Arquitectura de datos, Tabla 2).
 -- Licencias pendientes de verificar en la fuente oficial antes de usar cada imagen.
 INSERT INTO dataset (nombre, fuente_url, licencia, version, modalidad) VALUES
- ('HyperKvasir', 'https://datasets.simula.no/hyper-kvasir/', 'CC BY 4.0 (por verificar)', NULL, 'endoscopia (imagen y video)'),
- ('Kvasir', 'https://datasets.simula.no/kvasir/', 'Uso académico con cita (por verificar)', 'v2', 'endoscopia (imagen)'),
- ('CVC-ClinicDB', 'https://polyp.grand-challenge.org/CVCClinicDB/', 'Uso académico con cita (por verificar)', NULL, 'colonoscopia con máscara'),
- ('PolypGen', 'https://www.synapse.org/Synapse:syn26376615', 'CC BY 4.0 (por verificar)', NULL, 'colonoscopia multicéntrica');
+ ('HyperKvasir', 'https://datasets.simula.no/hyper-kvasir/', 'CC BY 4.0 (Borgli et al., 2020)', NULL, 'endoscopia (imagen y video)');
 COMMIT;

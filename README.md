@@ -30,7 +30,7 @@ Proyecto ONCO-AI_USC 2026 B · Línea 2 ONCO-SIM · Universidad Santiago de Cali
 - **Progreso y niveles** (Explorador, Analista, Experto).
 - **Estudios propios**: la persona puede cargar imágenes de su colonoscopia; se quitan los datos personales, se guardan cifradas y un modelo experimental marca regiones de interés.
 - **Protección de datos** según la Ley 1581 de 2012: autorizaciones que se pueden revocar, contraseñas con hash, supresión de la cuenta y exportación seudonimizada.
-- **Accesible y en español**, pensado para personas con cáncer colorrectal y sus familias.
+- **Accesible y en español**, pensado para personas con cáncer colorrectal.
 
 ## 🚀 Tecnologías
 
@@ -218,4 +218,4 @@ Este proyecto usa la licencia [MIT](LICENSE). Los datasets de imágenes conserva
 
 ---
 
-Elaborado por el equipo Medical programmers · Versión 1.0 de la documentación del repositorio.
+Elaborado por el equipo Medical programmers.

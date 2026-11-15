@@ -48,7 +48,7 @@ def test_demostracion_no_recibe_estudios(cliente, monkeypatch):
 
 @requiere_db
 def test_imagen_de_ejemplo_en_el_caso_de_demostracion(cliente, monkeypatch, tmp_path):
-    """La etapa 1 del caso de demostración recibe una sola vez la imagen de Kvasir-SEG con el modelo de visión activo."""
+    """La etapa 1 del caso de demostración recibe una sola vez la imagen de HyperKvasir con el modelo de visión activo."""
     import io
 
     from PIL import Image
@@ -58,7 +58,7 @@ def test_imagen_de_ejemplo_en_el_caso_de_demostracion(cliente, monkeypatch, tmp_
     buf = io.BytesIO()
     Image.new("RGB", (32, 32), (180, 90, 90)).save(buf, format="JPEG")
     imagen.write_bytes(buf.getvalue())
-    preparar.aplicar_esquema()  # aplica db/06 (Kvasir-SEG en el catálogo)
+    preparar.aplicar_esquema()  # aplica db/07 (solo HyperKvasir en el catálogo)
     with SessionLocal() as db:
         db.execute(text("UPDATE caso SET eliminado = TRUE WHERE titulo = :t"), {"t": preparar.TITULO_DEMO})
         db.commit()
@@ -68,7 +68,7 @@ def test_imagen_de_ejemplo_en_el_caso_de_demostracion(cliente, monkeypatch, tmp_
         fila = db.execute(text("""SELECT e.usa_modelo_vision, d.nombre FROM etapa e JOIN caso c ON c.id_caso = e.id_caso
                                   JOIN recurso_multimedia r ON r.id_etapa = e.id_etapa JOIN dataset d ON d.id_dataset = r.id_dataset
                                   WHERE c.titulo = :t AND NOT c.eliminado AND e.orden = 1"""), {"t": preparar.TITULO_DEMO}).one()
-    assert fila.usa_modelo_vision is True and fila.nombre == "Kvasir-SEG"
+    assert fila.usa_modelo_vision is True and fila.nombre == "HyperKvasir"
 
     # De punta a punta: la imagen guardada en la base llega al modelo de visión y su resultado aparece en la etapa.
     from app.modules.estudios.vision import CON_REGION, ResultadoVision, fijar_modelo
@@ -92,4 +92,13 @@ def test_imagen_de_ejemplo_en_el_caso_de_demostracion(cliente, monkeypatch, tmp_
         fijar_modelo(None)
     assert recibido["bytes"] == imagen.read_bytes()
     assert etapa["modelo_vision"]["disponible"] is True and etapa["modelo_vision"]["version_modelo"] == "prueba-demo"
-    assert etapa["recursos"][0]["dataset"] == "Kvasir-SEG" and etapa["recursos"][0]["tipo"] == "imagen"
+    assert etapa["recursos"][0]["dataset"] == "HyperKvasir" and etapa["recursos"][0]["tipo"] == "imagen"
+
+
+@requiere_db
+def test_catalogo_solo_hyperkvasir():
+    """El proyecto usa un solo dataset público: HyperKvasir, con su licencia verificada."""
+    preparar.aplicar_esquema()
+    with SessionLocal() as db:
+        filas = db.execute(text("SELECT nombre, licencia FROM dataset")).all()
+    assert [f.nombre for f in filas] == ["HyperKvasir"] and filas[0].licencia.startswith("CC BY 4.0")
