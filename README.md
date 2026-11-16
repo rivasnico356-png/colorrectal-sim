@@ -11,7 +11,7 @@
 
 Plataforma educativa de simulación sobre la **detección e interpretación del cáncer colorrectal mediante imágenes médicas multimodales**, con un agente tutor de inteligencia artificial que acompaña a la persona usuaria paso a paso.
 
-Proyecto ONCO-AI_USC 2026 B · Línea 2 ONCO-SIM · Universidad Santiago de Cali.
+Proyecto ONCO-AI_USC 2026 B · Universidad Santiago de Cali.
 
 | Enlace | Dirección |
 |---|---|
@@ -58,73 +58,6 @@ flowchart LR
     H --> I
     I --> J[Avance compartido con el profesional<br/>si la persona lo autoriza]
 ```
-
-## 📦 Instalación y configuración
-
-### Requisitos
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (incluye Docker Compose)
-- [Git](https://git-scm.com/)
-- Para desarrollo sin Docker: Python 3.12, Node.js 20 y PostgreSQL 16
-
-### Pasos
-
-1. Clona el repositorio:
-
-   ```bash
-   git clone https://github.com/<organizacion>/colorrectal-sim.git
-   cd colorrectal-sim
-   ```
-
-2. Crea tu archivo de variables de entorno y complétalo:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   La clave de la API de IA (`IA_API_KEY`) es opcional: sin ella el tutor usa la recomendación predefinida.
-
-## 🏃 Ejecución
-
-### Con Docker (recomendado)
-
-```bash
-docker compose up --build
-```
-
-| Servicio | Dirección |
-|----------|-----------|
-| Aplicación web | http://localhost:5173 |
-| API | http://localhost:8000/api/v1 |
-| Documentación de la API | http://localhost:8000/docs |
-
-La base de datos se crea sola con los scripts de `db/` la primera vez.
-
-### Sin Docker
-
-```bash
-# Backend
-cd backend
-python -m venv .venv && source .venv/bin/activate   # en Windows: .venv\Scripts\activate
-pip install -r requirements.txt -r requirements-dev.txt
-uvicorn app.main:app --reload
-
-# Frontend (en otra terminal)
-cd frontend
-npm install
-npm run dev
-```
-
-### Pruebas
-
-```bash
-cd backend
-ruff check .
-pytest --cov=app
-```
-
-Las pruebas de integración se ejecutan solo si `DATABASE_URL` apunta a una base con el esquema cargado.
-
 ## 📁 Estructura del proyecto
 
 ```
