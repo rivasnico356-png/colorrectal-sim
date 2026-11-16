@@ -3,7 +3,7 @@ import { enviar } from "../api";
 
 const RANGOS = ["18-29", "30-39", "40-49", "50-59", "60-69", "70+"];
 
-export default function Registro({ alTerminar }: { alTerminar: () => void }) {
+export default function Registro({ alTerminar, irAPolitica }: { alTerminar: () => void; irAPolitica: () => void }) {
   const [f, setF] = useState({
     nombre: "", correo: "", contrasena: "", rango_edad: "40-49",
     acepta_politica: false, autoriza_datos_sensibles: false, autoriza_compartir: false,
@@ -38,7 +38,10 @@ export default function Registro({ alTerminar }: { alTerminar: () => void }) {
       </label>
       <label className="casilla">
         <input type="checkbox" checked={f.acepta_politica} onChange={(e) => cambiar("acepta_politica", e.target.checked)} required />
-        Acepto la política de tratamiento de datos personales (Ley 1581 de 2012).
+        <span>
+          Acepto la política de tratamiento de datos personales (Ley 1581 de 2012).{" "}
+          <button type="button" className="enlace" onClick={irAPolitica}>Ver política</button>
+        </span>
       </label>
       <label className="casilla">
         <input type="checkbox" checked={f.autoriza_datos_sensibles}

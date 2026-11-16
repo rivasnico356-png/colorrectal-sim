@@ -4,6 +4,7 @@ import Admin from "./paginas/Admin";
 import Catalogo from "./paginas/Catalogo";
 import Estudios from "./paginas/Estudios";
 import Ingreso from "./paginas/Ingreso";
+import Politica from "./paginas/Politica";
 import Privacidad from "./paginas/Privacidad";
 import { EditorCasos, EstudiosCompartidos, PanelProfesional } from "./paginas/Profesional";
 import Progreso from "./paginas/Progreso";
@@ -11,7 +12,7 @@ import { Recuperar, Restablecer } from "./paginas/Recuperar";
 import Registro from "./paginas/Registro";
 import Simulacion from "./paginas/Simulacion";
 
-type Pantalla = "ingreso" | "registro" | "recuperar" | "restablecer" | "catalogo" | "simulacion" | "progreso" | "estudios"
+type Pantalla = "ingreso" | "registro" | "recuperar" | "restablecer" | "politica" | "catalogo" | "simulacion" | "progreso" | "estudios"
   | "privacidad" | "panel" | "compartidos" | "casos" | "admin";
 type Sesion = { token: string; rol: Rol };
 
@@ -37,6 +38,7 @@ export default function App() {
   const [sesion, setSesion] = useState<Sesion | null>(leerSesion);
   const tokenEnlace = window.location.hash.startsWith("#restablecer=") ? window.location.hash.slice(13) : "";
   const [pantalla, setPantalla] = useState<Pantalla>(tokenEnlace ? "restablecer" : sesion ? INICIO[sesion.rol] : "ingreso");
+  const [origenPolitica, setOrigenPolitica] = useState<Pantalla>("registro");
   const [caso, setCaso] = useState<number | null>(null);
   const [avisos, setAvisos] = useState(0);
 
@@ -92,13 +94,21 @@ export default function App() {
         {pantalla === "ingreso" && <Ingreso alEntrar={entrar} irARegistro={() => setPantalla("registro")} irARecuperar={() => setPantalla("recuperar")} />}
         {pantalla === "recuperar" && <Recuperar volver={() => setPantalla("ingreso")} />}
         {pantalla === "restablecer" && <Restablecer token={tokenEnlace} terminar={() => { window.location.hash = ""; setPantalla("ingreso"); }} />}
-        {pantalla === "registro" && <Registro alTerminar={() => setPantalla("ingreso")} />}
+        {pantalla === "registro" && (
+          <Registro alTerminar={() => setPantalla("ingreso")} irAPolitica={() => { setOrigenPolitica("registro"); setPantalla("politica"); }} />
+        )}
+        {pantalla === "politica" && <Politica volver={() => setPantalla(origenPolitica)} />}
         {pantalla === "catalogo" && <Catalogo abrir={(id) => { setCaso(id); setPantalla("simulacion"); }} />}
         {pantalla === "simulacion" && caso && <Simulacion idCaso={caso} volver={() => setPantalla("catalogo")} />}
         {pantalla === "progreso" && <Progreso />}
         {pantalla === "estudios" && <Estudios />}
         {pantalla === "compartidos" && <EstudiosCompartidos />}
-        {pantalla === "privacidad" && <Privacidad alSuprimir={() => { setSesion(null); setPantalla("ingreso"); }} />}
+        {pantalla === "privacidad" && (
+          <Privacidad
+            alSuprimir={() => { setSesion(null); setPantalla("ingreso"); }}
+            irAPolitica={() => { setOrigenPolitica("privacidad"); setPantalla("politica"); }}
+          />
+        )}
         {pantalla === "panel" && <PanelProfesional />}
         {pantalla === "casos" && <EditorCasos />}
         {pantalla === "admin" && <Admin />}
