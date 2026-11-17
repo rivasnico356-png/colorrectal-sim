@@ -2,7 +2,7 @@
 
 ## Integración continua
 
-Cada cambio en GitHub ejecuta tres revisiones automáticas: **backend** (estilo con ruff y pruebas con cobertura sobre PostgreSQL 16), **frontend** (compilación) y **secretos** (gitleaks). Los cambios entran a `develop` por Pull Request revisado por otro integrante y con las tres revisiones en verde.
+Cada cambio en GitHub ejecuta tres revisiones automáticas: **backend** (estilo con ruff y pruebas con cobertura sobre PostgreSQL 16; la revisión falla si la cobertura baja del 70 %), **frontend** (compilación) y **secretos** (gitleaks). Los cambios entran a `develop` por Pull Request revisado por otro integrante y con las tres revisiones en verde.
 
 ## Resultados
 
