@@ -1,6 +1,6 @@
 # Base de datos y privacidad
 
-PostgreSQL 16 con **23 tablas**. El esquema se crea con seis scripts numerados que se ejecutan en orden; no se usa ORM ni Alembic. Al arrancar, el backend (`app/preparar.py`) aplica los que falten, y desde el 05 todos se pueden volver a ejecutar sin error:
+PostgreSQL 16 con **23 tablas**. El esquema se crea con siete scripts numerados que se ejecutan en orden; no se usa ORM ni Alembic. Al arrancar, el backend (`app/preparar.py`) aplica los que falten, y desde el 05 todos se pueden volver a ejecutar sin error:
 
 | Script | Contenido |
 |---|---|
@@ -9,7 +9,8 @@ PostgreSQL 16 con **23 tablas**. El esquema se crea con seis scripts numerados q
 | `db/03_ajustes_srs.sql` | Campos que pide el SRS (descripción del caso, puntaje y fuente por opción, insignias) y las tablas `caso_version` y `sesion_revocada` |
 | `db/04_estudios_recuperacion.sql` | Tabla `recuperacion_contrasena` y avisos de comentarios |
 | `db/05_recursos_en_base.sql` | Tabla `recurso_contenido`: las imágenes y videos de los casos se guardan en la base para que no se pierdan al redesplegar |
-| `db/06_kvasir_seg.sql` | Registra en el catálogo las 1.000 imágenes segmentadas de pólipos de HyperKvasir (publicadas por Simula como Kvasir-SEG) |
+| `db/06_kvasir_seg.sql` | Sin efecto; se conserva para no romper bases ya creadas |
+| `db/07_solo_hyperkvasir.sql` | Deja HyperKvasir (Borgli et al., 2020), CC BY 4.0, como único dataset del catálogo |
 
 ## Protección de datos (Congreso de la República de Colombia, 2012)
 
