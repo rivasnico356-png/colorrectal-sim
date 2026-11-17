@@ -3,11 +3,17 @@ import { enviar } from "../api";
 
 const RANGOS = ["18-29", "30-39", "40-49", "50-59", "60-69", "70+"];
 
-export default function Registro({ alTerminar, irAPolitica }: { alTerminar: () => void; irAPolitica: () => void }) {
-  const [f, setF] = useState({
-    nombre: "", correo: "", contrasena: "", rango_edad: "40-49",
-    acepta_politica: false, autoriza_datos_sensibles: false, autoriza_compartir: false,
-  });
+export const REGISTRO_INICIAL = {
+  nombre: "", correo: "", contrasena: "", rango_edad: "40-49",
+  acepta_politica: false, autoriza_datos_sensibles: false, autoriza_compartir: false,
+};
+export type DatosRegistro = typeof REGISTRO_INICIAL;
+
+export default function Registro({
+  alTerminar, irAPolitica, datos: f, setDatos: setF,
+}: {
+  alTerminar: () => void; irAPolitica: () => void; datos: DatosRegistro; setDatos: (d: DatosRegistro) => void;
+}) {
   const [error, setError] = useState("");
   const cambiar = (campo: string, valor: string | boolean) => setF({ ...f, [campo]: valor });
 
