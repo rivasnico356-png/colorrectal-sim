@@ -32,14 +32,20 @@ function mensajeValidacion(detalle: unknown): string {
 
 export async function api<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
   const esFormulario = opciones.body instanceof FormData;
-  const r = await fetch(`${BASE}${ruta}`, {
-    ...opciones,
-    headers: {
-      ...(esFormulario ? {} : { "Content-Type": "application/json" }),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...opciones.headers,
-    },
-  });
+  let r: Response;
+  try {
+    r = await fetch(`${BASE}${ruta}`, {
+      ...opciones,
+      headers: {
+        ...(esFormulario ? {} : { "Content-Type": "application/json" }),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...opciones.headers,
+      },
+    });
+  } catch {
+    // "Failed to fetch": el navegador no logró conectarse con el backend (servidor apagado, URL o CORS).
+    throw new ErrorApi("No se pudo conectar con el servidor. Revisa tu conexión o inténtalo de nuevo en un minuto.", 0);
+  }
   if (!r.ok) {
     const cuerpo = await r.json().catch(() => ({}));
     const detalle = typeof cuerpo.detail === "string" ? cuerpo.detail : mensajeValidacion(cuerpo.detail);
