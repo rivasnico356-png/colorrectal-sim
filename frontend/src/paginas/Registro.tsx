@@ -15,6 +15,7 @@ export default function Registro({
   alTerminar: () => void; irAPolitica: () => void; datos: DatosRegistro; setDatos: (d: DatosRegistro) => void;
 }) {
   const [error, setError] = useState("");
+  const [creada, setCreada] = useState(false);
   const cambiar = (campo: string, valor: string | boolean) => setF({ ...f, [campo]: valor });
 
   const registrar = async (e: FormEvent) => {
@@ -22,11 +23,21 @@ export default function Registro({
     setError("");
     try {
       await enviar("/auth/registro", "POST", f);
-      alTerminar();
+      setCreada(true);
     } catch (err) {
       setError((err as Error).message);
     }
   };
+
+  if (creada) {
+    return (
+      <section className="tarjeta estrecha">
+        <h1>Cuenta creada</h1>
+        <p role="status">Tu cuenta quedó registrada. Ya puedes iniciar sesión con tu correo y contraseña.</p>
+        <button type="button" className="primario" onClick={alTerminar}>Ir a iniciar sesión</button>
+      </section>
+    );
+  }
 
   return (
     <form className="tarjeta estrecha" onSubmit={registrar}>
