@@ -60,7 +60,7 @@ class ServicioTutor:
                 return estrategia.obtener(mensaje, explicacion_predefinida)
             except (ErrorProveedor, TimeoutError) as e:
                 self.errores.append(f"{estrategia.nombre}: {e}")
-                # Va al registro del servidor para diagnosticar; nunca incluye la clave de API.
+                # Va al registro del servidor para revisar la falla; nunca incluye la clave de API.
                 registro.warning("Tutor: falló %s (%s): %s", estrategia.nombre,
                                  getattr(getattr(estrategia, "proveedor", None), "modelo", "-"), e)
         return EstrategiaPredefinida().obtener(mensaje, explicacion_predefinida)  # pragma: no cover

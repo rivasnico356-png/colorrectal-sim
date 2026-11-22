@@ -44,7 +44,7 @@ Versión `polipos-unet-mobilenet_v2-20261112`, evaluada con las **100 imágenes 
 
 * **Reparto por imagen, no por paciente:** el dataset no dice de qué paciente es cada imagen. Si dos imágenes del mismo paciente quedaron una para entrenar y otra para el examen, el resultado puede ser algo más alto de lo real.
 * No se ha probado con imágenes de otros hospitales ni se ha medido cuánto tarda en responder en el servidor.
-* No da diagnósticos ni dice si una lesión es cáncer: solo señala una zona.
+* No reemplaza la valoración médica ni dice si una lesión es cáncer: solo señala una zona.
 
 ## Usarlo en el entorno local
 

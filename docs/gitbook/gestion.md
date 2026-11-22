@@ -7,7 +7,7 @@
 | **Nombre del proyecto** | Colorrectal-Sim: plataforma web de simulación para la detección e interpretación del cáncer colorrectal mediante imágenes médicas multimodales |
 | **Convocatoria** | ONCO-AI_USC 2026 B, línea 2 ONCO-SIM (Universidad Santiago de Cali) |
 | **Propietario del proyecto** | Jair Enrique Sanclemente Castro, docente de Gestión de Proyectos TI |
-| **Director del proyecto** | Nicolás Rivas Castillo |
+| **Director del proyecto** | Nicolas Rivas Castillo |
 | **Dónde están los documentos** | Documentos de gestión (Acta, planes, EDT, cronograma, SRS, diseño): carpeta del equipo en OneDrive y entregas en Moodle. Documentación técnica: esta página de GitBook. Código, pruebas y control de cambios: repositorio público en GitHub |
 
 ## Marco de trabajo
@@ -16,7 +16,7 @@ La dirección del proyecto sigue la Guía del PMBOK, 6.ª edición (Project Mana
 
 | Integrante | Rol PMBOK | Rol TSP |
 |---|---|---|
-| Nicolás Rivas Castillo | Director del proyecto | Líder del equipo y gerente de planeación |
+| Nicolas Rivas Castillo | Director del proyecto | Líder del equipo y gerente de planeación |
 | Valentina Ramírez Solano | Analista | Gerente de proceso |
 | Juan Camilo Paredes Ramírez | Diseñador | Gerente de diseño |
 | David Steven Muñoz Rojas | Desarrollador | Gerente de soporte |
