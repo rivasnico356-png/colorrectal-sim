@@ -79,7 +79,10 @@ export default function App() {
   return (
     <div className="app">
       <header className="cabecera">
-        <span className="marca">Colorrectal-Sim</span>
+        <span className="marca">
+          <img src="/isotipo.png" alt="" className="marca-logo" width={44} height={44} />
+          <span>Colorrectal-Sim</span>
+        </span>
         {sesion && (
           <nav>
             {MENU[sesion.rol].map(([p, t]) => (
@@ -92,6 +95,11 @@ export default function App() {
         )}
       </header>
       <main>
+        {sesion && pantalla === INICIO[sesion.rol] && (
+          <div className="bienvenida-logo">
+            <img src="/logo.png" alt="Colorrectal-Sim" className="logo-inicio" />
+          </div>
+        )}
         {pantalla === "ingreso" && <Ingreso alEntrar={entrar} irARegistro={() => setPantalla("registro")} irARecuperar={() => setPantalla("recuperar")} />}
         {pantalla === "recuperar" && <Recuperar volver={() => setPantalla("ingreso")} />}
         {pantalla === "restablecer" && <Restablecer token={tokenEnlace} terminar={() => { window.location.hash = ""; setPantalla("ingreso"); }} />}
