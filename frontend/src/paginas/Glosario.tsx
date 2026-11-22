@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-type Categoria = "Diagnóstico y estudios" | "Hallazgos y enfermedad" | "Tratamiento y seguimiento" | "Inteligencia artificial y datos";
+type Categoria = "Detección y estudios" | "Hallazgos y enfermedad" | "Tratamiento y seguimiento" | "Inteligencia artificial y datos";
 
 interface Termino {
   termino: string;
@@ -9,7 +9,7 @@ interface Termino {
 }
 
 const CATEGORIAS: Categoria[] = [
-  "Diagnóstico y estudios",
+  "Detección y estudios",
   "Hallazgos y enfermedad",
   "Tratamiento y seguimiento",
   "Inteligencia artificial y datos",
@@ -19,27 +19,27 @@ const CATEGORIAS: Categoria[] = [
 const TERMINOS: Termino[] = [
   {
     termino: "Colonoscopia",
-    categoria: "Diagnóstico y estudios",
+    categoria: "Detección y estudios",
     definicion: "Examen en el que el médico observa el interior del intestino grueso (colon y recto) con una cámara delgada y flexible para buscar pólipos u otras lesiones.",
   },
   {
     termino: "Tamizaje (cribado)",
-    categoria: "Diagnóstico y estudios",
+    categoria: "Detección y estudios",
     definicion: "Pruebas preventivas que se realizan a personas sin síntomas para detectar el cáncer colorrectal o lesiones previas de forma temprana, cuando es más fácil tratarlo.",
   },
   {
     termino: "Sangre oculta en heces (FIT / SOH)",
-    categoria: "Diagnóstico y estudios",
+    categoria: "Detección y estudios",
     definicion: "Prueba de laboratorio no invasiva que busca rastros microscópicos de sangre en la materia fecal que no se ven a simple vista.",
   },
   {
     termino: "Biopsia",
-    categoria: "Diagnóstico y estudios",
+    categoria: "Detección y estudios",
     definicion: "Toma de una pequeña muestra de tejido durante un examen para analizarla en el microscopio y confirmar si las células son benignas o malignas.",
   },
   {
     termino: "DICOM",
-    categoria: "Diagnóstico y estudios",
+    categoria: "Detección y estudios",
     definicion: "Formato estándar usado por clínicas y hospitales para guardar imágenes médicas junto con datos técnicos del equipo y del estudio.",
   },
   {
@@ -100,7 +100,7 @@ const TERMINOS: Termino[] = [
   {
     termino: "Confianza del modelo de IA",
     categoria: "Inteligencia artificial y datos",
-    definicion: "Porcentaje que indica qué tan parecida es una imagen a los ejemplos con los que aprendió el modelo. No representa una probabilidad de tener cáncer ni un diagnóstico.",
+    definicion: "Porcentaje que indica qué tan parecida es una imagen a los ejemplos con los que aprendió el modelo. No representa una probabilidad de tener cáncer ni reemplaza la valoración de su médico.",
   },
   {
     termino: "Desidentificación y seudonimización",
@@ -163,7 +163,7 @@ export default function Glosario({ volver }: { volver: () => void }) {
       )}
 
       <p className="rotulo">
-        Este glosario es educativo e informativo. Ante cualquier duda sobre un examen, diagnóstico o tratamiento, consulte siempre a su médico.
+        Este glosario es educativo e informativo. Ante cualquier duda sobre un examen, un resultado o un tratamiento, consulte siempre a su médico.
       </p>
       <button type="button" className="primario" onClick={volver}>Volver</button>
     </section>

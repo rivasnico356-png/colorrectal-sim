@@ -29,6 +29,7 @@ export default function Ingreso({ alEntrar, irARegistro, irARecuperar }: Props) 
 
   return (
     <form className="tarjeta estrecha" onSubmit={entrar}>
+      <img src="/logo.png" alt="Colorrectal-Sim" className="logo-portada" />
       <h1>Iniciar sesión</h1>
       <label>Correo<input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required /></label>
       <label>Contraseña<input type="password" value={contrasena} onChange={(e) => setContrasena(e.target.value)} required /></label>

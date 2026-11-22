@@ -89,7 +89,7 @@ flowchart TB
 - Permite al **Profesional de la salud** listar los estudios que sus usuarios vinculados autorizaron compartir (`GET /profesional/estudios`), abrir la imagen desidentificada con la ROI del modelo ONNX reutilizando `VistaEstudio` (`GET /estudios/{id}` y `GET /estudios/{id}/imagen`), y publicar comentarios educativos (`POST /estudios/{id}/comentarios`) que disparan notificaciones (`GET /notificaciones`) en la barra superior del usuario.
 
 ### 4.4 Glosario de términos médicos y control de tamaño de letra (RNF-008)
-- **`Glosario.tsx` (`pantalla = "glosario"`)**: ofrece búsqueda instantánea y filtro por categoría (*Diagnóstico y estudios*, *Hallazgos y enfermedad*, *Tratamiento y seguimiento*, *Inteligencia artificial y datos*) con 18 términos en lenguaje sencillo. Accesible desde la barra superior antes y después de iniciar sesión, regresando al estado previo (`origenGlosario`).
+- **`Glosario.tsx` (`pantalla = "glosario"`)**: ofrece búsqueda instantánea y filtro por categoría (*Detección y estudios*, *Hallazgos y enfermedad*, *Tratamiento y seguimiento*, *Inteligencia artificial y datos*) con 18 términos en lenguaje sencillo. Accesible desde la barra superior antes y después de iniciar sesión, regresando al estado previo (`origenGlosario`).
 - **Control de tamaño de letra (`App.tsx` + `estilos.css`)**: grupo accesible (`role="group"`, `aria-label="Tamaño de letra"`, `aria-pressed`) con tres niveles persistidos en `localStorage` (`A` = 100 %, `A+` = 118,75 %, `A++` = 137,5 %) aplicados sobre la raíz `html[data-texto]` con tipografía en unidades `rem`.
 
 ---
