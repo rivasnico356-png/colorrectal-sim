@@ -102,3 +102,34 @@ def test_catalogo_solo_hyperkvasir():
     with SessionLocal() as db:
         filas = db.execute(text("SELECT nombre, licencia FROM dataset")).all()
     assert [f.nombre for f in filas] == ["HyperKvasir"] and filas[0].licencia.startswith("CC BY 4.0")
+
+
+@requiere_db
+def test_imagenes_de_la_etapa_2_del_caso_de_demostracion(monkeypatch):
+    """La etapa 2 del caso de demostración recibe una sola vez las imágenes de HyperKvasir de app/demo."""
+    monkeypatch.setenv("CASO_DEMO", "1")
+    preparar.aplicar_esquema()
+    with SessionLocal() as db:
+        db.execute(text("UPDATE caso SET eliminado = TRUE WHERE titulo = :t"), {"t": preparar.TITULO_DEMO})
+        db.commit()
+        assert preparar.publicar_caso_demo(db) is True
+        assert preparar.agregar_imagenes_etapa_2(db) == len(preparar.IMAGENES_ETAPA_2)
+        assert preparar.agregar_imagenes_etapa_2(db) == 0
+        filas = db.execute(text("""SELECT d.nombre, r.licencia, r.tipo FROM recurso_multimedia r
+                                   JOIN dataset d ON d.id_dataset = r.id_dataset JOIN etapa e ON e.id_etapa = r.id_etapa
+                                   JOIN caso c ON c.id_caso = e.id_caso
+                                   WHERE c.titulo = :t AND NOT c.eliminado AND e.orden = 2"""), {"t": preparar.TITULO_DEMO}).all()
+    assert len(filas) == len(preparar.IMAGENES_ETAPA_2)
+    assert all(f.nombre == "HyperKvasir" and "CC BY 4.0" in f.licencia for f in filas)
+
+
+def test_las_imagenes_de_demostracion_son_jpg_reales():
+    """Los archivos de app/demo deben ser imágenes JPEG, no fichas de texto con extensión .jpg."""
+    from pathlib import Path
+
+    from PIL import Image
+
+    carpeta = Path(preparar.__file__).parent / "demo"
+    for nombre in preparar.IMAGENES_ETAPA_2:
+        with Image.open(carpeta / nombre) as imagen:
+            assert imagen.format == "JPEG"

@@ -6,9 +6,12 @@
    mientras los profesionales de la salud escriben los casos reales.
 4. Si existe la imagen de ejemplo de HyperKvasir (imagen segmentada de la partición de prueba del modelo de visión), la agrega a la etapa 1 del
    caso de demostración con el modelo de visión activado, para mostrar su resultado en el enlace público.
+5. Agrega a la etapa 2 del caso de demostración las imágenes de HyperKvasir de la carpeta app/demo (preparación intestinal
+   y resección), cada una una sola vez.
 
 Cada paso es idempotente: se puede ejecutar en cada arranque. Uso: python -m app.preparar
 """
+import hashlib
 import os
 import secrets
 from pathlib import Path
@@ -132,12 +135,44 @@ def agregar_imagen_demo(db: Session, ruta: str | None = None) -> bool:
     return True
 
 
+IMAGENES_ETAPA_2 = ("preparacion-intestinal.jpg", "reseccion.jpg")
+LICENCIA_HYPERKVASIR = "HyperKvasir (Borgli et al., 2020), CC BY 4.0"
+
+
+def agregar_imagenes_etapa_2(db: Session, carpeta: str | None = None) -> int:
+    """Agrega a la etapa 2 del caso de demostración las imágenes de HyperKvasir que aún no tiene. Devuelve cuántas agregó."""
+    base = Path(carpeta) if carpeta else Path(__file__).parent / "demo"
+    etapa = db.execute(text("""SELECT e.id_etapa, c.id_autor FROM etapa e JOIN caso c ON c.id_caso = e.id_caso
+                               WHERE c.titulo = :t AND NOT c.eliminado AND e.orden = 2"""), {"t": TITULO_DEMO}).first()
+    id_dataset = db.execute(text("SELECT id_dataset FROM dataset WHERE nombre = 'HyperKvasir'")).scalar()
+    if etapa is None or id_dataset is None:
+        return 0
+    agregadas = 0
+    for nombre in IMAGENES_ETAPA_2:
+        archivo = base / nombre
+        if not archivo.is_file():
+            continue
+        contenido = archivo.read_bytes()
+        ya_esta = db.execute(text("""SELECT 1 FROM recurso_multimedia r JOIN recurso_contenido rc ON rc.id_recurso = r.id_recurso
+                                     WHERE r.id_etapa = :e AND rc.sha256 = :h"""),
+                             {"e": etapa.id_etapa, "h": hashlib.sha256(contenido).hexdigest()}).first()
+        if ya_esta:
+            continue
+        casos.guardar_recurso(db, str(etapa.id_autor), etapa.id_etapa, nombre, contenido, id_dataset, LICENCIA_HYPERKVASIR)
+        agregadas += 1
+    db.commit()
+    if agregadas:
+        print(f"Imágenes de HyperKvasir agregadas a la etapa 2 del caso de demostración: {agregadas}")
+    return agregadas
+
+
 def main() -> None:
     aplicar_esquema()
     with SessionLocal() as db:
         crear_admin_inicial(db)
         publicar_caso_demo(db)
         agregar_imagen_demo(db)
+        agregar_imagenes_etapa_2(db)
 
 
 if __name__ == "__main__":
