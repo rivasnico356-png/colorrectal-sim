@@ -88,8 +88,10 @@ colorrectal-sim/
 │   ├── 02_catalogos.sql       # roles, niveles y datasets
 │   ├── 03_ajustes_srs.sql     # campos que pide el SRS
 │   ├── 04_estudios_recuperacion.sql
-│   └── 05_recursos_en_base.sql # imágenes y videos de los casos en la base
-├── vision/                    # entrenamiento del modelo de visión (Colab)
+│   ├── 05_recursos_en_base.sql # imágenes y videos de los casos en la base
+│   ├── 06_kvasir_seg.sql       # sin efecto, se conserva por compatibilidad
+│   └── 07_solo_hyperkvasir.sql # HyperKvasir como único dataset del catálogo
+├── vision/                    # entrenamiento del modelo de visión (GitHub Actions)
 ├── docs/                      # datasets, tutor de IA y estado de los requisitos
 ├── .github/                   # CI, plantillas de PR y defectos
 └── docker-compose.yml
@@ -137,7 +139,7 @@ Lee la [guía de contribución](CONTRIBUTING.md) antes de abrir un Pull Request.
 
 | Integrante | GitHub | Rol en el desarrollo |
 |------------|--------|----------------------|
-| Nicolás Rivas Castillo | [@rivasnico356-png](https://github.com/rivasnico356-png) | Líder del proyecto, integración y documentación |
+| Nicolas Rivas Castillo | [@rivasnico356-png](https://github.com/rivasnico356-png) | Líder del proyecto, integración y documentación |
 | David Steven Muñoz | [@Darksteven30](https://github.com/Darksteven30) | Backend, base de datos y Docker |
 | Juan Camilo Paredes Ramírez | [@juanparedes247](https://github.com/juanparedes247) | Frontend |
 | Valentina Ramírez | [@valentinaramirezs](https://github.com/valentinaramirezs) | Agente tutor de IA y modelo de visión |

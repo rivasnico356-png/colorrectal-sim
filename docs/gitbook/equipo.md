@@ -2,7 +2,7 @@
 
 | Integrante | GitHub | Rol PMBOK | Rol TSP | Frente principal |
 |---|---|---|---|---|
-| Nicolás Rivas Castillo | [@rivasnico356-png](https://github.com/rivasnico356-png) | Director del proyecto | Líder del equipo y gerente de planeación | Integración, repositorio y documentación de gestión |
+| Nicolas Rivas Castillo | [@rivasnico356-png](https://github.com/rivasnico356-png) | Director del proyecto | Líder del equipo y gerente de planeación | Integración, repositorio y documentación de gestión |
 | Valentina Ramírez Solano | [@valentinaramirezs](https://github.com/valentinaramirezs) | Analista | Gerente de proceso | Requisitos (SRS, Matriz de Trazabilidad, MoSCoW, Casos de Uso) e informes TSP |
 | Juan Camilo Paredes Ramírez | [@juanparedes247](https://github.com/juanparedes247) | Diseñador | Gerente de diseño | Frontend, arquitectura y diagramas |
 | David Steven Muñoz Rojas | [@Darksteven30](https://github.com/Darksteven30) | Desarrollador | Gerente de soporte | Backend, base de datos, Docker, CI y modelo de visión |

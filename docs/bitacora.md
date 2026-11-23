@@ -39,7 +39,7 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 | 14:05 | Inicia el monitoreo de disponibilidad del enlace público (RNF-002): una consulta cada 2 horas | `.github/workflows/monitoreo.yml` | Muestras en la pestaña Actions › Monitoreo de disponibilidad |
 | 13:50 | Borrador del protocolo de la prueba SUS (consentimiento, 6 tareas, cuestionario, tabla de resultados) | Documento en Claude Docs | Borrador; se aplica del 23 al 25-11 |
 | 13:30 | Ciclo 2 (regresión) de la Matriz de Pruebas Unitarias: 48 casos repetidos y 4 nuevos (CP049–CP052) | Corrida 43275023226, commit 067dc1d | 52 de 52 exitosos |
-| 13:15 | Copia local en el PC de Nicolás actualizada con `git pull` y `docker compose up -d --build` | Registro del backend en Docker Desktop | Script 05 aplicado; 3 contenedores en funcionamiento |
+| 13:15 | Copia local en el PC de Nicolas actualizada con `git pull` y `docker compose up -d --build` | Registro del backend en Docker Desktop | Script 05 aplicado; 3 contenedores en funcionamiento |
 | 13:05 | Etiqueta `v0.5.0` (fin del Ciclo 1) | `git push` rechazado con error 403 | Pendiente: crearla desde GitHub › Releases |
 | 13:00 | Imágenes y videos de los casos guardados en la base (db/05), con peticiones parciales para el video | Commit 067dc1d; corrida 43275023226 (41 pruebas aprobadas, cobertura 89 %) | Desplegado en Render: «Esquema: 05_recursos_en_base.sql aplicado» |
 | 11:10 | Administrador del enlace público cambiado desde las variables de Render | Despliegue dep-dbqu9aoae00c73deikc0 | «Administrador inicial creado» |
@@ -50,7 +50,7 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 
 | Hora | Qué | Evidencia | Resultado |
 |---|---|---|---|
-| 22:30 | Simulador instalado en el PC de Nicolás con Docker Desktop (se instalaron WSL y Git) | Docker Desktop | Funciona en http://localhost:5173 |
+| 22:30 | Simulador instalado en el PC de Nicolas con Docker Desktop (se instalaron WSL y Git) | Docker Desktop | Funciona en http://localhost:5173 |
 | 21:50 | Seguridad repetida tras las correcciones | Corrida 43139882779, commit 8118158 | OWASP ZAP: 0 fallas, 0 avisos, 120 reglas; pip-audit y npm audit (producción): 0 vulnerabilidades |
 | 21:50 | Pruebas de sistema de punta a punta con revisión de accesibilidad (axe) en 5 navegadores | Corrida 43139845153, commit 8118158 | 5 de 5 aprobadas; 0 hallazgos de axe en 10 pantallas |
 | 21:30 | Defecto: aviso de ZAP por `Cross-Origin-Resource-Policy` | Corrida 43139144736; commit 8118158 | Corregido |
