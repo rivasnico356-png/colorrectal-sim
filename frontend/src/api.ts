@@ -14,19 +14,41 @@ export const fijarToken = (t: string | null) => {
 };
 export const tokenActual = () => token;
 
+// Convierte los errores de validación (422) en un mensaje claro para la persona.
+const CAMPOS: Record<string, string> = { correo: "Correo", contrasena: "Contraseña", nombre: "Nombre", rango_edad: "Rango de edad" };
+function mensajeValidacion(detalle: unknown): string {
+  if (!Array.isArray(detalle) || detalle.length === 0) return "Revisa los datos e inténtalo de nuevo.";
+  return detalle
+    .map((e: { loc?: string[]; msg?: string; type?: string }) => {
+      const campo = e.loc?.[e.loc.length - 1] ?? "";
+      if (campo === "correo") return "Correo: escribe un correo válido, por ejemplo nombre@dominio.com.";
+      const msg = (e.msg ?? "").replace(/^Value error, /, "");
+      if (e.type === "string_too_short") return `${CAMPOS[campo] ?? campo}: es demasiado corto.`;
+      if (e.type === "string_too_long") return `${CAMPOS[campo] ?? campo}: es demasiado largo.`;
+      return msg;
+    })
+    .join(" ");
+}
+
 export async function api<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
   const esFormulario = opciones.body instanceof FormData;
-  const r = await fetch(`${BASE}${ruta}`, {
-    ...opciones,
-    headers: {
-      ...(esFormulario ? {} : { "Content-Type": "application/json" }),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...opciones.headers,
-    },
-  });
+  let r: Response;
+  try {
+    r = await fetch(`${BASE}${ruta}`, {
+      ...opciones,
+      headers: {
+        ...(esFormulario ? {} : { "Content-Type": "application/json" }),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...opciones.headers,
+      },
+    });
+  } catch {
+    // "Failed to fetch": el navegador no logró conectarse con el backend (servidor apagado, URL o CORS).
+    throw new ErrorApi("No se pudo conectar con el servidor. Revisa tu conexión o inténtalo de nuevo en un minuto.", 0);
+  }
   if (!r.ok) {
     const cuerpo = await r.json().catch(() => ({}));
-    const detalle = typeof cuerpo.detail === "string" ? cuerpo.detail : "Revisa los datos e inténtalo de nuevo.";
+    const detalle = typeof cuerpo.detail === "string" ? cuerpo.detail : mensajeValidacion(cuerpo.detail);
     throw new ErrorApi(detalle, r.status);
   }
   if (r.status === 204) return undefined as T;
