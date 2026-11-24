@@ -133,3 +133,47 @@ def test_las_imagenes_de_demostracion_son_jpg_reales():
     for nombre in preparar.IMAGENES_ETAPA_2:
         with Image.open(carpeta / nombre) as imagen:
             assert imagen.format == "JPEG"
+
+
+@requiere_db
+def test_caso_de_tamizaje_se_publica_una_vez_con_sus_imagenes(monkeypatch, tmp_path):
+    """El caso de tamizaje (PR #25) queda publicado con 3 etapas, la IA equivocada a propósito en la etapa 3
+    y una imagen de HyperKvasir por etapa."""
+    import json
+    from io import BytesIO
+
+    from PIL import Image
+
+    imagen = tmp_path / "ejemplo-kvasir.jpg"
+    buffer = BytesIO()
+    Image.new("RGB", (64, 64), (180, 90, 80)).save(buffer, "JPEG")
+    imagen.write_bytes(buffer.getvalue())
+    monkeypatch.setenv("CASO_DEMO", "1")
+    monkeypatch.setenv("IMAGEN_DEMO", str(imagen))
+    datos = json.loads(preparar.CASO_TAMIZAJE.read_text(encoding="utf-8"))
+    preparar.aplicar_esquema()
+    with SessionLocal() as db:
+        db.execute(text("UPDATE caso SET eliminado = TRUE WHERE titulo = :t"), {"t": datos["titulo"]})
+        db.commit()
+        id_caso = preparar.publicar_caso_tamizaje(db)
+        assert id_caso is not None
+        assert preparar.publicar_caso_tamizaje(db) is None
+        caso = db.execute(text("SELECT estado, tema FROM caso WHERE id_caso = :c"), {"c": id_caso}).one()
+        etapas = db.execute(text("""SELECT e.orden, count(r.id_recurso) AS imagenes FROM etapa e
+                                    LEFT JOIN recurso_multimedia r ON r.id_etapa = e.id_etapa
+                                    WHERE e.id_caso = :c GROUP BY e.orden ORDER BY e.orden"""), {"c": id_caso}).all()
+        ia_erronea = db.execute(text("""SELECT o.es_correcta FROM opcion_decision o JOIN etapa e ON e.id_etapa = o.id_etapa
+                                        WHERE e.id_caso = :c AND e.orden = 3 AND o.recomendada_ia"""), {"c": id_caso}).scalar()
+    assert caso.estado == "publicado" and caso.tema == "tamizaje"
+    assert [(e.orden, e.imagenes) for e in etapas] == [(1, 1), (2, 1), (3, 1)]
+    assert ia_erronea is False
+
+
+def test_imagenes_del_caso_de_tamizaje_existen():
+    """Cada imagen que nombra el JSON del caso de tamizaje corresponde a un archivo real (o a la imagen de ejemplo)."""
+    import json
+
+    datos = json.loads(preparar.CASO_TAMIZAJE.read_text(encoding="utf-8"))
+    for etapa in datos["etapas"]:
+        destino = preparar.IMAGENES_TAMIZAJE[etapa["imagen_url"]]
+        assert destino == "IMAGEN_DEMO" or (preparar.CASO_TAMIZAJE.parent / destino).is_file()
