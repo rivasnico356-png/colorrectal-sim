@@ -11,7 +11,7 @@
 
 Plataforma educativa de simulación sobre la **detección e interpretación del cáncer colorrectal mediante imágenes médicas multimodales**, con un agente tutor de inteligencia artificial que acompaña a la persona usuaria paso a paso.
 
-Proyecto ONCO-AI_USC 2026 B · Línea 2 ONCO-SIM · Universidad Santiago de Cali.
+Proyecto ONCO-AI_USC 2026 B · Universidad Santiago de Cali.
 
 | Enlace | Dirección |
 |---|---|
@@ -30,7 +30,7 @@ Proyecto ONCO-AI_USC 2026 B · Línea 2 ONCO-SIM · Universidad Santiago de Cali
 - **Progreso y niveles** (Explorador, Analista, Experto).
 - **Estudios propios**: la persona puede cargar imágenes de su colonoscopia; se quitan los datos personales, se guardan cifradas y un modelo experimental marca regiones de interés.
 - **Protección de datos** según la Ley 1581 de 2012: autorizaciones que se pueden revocar, contraseñas con hash, supresión de la cuenta y exportación seudonimizada.
-- **Accesible y en español**, pensado para personas con cáncer colorrectal y sus familias.
+- **Accesible y en español**, pensado para personas con cáncer colorrectal.
 
 ## 🚀 Tecnologías
 
@@ -58,73 +58,6 @@ flowchart LR
     H --> I
     I --> J[Avance compartido con el profesional<br/>si la persona lo autoriza]
 ```
-
-## 📦 Instalación y configuración
-
-### Requisitos
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (incluye Docker Compose)
-- [Git](https://git-scm.com/)
-- Para desarrollo sin Docker: Python 3.12, Node.js 20 y PostgreSQL 16
-
-### Pasos
-
-1. Clona el repositorio:
-
-   ```bash
-   git clone https://github.com/<organizacion>/colorrectal-sim.git
-   cd colorrectal-sim
-   ```
-
-2. Crea tu archivo de variables de entorno y complétalo:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   La clave de la API de IA (`IA_API_KEY`) es opcional: sin ella el tutor usa la recomendación predefinida.
-
-## 🏃 Ejecución
-
-### Con Docker (recomendado)
-
-```bash
-docker compose up --build
-```
-
-| Servicio | Dirección |
-|----------|-----------|
-| Aplicación web | http://localhost:5173 |
-| API | http://localhost:8000/api/v1 |
-| Documentación de la API | http://localhost:8000/docs |
-
-La base de datos se crea sola con los scripts de `db/` la primera vez.
-
-### Sin Docker
-
-```bash
-# Backend
-cd backend
-python -m venv .venv && source .venv/bin/activate   # en Windows: .venv\Scripts\activate
-pip install -r requirements.txt -r requirements-dev.txt
-uvicorn app.main:app --reload
-
-# Frontend (en otra terminal)
-cd frontend
-npm install
-npm run dev
-```
-
-### Pruebas
-
-```bash
-cd backend
-ruff check .
-pytest --cov=app
-```
-
-Las pruebas de integración se ejecutan solo si `DATABASE_URL` apunta a una base con el esquema cargado.
-
 ## 📁 Estructura del proyecto
 
 ```
@@ -155,8 +88,10 @@ colorrectal-sim/
 │   ├── 02_catalogos.sql       # roles, niveles y datasets
 │   ├── 03_ajustes_srs.sql     # campos que pide el SRS
 │   ├── 04_estudios_recuperacion.sql
-│   └── 05_recursos_en_base.sql # imágenes y videos de los casos en la base
-├── vision/                    # entrenamiento del modelo de visión (Colab)
+│   ├── 05_recursos_en_base.sql # imágenes y videos de los casos en la base
+│   ├── 06_kvasir_seg.sql       # sin efecto, se conserva por compatibilidad
+│   └── 07_solo_hyperkvasir.sql # HyperKvasir como único dataset del catálogo
+├── vision/                    # entrenamiento del modelo de visión (GitHub Actions)
 ├── docs/                      # datasets, tutor de IA y estado de los requisitos
 ├── .github/                   # CI, plantillas de PR y defectos
 └── docker-compose.yml
@@ -176,7 +111,7 @@ colorrectal-sim/
 | Problema | Solución |
 |----------|----------|
 | `port is already allocated` | Otro programa usa el puerto 5432, 8000 o 5173. Ciérralo o cambia el puerto en `docker-compose.yml`. |
-| La base no tiene tablas | Los scripts de `db/` solo se ejecutan la primera vez. Borra el volumen con `docker compose down -v` y vuelve a levantar. |
+| La base no tiene tablas | Los scripts de `db/` solo se ejecutan la primera vez. Borra el volumen con `docker compose down -v` y vuelve a levantar. Ojo: `-v` también borra los estudios propios cifrados (volumen `estudios_cifrados`). |
 | El tutor siempre muestra la recomendación predefinida | Revisa `IA_API_KEY` en `.env`. |
 | Error de CORS en el navegador | Agrega la dirección del frontend a `CORS_ORIGENES`. |
 
@@ -204,7 +139,7 @@ Lee la [guía de contribución](CONTRIBUTING.md) antes de abrir un Pull Request.
 
 | Integrante | GitHub | Rol en el desarrollo |
 |------------|--------|----------------------|
-| Nicolás Rivas Castillo | [@rivasnico356-png](https://github.com/rivasnico356-png) | Líder del proyecto, integración y documentación |
+| Nicolas Rivas Castillo | [@rivasnico356-png](https://github.com/rivasnico356-png) | Líder del proyecto, integración y documentación |
 | David Steven Muñoz | [@Darksteven30](https://github.com/Darksteven30) | Backend, base de datos y Docker |
 | Juan Camilo Paredes Ramírez | [@juanparedes247](https://github.com/juanparedes247) | Frontend |
 | Valentina Ramírez | [@valentinaramirezs](https://github.com/valentinaramirezs) | Agente tutor de IA y modelo de visión |
@@ -218,4 +153,4 @@ Este proyecto usa la licencia [MIT](LICENSE). Los datasets de imágenes conserva
 
 ---
 
-Elaborado por el equipo Medical programmers · Versión 1.0 de la documentación del repositorio.
+Elaborado por el equipo Medical programmers.

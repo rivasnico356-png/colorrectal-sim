@@ -9,7 +9,8 @@ services:
       - ./db:/docker-entrypoint-initdb.d:ro
       - datos_pg:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      # Solo desde el propio equipo (pgAdmin o desarrollo sin Docker); el backend usa la red interna (db:5432).
+      - "127.0.0.1:5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -23,10 +24,13 @@ services:
         condition: service_healthy
     environment:
       ESQUEMA_DIR: /app/db
+      ESTUDIOS_DIR: /app/estudios
     volumes:
       - ./data/media:/app/media
       - ./db:/app/db:ro
       - ./backend/modelos:/app/modelos:ro
+      # RF-010 y RNF-003: estudios propios cifrados; el volumen sobrevive a recrear el contenedor y solo lo monta el backend.
+      - estudios_cifrados:/app/estudios
     ports:
       - "8000:8000"
 
@@ -42,3 +46,4 @@ services:
 
 volumes:
   datos_pg:
+  estudios_cifrados:

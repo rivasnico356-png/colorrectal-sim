@@ -10,7 +10,7 @@ from app.core.eventos import DecisionRegistrada, publicar
 from app.core.textos import AVISO_ALCANCE, ROTULO_IA
 from app.modules.casos.medios import bytes_de_ruta
 from app.modules.casos.service import dificultad_maxima, niveles_por_dificultad
-from app.modules.estudios.vision import obtener_modelo
+from app.modules.estudios.procesamiento import ProcesadorCasoSimulado
 
 
 def _intento(db: Session, id_usuario: str, id_intento: int) -> dict:
@@ -111,13 +111,18 @@ def _bytes_imagen(db: Session, ruta: str) -> bytes | None:
 
 
 def _vision_etapa(db: Session, recursos) -> dict:
-    """RF-003 3.4: región de interés, clasificación experimental y confianza del modelo sobre la imagen de la etapa."""
-    modelo = obtener_modelo()
+    """RF-003 3.4: región de interés, clasificación experimental y confianza del modelo sobre la imagen de la etapa.
+    La imagen pasa por el procesador de casos simulados (patrón Template Method)."""
     imagen = next((r for r in recursos if r["tipo"] == "imagen"), None)
     datos = _bytes_imagen(db, imagen["ruta_almacenamiento"]) if imagen else None
-    if modelo is None or datos is None:
+    if datos is None:
         return {"disponible": False}
-    r = modelo.analizar(datos)
+    try:
+        r = ProcesadorCasoSimulado().procesar(imagen["ruta_almacenamiento"], datos).resultado
+    except ErrorNegocio:
+        r = None
+    if r is None:
+        return {"disponible": False}
     return {"disponible": True, "roi": r.roi, "clasificacion": r.clasificacion, "confianza": r.confianza,
             "version_modelo": r.version_modelo, "rotulo": ROTULO_IA,
             "que_significa": "La confianza indica qué tan parecido es lo que ve el modelo a los ejemplos con que fue entrenado; "
@@ -141,25 +146,18 @@ def decidir(db: Session, id_usuario: str, id_intento: int, id_etapa: int, id_opc
     resultado = "correcto" if elegida["es_correcta"] else ("parcial" if elegida["puntaje"] > 0 else "incorrecto")
     puntaje = elegida["puntaje"]
     siguio_ia = bool(elegida["recomendada_ia"])
-    db.execute(text("""INSERT INTO decision (id_intento, id_etapa, id_opcion, confianza_declarada, siguio_ia, es_correcta, puntaje,
-                                             tiempo_respuesta_ms)
-                       VALUES (:i, :e, :o, :c, :s, :k, :p, :t)"""),
-               {"i": id_intento, "e": id_etapa, "o": id_opcion, "c": confianza * 20, "s": siguio_ia,
-                "k": bool(elegida["es_correcta"]), "p": puntaje, "t": tiempo_ms})
-    finalizado = _etapa_actual(db, id_intento, intento["id_caso"]) is None
-    if finalizado:
-        db.execute(text("""UPDATE intento SET estado = 'finalizado', fecha_fin = now(),
-                                  puntaje_total = (SELECT coalesce(sum(puntaje), 0) FROM decision WHERE id_intento = :i)
-                           WHERE id_intento = :i"""), {"i": id_intento})
-    efectos = publicar(DecisionRegistrada(db, id_usuario, id_intento, id_etapa, bool(elegida["es_correcta"]), siguio_ia,
-                                          bool(actual["ia_erronea_intencional"]), puntaje, finalizado))
+    ia_erronea = bool(actual["ia_erronea_intencional"])
+    # Observer: la evaluación solo publica; registrar la decisión, cerrar el intento y la gamificación son observadores.
+    evento = DecisionRegistrada(db, id_usuario, id_intento, id_etapa, bool(elegida["es_correcta"]), siguio_ia, ia_erronea,
+                                puntaje, id_caso=intento["id_caso"], id_opcion=id_opcion, confianza=confianza, tiempo_ms=tiempo_ms)
+    efectos = publicar(evento)
+    finalizado = evento.intento_finalizado
     db.commit()
     extra = {"nivel_nuevo": None, "insignias_nuevas": []}
     for e in efectos:
         if isinstance(e, dict):
             extra["nivel_nuevo"] = extra["nivel_nuevo"] or e.get("nivel_nuevo")
             extra["insignias_nuevas"] += e.get("insignias_nuevas", [])
-    ia_erronea = bool(actual["ia_erronea_intencional"])
     return {
         "resultado": resultado, "puntaje": puntaje,
         "respuesta_esperada": correcta["texto"] if correcta else None,

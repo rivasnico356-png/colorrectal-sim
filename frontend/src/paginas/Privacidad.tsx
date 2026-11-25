@@ -10,7 +10,7 @@ const NOMBRES: Record<string, string> = {
 };
 
 // RF-009 y RF-001 1.6
-export default function Privacidad({ alSuprimir }: { alSuprimir: () => void }) {
+export default function Privacidad({ alSuprimir, irAPolitica }: { alSuprimir: () => void; irAPolitica: () => void }) {
   const [aut, setAut] = useState<Autorizacion[]>([]);
   const [vinc, setVinc] = useState<Vinculo[]>([]);
   const [perfil, setPerfil] = useState<{ nombre: string; correo: string; rango_edad: string } | null>(null);
@@ -58,7 +58,16 @@ export default function Privacidad({ alSuprimir }: { alSuprimir: () => void }) {
           <label key={a.tipo} className="casilla">
             <input type="checkbox" checked={a.aceptada} disabled={a.tipo === "politica_tratamiento"}
               onChange={(e) => accion(() => enviar(`/privacidad/autorizaciones/${a.tipo}`, "PUT", { aceptada: e.target.checked }), "Autorización actualizada.")} />
-            <span>{NOMBRES[a.tipo] ?? a.tipo}<small className="meta"> · versión {a.version_politica} · {fecha(a.fecha_aceptacion)}</small></span>
+            <span>
+              {NOMBRES[a.tipo] ?? a.tipo}
+              <small className="meta"> · versión {a.version_politica} · {fecha(a.fecha_aceptacion)}</small>
+              {a.tipo === "politica_tratamiento" && (
+                <>
+                  {" "}
+                  <button type="button" className="enlace" onClick={irAPolitica}>Ver política</button>
+                </>
+              )}
+            </span>
           </label>
         ))}
       </div>

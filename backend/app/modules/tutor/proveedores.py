@@ -1,4 +1,9 @@
-"""Patrón Adapter (ADR-04): cada proveedor de IA implementa la misma interfaz ProveedorLLM."""
+"""Patrones Adapter y Factory Method (1.3.2.2, sección 2; ADR-04).
+
+Cada proveedor de IA implementa la misma interfaz ProveedorLLM. FabricaProveedores crea el adaptador según la
+configuración (variables de entorno): AdaptadorIAGenerativa para el servicio principal y AdaptadorModeloAlternativo
+para el respaldo.
+"""
 import re
 import time
 from dataclasses import dataclass
@@ -65,3 +70,38 @@ class AdaptadorOpenAICompatible:
         except (httpx.HTTPError, KeyError, IndexError, ValueError, TypeError, AttributeError) as exc:
             raise ErrorProveedor(str(exc)) from exc
         return RespuestaIA(texto, self.nombre, self.modelo, int((time.perf_counter() - inicio) * 1000))
+
+
+class AdaptadorIAGenerativa(AdaptadorOpenAICompatible):
+    """Servicio de IA generativa principal (IE-02): Groq con openai/gpt-oss-120b."""
+
+    @classmethod
+    def desde_entorno(cls) -> "AdaptadorIAGenerativa":
+        from app.core.config import get_settings
+
+        s = get_settings()
+        return cls("principal", s.ia_api_url, s.ia_api_key, s.ia_modelo_principal, s.ia_timeout_segundos)
+
+
+class AdaptadorModeloAlternativo(AdaptadorOpenAICompatible):
+    """Modelo de IA alternativo (IE-03): openai/gpt-oss-20b en el mismo proveedor."""
+
+    @classmethod
+    def desde_entorno(cls) -> "AdaptadorModeloAlternativo":
+        from app.core.config import get_settings
+
+        s = get_settings()
+        return cls("alternativo", s.ia_api_url, s.ia_api_key, s.ia_modelo_alternativo, s.ia_timeout_segundos)
+
+
+class FabricaProveedores:
+    """Factory Method: decide qué adaptador concreto crear a partir del tipo configurado."""
+
+    TIPOS: dict[str, type[AdaptadorOpenAICompatible]] = {"principal": AdaptadorIAGenerativa,
+                                                          "alternativo": AdaptadorModeloAlternativo}
+
+    @staticmethod
+    def crear(tipo: str) -> ProveedorLLM:
+        if tipo not in FabricaProveedores.TIPOS:
+            raise ValueError(f"Proveedor de IA desconocido: {tipo}")
+        return FabricaProveedores.TIPOS[tipo].desde_entorno()

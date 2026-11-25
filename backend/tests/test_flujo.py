@@ -89,6 +89,11 @@ def test_simulacion_completa_con_tutor_progreso_y_profesional(cliente, admin):
     # RF-004 4.5: sin clave de IA, el tutor responde con la explicación predefinida y no bloquea.
     tutor = cliente.post(f"{API}/intentos/{id_intento}/etapas/{etapa['id_etapa']}/tutor", headers=usuario, json={})
     assert tutor.status_code == 200 and tutor.json()["proveedor"] == "predefinida"
+    # Facade + Chain of Responsibility: una pregunta con datos personales no llega a la IA ni gasta pregunta.
+    guia = cliente.post(f"{API}/intentos/{id_intento}/etapas/{etapa['id_etapa']}/tutor", headers=usuario,
+                        json={"pregunta": "Mi cédula es 1105364884, ¿qué hago?"})
+    assert guia.status_code == 200 and guia.json()["proveedor"] == "validacion"
+    assert guia.json()["consultas_restantes"] == etapa["tutor"]["maximo"]
     # RF-004 4.3: límite de preguntas por etapa.
     for _ in range(etapa["tutor"]["maximo"]):
         assert cliente.post(f"{API}/intentos/{id_intento}/etapas/{etapa['id_etapa']}/tutor", headers=usuario,

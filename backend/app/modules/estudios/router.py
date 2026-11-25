@@ -14,8 +14,9 @@ from app.core.deps import PROFESIONAL, USUARIO, requiere_rol, usuario_actual
 from app.core.errores import ErrorNegocio
 from app.core.textos import ROTULO_IA
 from app.modules.estudios import seguridad
-from app.modules.estudios.vision import CON_REGION, obtener_modelo
-from app.modules.tutor.servicio import crear_servicio
+from app.modules.estudios.procesamiento import ProcesadorEstudioPropio
+from app.modules.estudios.vision import CON_REGION, ResultadoVision
+from app.modules.tutor.fachada import FachadaTutor
 from app.modules.usuarios.service import bitacora
 
 router = APIRouter(tags=["Estudios propios"])
@@ -40,21 +41,16 @@ class ComentarioIn(BaseModel):
     texto: str = Field(min_length=3, max_length=2000)
 
 
-def _interpretar(db: Session, id_estudio: int, png: bytes) -> bool:
-    """RF-010 10.3: modelo de visión + explicación del tutor. La IA solo recibe la imagen ya desidentificada
-    y el resultado del modelo, nunca datos de la persona (IE-02)."""
-    modelo = obtener_modelo()
-    if modelo is None:
+def _interpretar(db: Session, id_estudio: int, r: ResultadoVision | None) -> bool:
+    """RF-010 10.3: resultado del modelo de visión + explicación del tutor. La IA solo recibe el resultado del modelo
+    sobre la imagen ya desidentificada, nunca datos de la persona (IE-02)."""
+    if r is None:
         return False
-    r = modelo.analizar(png)
     con_region = r.clasificacion == CON_REGION
-    tutor = crear_servicio().explicar(
-        "Estudio de colonoscopia cargado por la persona usuaria.",
-        f"El modelo experimental de visión indica: {r.clasificacion}, con una confianza de {r.confianza} %.",
-        EXPLICACION_FIJA[con_region], PREGUNTA_ESTUDIO)
+    explicacion = FachadaTutor().explicar_estudio(r.clasificacion, r.confianza, EXPLICACION_FIJA[con_region], PREGUNTA_ESTUDIO)
     db.execute(text("""INSERT INTO interpretacion_estudio (id_estudio, roi, clasificacion, confianza, explicacion, version_modelo)
                        VALUES (:e, CAST(:r AS jsonb), :c, :f, :x, :v)"""),
-               {"e": id_estudio, "r": json.dumps(r.roi or {}), "c": r.clasificacion, "f": r.confianza, "x": tutor.texto,
+               {"e": id_estudio, "r": json.dumps(r.roi or {}), "c": r.clasificacion, "f": r.confianza, "x": explicacion,
                 "v": r.version_modelo})
     return True
 
@@ -88,15 +84,17 @@ async def cargar(archivo: UploadFile = File(...), confirma_sin_datos_visibles: b
     if not confirma_sin_datos_visibles:
         raise HTTPException(422, "Confirma que la imagen no muestra tu nombre ni otros datos personales escritos sobre ella.")
     try:
-        png, advertencia = seguridad.desidentificar(archivo.filename or "", await archivo.read())
+        # Template Method: control de calidad → desidentificación → normalización → análisis → registro.
+        procesada = ProcesadorEstudioPropio().procesar(archivo.filename or "", await archivo.read())
     except ErrorNegocio as e:
         raise HTTPException(e.codigo, e.mensaje) from e
+    png, advertencia = procesada.imagen, procesada.advertencia_texto
     id_estudio = db.execute(text("""INSERT INTO estudio_propio (id_usuario, ruta_cifrada, hash_sha256, desidentificado, advertencia_texto)
                                     VALUES (CAST(:u AS uuid), '', :h, TRUE, :a) RETURNING id_estudio"""),
                             {"u": usuario["sub"], "h": hashlib.sha256(png).hexdigest(), "a": advertencia}).scalar_one()
     ruta = seguridad.guardar_cifrado(id_estudio, png)
     db.execute(text("UPDATE estudio_propio SET ruta_cifrada = :r WHERE id_estudio = :e"), {"r": ruta, "e": id_estudio})
-    procesado = _interpretar(db, id_estudio, png)
+    procesado = _interpretar(db, id_estudio, procesada.resultado)
     bitacora(db, usuario["sub"], "estudio_propio", str(id_estudio), "cargar")
     db.commit()
     return {"id_estudio": id_estudio, "procesado": procesado,

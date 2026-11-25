@@ -40,7 +40,9 @@ jobs:
       - name: Estilo (ruff)
         run: ruff check .
       - name: Pruebas con cobertura
-        run: pytest --cov=app --cov-report=term-missing --cov-report=xml
+        # Plan de Gestión de la Calidad y ONCO-AI 2.7: la CI falla si la cobertura del backend baja del 70 %.
+        # El umbral va solo aquí: en local las pruebas que requieren PostgreSQL se saltan y la cobertura es menor.
+        run: pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=70
       - uses: actions/upload-artifact@v4
         with:
           name: cobertura-backend
