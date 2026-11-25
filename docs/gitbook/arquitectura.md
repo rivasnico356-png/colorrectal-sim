@@ -1,0 +1,75 @@
+# Arquitectura
+
+Colorrectal-Sim es un **monolito modular** (ADR-01): una sola API con módulos separados por responsabilidad, un frontend web y una base de datos relacional, todo en contenedores Docker.
+
+```mermaid
+flowchart LR
+    U[Navegador<br/>React + TypeScript] -->|HTTPS / REST| A[API FastAPI]
+    A --> DB[(PostgreSQL 16)]
+    A --> IA[Proveedor de IA<br/>principal y alternativo]
+    A --> V[Modelo de visión ONNX<br/>dentro del backend]
+    A --> ES[(Estudios cifrados<br/>Fernet por archivo)]
+    A --> C[Correo<br/>API HTTPS de Brevo]
+```
+
+Las imágenes y videos de los casos se guardan en la base (tabla `recurso_contenido`) y la API los sirve en `/media/recursos/…` con soporte de rangos para el video.
+
+## Despliegue
+
+| Entorno | Cómo corre |
+|---|---|
+| Local (desarrollo) | `docker compose up`: 3 contenedores (frontend con Vite, backend FastAPI y PostgreSQL 16) |
+| Demostración pública | Render: un solo servicio Docker (`despliegue/Dockerfile`) que compila el frontend y lo sirve desde FastAPI, más una base PostgreSQL 16 administrada. Se despliega solo con cada cambio en `develop` (`render.yaml`) |
+
+```mermaid
+flowchart LR
+    GH[GitHub · rama develop] -->|despliegue automático| R[Render · servicio web Docker<br/>FastAPI + frontend compilado + modelo ONNX]
+    REL[GitHub Release modelo-vision] -->|vision.onnx al construir| R
+    R --> PG[(Render PostgreSQL 16)]
+    R --> G[Groq · tutor de IA]
+    R --> B[Brevo · correo]
+```
+
+## Decisiones de arquitectura vigentes
+
+| Decisión | Motivo |
+|---|---|
+| Monolito modular (ADR-01) | Un equipo pequeño y un solo despliegue |
+| Modelo de visión en ONNX dentro del backend | Corre en CPU, sin GPU ni servicio aparte (reemplaza la idea de un servicio de inferencia separado) |
+| Acceso a datos con SQL y scripts numerados | Control total del esquema del documento de datos, sin ORM ni Alembic |
+| Correo por la API HTTPS de Brevo | Render gratuito bloquea los puertos SMTP; el SMTP queda como alternativa local |
+| Despliegue en Render | Enlace público gratuito para el profesor y las pruebas con usuarios |
+
+## Módulos del backend
+
+| Módulo | Carpeta | Responsabilidad |
+|---|---|---|
+| M01 Usuarios y acceso | `usuarios/`, `vinculos/` | Registro, sesión, recuperación, roles, administración y vínculo |
+| M02 Casos clínicos | `casos/` | Editor, versiones, recursos, revisión y catálogo |
+| M03 Simulación · M05 Evaluación · M07 Interacción | `simulacion/` | Intentos, etapas y evaluación de decisiones; los observadores registran la decisión humano-IA y cierran el intento |
+| M04 Tutor de IA | `tutor/` | Tutor con Groq (`gpt-oss-120b`) y respaldo (`gpt-oss-20b`), luego recomendación predefinida |
+| M06 Gamificación | `gamificacion/` | Puntaje, niveles e insignias (observador de cada decisión) |
+| M08 Reportes | `progreso/` | Historial, progreso, panel y exportación |
+| M09 Privacidad | `privacidad/` | Autorizaciones y derechos del titular |
+| M10 Estudios propios | `estudios/` | Desidentificación, cifrado, modelo de visión y comentarios |
+
+## Patrones de diseño
+
+Los ocho patrones del documento de patrones de diseño (1.3.2.2) están implementados en el backend, cada uno con pruebas automáticas en `backend/tests/test_patrones.py`:
+
+| Patrón | Dónde (`backend/app/`) | Para qué |
+|---|---|---|
+| Adapter | `modules/tutor/proveedores.py` (`AdaptadorIAGenerativa`, `AdaptadorModeloAlternativo`) | Mismo contrato `ProveedorLLM` para cualquier proveedor de IA |
+| Factory Method | `modules/tutor/proveedores.py` (`FabricaProveedores`) | Crea el adaptador según la configuración |
+| Strategy | `modules/tutor/servicio.py` (`ServicioTutor` y sus estrategias) | IA principal → modelo alternativo → recomendación predefinida |
+| Facade | `modules/tutor/fachada.py` (`FachadaTutor`) | Una sola entrada al tutor: contexto, validación, respuesta, rótulo y registro |
+| Chain of Responsibility | `modules/tutor/validacion.py` | Longitud → límite → tema → seguridad; lo que no cumple no llega a la IA |
+| State | `modules/casos/estados.py` (`CasoClinico` y sus estados) | Borrador → revisado → publicado, con revisor distinto del autor |
+| Observer | `core/eventos.py` (`BusEventos`) | La evaluación publica *DecisionRegistrada*; reaccionan la interacción humano-IA, el progreso y la gamificación |
+| Template Method | `modules/estudios/procesamiento.py` (`ProcesadorImagen`) | Pasos fijos para procesar imágenes: calidad → desidentificación → normalización → análisis → registro |
+
+## Reglas
+
+* El frontend solo habla con la API REST.
+* Los módulos no llaman servicios externos directamente: lo hacen por adaptadores.
+* Las claves se leen de variables de entorno; nunca están en el repositorio.

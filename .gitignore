@@ -1,0 +1,41 @@
+# Secretos
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Node
+node_modules/
+dist/
+
+# Datos e imágenes médicas: se descargan fuera del repositorio (ver docs/datasets.md)
+data/
+datasets/
+*.dcm
+*.nii
+*.nii.gz
+modelos/*.pt
+modelos/*.onnx
+/backend/media/
+/data/
+/backend/estudios/
+vision/salidas/
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Modelo de visión: se descarga del release modelo-vision (no se versiona)
+/backend/modelos/
+*.onnx

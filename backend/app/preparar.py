@@ -1,0 +1,231 @@
+"""Prepara la base al arrancar el despliegue público (Render).
+
+1. Carga el esquema (db/*.sql) si la base está vacía.
+2. Crea el primer administrador con ADMIN_CORREO, ADMIN_NOMBRE y ADMIN_CONTRASENA si aún no existe.
+3. Con CASO_DEMO=1 publica un caso de demostración con texto de prueba (sin contenido clínico) para recorrer el flujo
+   mientras los profesionales de la salud escriben los casos reales.
+4. Si existe la imagen de ejemplo de HyperKvasir (imagen segmentada de la partición de prueba del modelo de visión), la agrega a la etapa 1 del
+   caso de demostración con el modelo de visión activado, para mostrar su resultado en el enlace público.
+5. Agrega a la etapa 2 del caso de demostración las imágenes de HyperKvasir de la carpeta app/demo (preparación intestinal
+   y resección), cada una una sola vez.
+
+Cada paso es idempotente: se puede ejecutar en cada arranque. Uso: python -m app.preparar
+"""
+import hashlib
+import json
+import os
+import secrets
+from pathlib import Path
+
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+from app.core.config import get_settings
+from app.core.db import SessionLocal, engine
+from app.core.security import hash_contrasena, verificar_contrasena
+from app.modules.casos import service as casos
+from app.modules.casos.schemas import CasoIn, EtapaIn, OpcionIn
+from app.modules.usuarios.schemas import validar_contrasena
+
+TITULO_DEMO = "Caso de demostración del simulador"
+
+
+# Scripts de la versión inicial (01 a 04): solo se ejecutan sobre una base vacía. Del 05 en adelante los scripts son
+# idempotentes y se aplican en cada arranque, así las bases que ya existen reciben los cambios nuevos.
+ULTIMO_SCRIPT_INICIAL = "04"
+
+
+def aplicar_esquema() -> bool:
+    """Carga el esquema completo en una base vacía o aplica los scripts nuevos a una base existente.
+
+    Devuelve True si la base estaba vacía.
+    """
+    with engine.connect() as c:
+        vacia = not c.execute(text("SELECT to_regclass('public.usuario')")).scalar()
+    scripts = sorted(Path(get_settings().esquema_dir).glob("*.sql"))
+    if not vacia:
+        scripts = [a for a in scripts if a.name[:2] > ULTIMO_SCRIPT_INICIAL]
+    crudo = engine.raw_connection()
+    try:
+        crudo.driver_connection.autocommit = True
+        with crudo.driver_connection.cursor() as cur:
+            for archivo in scripts:
+                cur.execute(archivo.read_text(encoding="utf-8"))
+                print(f"Esquema: {archivo.name} aplicado.")
+    finally:
+        crudo.close()
+    return vacia
+
+
+def _crear_usuario(db: Session, rol: str, nombre: str, correo: str, contrasena: str) -> str:
+    return str(db.execute(text("""INSERT INTO usuario (id_rol, nombre, correo, hash_contrasena, rango_edad)
+                                  VALUES ((SELECT id_rol FROM rol WHERE nombre = :r), :n, lower(:c), :h, '30-39')
+                                  RETURNING id_usuario"""),
+                          {"r": rol, "n": nombre, "c": correo, "h": hash_contrasena(contrasena)}).scalar_one())
+
+
+def crear_admin_inicial(db: Session) -> bool:
+    """Crea el administrador inicial o, si ya existe, deja su contraseña igual a ADMIN_CONTRASENA y lo desbloquea.
+
+    Los campos de Render admiten varias líneas: se quitan espacios y saltos de línea al inicio y al final.
+    """
+    correo, contrasena = os.getenv("ADMIN_CORREO", "").strip(), os.getenv("ADMIN_CONTRASENA", "").strip()
+    if not (correo and contrasena):
+        return False
+    validar_contrasena(contrasena)
+    existente = db.execute(text("SELECT id_usuario, hash_contrasena FROM usuario WHERE lower(correo) = lower(:c)"),
+                           {"c": correo}).first()
+    if existente:
+        if not verificar_contrasena(contrasena, existente.hash_contrasena):
+            db.execute(text("""UPDATE usuario SET hash_contrasena = :h, intentos_fallidos = 0, bloqueado_hasta = NULL
+                               WHERE id_usuario = :u"""), {"h": hash_contrasena(contrasena), "u": existente.id_usuario})
+            db.commit()
+            print("Contraseña del administrador inicial actualizada desde ADMIN_CONTRASENA.")
+        return False
+    _crear_usuario(db, "Administrador", os.getenv("ADMIN_NOMBRE", "Administrador"), correo, contrasena)
+    db.commit()
+    print("Administrador inicial creado.")
+    return True
+
+
+def publicar_caso_demo(db: Session) -> bool:
+    if os.getenv("CASO_DEMO", "") != "1":
+        return False
+    if db.execute(text("SELECT 1 FROM caso WHERE titulo = :t AND NOT eliminado"), {"t": TITULO_DEMO}).first():
+        return False
+    # Autor y revisor internos: cuentas sin contraseña conocida, solo para firmar el caso de demostración.
+    autor = _crear_usuario(db, "Profesional de la salud", "Autor de demostración",
+                           f"demo-autor-{secrets.token_hex(3)}@ejemplo.com", secrets.token_urlsafe(24) + "a1")
+    revisor = _crear_usuario(db, "Profesional de la salud", "Revisor de demostración",
+                             f"demo-revisor-{secrets.token_hex(3)}@ejemplo.com", secrets.token_urlsafe(24) + "a1")
+    db.commit()
+    id_caso = casos.crear_caso(db, autor, CasoIn(
+        titulo=TITULO_DEMO, tema="pólipos", nivel_dificultad=1,
+        descripcion="Caso de prueba para conocer cómo funciona el simulador. El texto no tiene contenido clínico.",
+        contexto_simulado="Persona simulada de demostración."))
+    for orden in (1, 2):
+        opciones = [OpcionIn(texto=f"Opción {x}", puntaje=p, es_correcta=p == 100, recomendada_ia=x == "A",
+                             retroalimentacion="Explicación de demostración: aquí el profesional explica la respuesta.",
+                             fuente="Texto de demostración") for x, p in (("A", 100), ("B", 0))]
+        casos.guardar_etapa(db, autor, id_caso, EtapaIn(
+            orden=orden, enunciado=f"Etapa {orden} de demostración. Aquí irá la pregunta del caso clínico.",
+            recomendacion_ia="Sugerencia de demostración del tutor de IA.", opciones=opciones))
+    casos.revisar(db, revisor, id_caso, "aprobar", "Texto de demostración")
+    casos.revisar(db, revisor, id_caso, "publicar", None)
+    print(f"Caso de demostración publicado: {id_caso}")
+    return True
+
+
+def agregar_imagen_demo(db: Session, ruta: str | None = None) -> bool:
+    """Agrega la imagen de ejemplo de HyperKvasir a la etapa 1 del caso de demostración (una sola vez)."""
+    archivo = Path(ruta or os.getenv("IMAGEN_DEMO", "modelos/ejemplo-kvasir.jpg"))
+    if not archivo.is_file():
+        return False
+    etapa = db.execute(text("""SELECT e.id_etapa, c.id_autor FROM etapa e JOIN caso c ON c.id_caso = e.id_caso
+                               WHERE c.titulo = :t AND NOT c.eliminado AND e.orden = 1"""), {"t": TITULO_DEMO}).first()
+    if etapa is None or db.execute(text("SELECT 1 FROM recurso_multimedia WHERE id_etapa = :e"), {"e": etapa.id_etapa}).first():
+        return False
+    id_dataset = db.execute(text("SELECT id_dataset FROM dataset WHERE nombre = 'HyperKvasir'")).scalar()
+    if id_dataset is None:
+        return False
+    casos.guardar_recurso(db, str(etapa.id_autor), etapa.id_etapa, archivo.name, archivo.read_bytes(), id_dataset,
+                          "HyperKvasir (Borgli et al., 2020), CC BY 4.0")
+    db.execute(text("UPDATE etapa SET usa_modelo_vision = TRUE WHERE id_etapa = :e"), {"e": etapa.id_etapa})
+    db.commit()
+    print("Imagen de ejemplo de HyperKvasir agregada al caso de demostración.")
+    return True
+
+
+IMAGENES_ETAPA_2 = ("preparacion-intestinal.jpg", "reseccion.jpg")
+LICENCIA_HYPERKVASIR = "HyperKvasir (Borgli et al., 2020), CC BY 4.0"
+
+
+def agregar_imagenes_etapa_2(db: Session, carpeta: str | None = None) -> int:
+    """Agrega a la etapa 2 del caso de demostración las imágenes de HyperKvasir que aún no tiene. Devuelve cuántas agregó."""
+    base = Path(carpeta) if carpeta else Path(__file__).parent / "demo"
+    etapa = db.execute(text("""SELECT e.id_etapa, c.id_autor FROM etapa e JOIN caso c ON c.id_caso = e.id_caso
+                               WHERE c.titulo = :t AND NOT c.eliminado AND e.orden = 2"""), {"t": TITULO_DEMO}).first()
+    id_dataset = db.execute(text("SELECT id_dataset FROM dataset WHERE nombre = 'HyperKvasir'")).scalar()
+    if etapa is None or id_dataset is None:
+        return 0
+    agregadas = 0
+    for nombre in IMAGENES_ETAPA_2:
+        archivo = base / nombre
+        if not archivo.is_file():
+            continue
+        contenido = archivo.read_bytes()
+        ya_esta = db.execute(text("""SELECT 1 FROM recurso_multimedia r JOIN recurso_contenido rc ON rc.id_recurso = r.id_recurso
+                                     WHERE r.id_etapa = :e AND rc.sha256 = :h"""),
+                             {"e": etapa.id_etapa, "h": hashlib.sha256(contenido).hexdigest()}).first()
+        if ya_esta:
+            continue
+        casos.guardar_recurso(db, str(etapa.id_autor), etapa.id_etapa, nombre, contenido, id_dataset, LICENCIA_HYPERKVASIR)
+        agregadas += 1
+    db.commit()
+    if agregadas:
+        print(f"Imágenes de HyperKvasir agregadas a la etapa 2 del caso de demostración: {agregadas}")
+    return agregadas
+
+
+# RF-002: caso de tamizaje aportado por Valentina (PR #25). Las imágenes del JSON se resuelven a archivos reales de HyperKvasir.
+CASO_TAMIZAJE = Path(__file__).parent / "demo" / "caso_tamizaje.json"
+IMAGENES_TAMIZAJE = {
+    "polipo_etapa1.jpg": "IMAGEN_DEMO",
+    "bbps_etapa2.jpg": "preparacion-intestinal.jpg",
+    "reseccion_etapa3.jpg": "reseccion.jpg",
+}
+
+
+def _imagen_tamizaje(nombre: str) -> Path | None:
+    destino = IMAGENES_TAMIZAJE.get(nombre, nombre)
+    if destino == "IMAGEN_DEMO":
+        ruta = Path(os.getenv("IMAGEN_DEMO", "modelos/ejemplo-kvasir.jpg"))
+    else:
+        ruta = Path(__file__).parent / "demo" / destino
+    return ruta if ruta.is_file() else None
+
+
+def publicar_caso_tamizaje(db: Session, ruta: Path | None = None) -> int | None:
+    """Publica una sola vez el caso de tamizaje de 3 etapas con sus imágenes de HyperKvasir. Devuelve su id."""
+    if os.getenv("CASO_DEMO", "") != "1":
+        return None
+    datos = json.loads((ruta or CASO_TAMIZAJE).read_text(encoding="utf-8"))
+    if db.execute(text("SELECT 1 FROM caso WHERE titulo = :t AND NOT eliminado"), {"t": datos["titulo"]}).first():
+        return None
+    autor = _crear_usuario(db, "Profesional de la salud", "Autor de demostración",
+                           f"demo-autor-{secrets.token_hex(3)}@ejemplo.com", secrets.token_urlsafe(24) + "a1")
+    revisor = _crear_usuario(db, "Profesional de la salud", "Revisor de demostración",
+                             f"demo-revisor-{secrets.token_hex(3)}@ejemplo.com", secrets.token_urlsafe(24) + "a1")
+    db.commit()
+    id_caso = casos.crear_caso(db, autor, CasoIn(
+        titulo=datos["titulo"], tema=datos["tema"], nivel_dificultad=datos["nivel"],
+        descripcion=datos["descripcion"], contexto_simulado=datos["paciente"]["nota"]))
+    id_dataset = db.execute(text("SELECT id_dataset FROM dataset WHERE nombre = 'HyperKvasir'")).scalar()
+    for etapa in datos["etapas"]:
+        opciones = [OpcionIn(texto=o["texto"], puntaje=o["puntos"], es_correcta=o["correcta"],
+                             recomendada_ia=o["sugerida_por_ia"], retroalimentacion=o["retroalimentacion"],
+                             fuente=etapa["fuente"]) for o in etapa["opciones"]]
+        imagen = _imagen_tamizaje(etapa["imagen_url"])
+        id_etapa = casos.guardar_etapa(db, autor, id_caso, EtapaIn(
+            orden=etapa["etapa"], enunciado=etapa["enunciado"], recomendacion_ia=etapa["sugerencia_ia"]["texto"],
+            usa_modelo_vision=bool(etapa["modelo_vision_activo"] and imagen), opciones=opciones))
+        if imagen and id_dataset is not None:
+            casos.guardar_recurso(db, autor, id_etapa, imagen.name, imagen.read_bytes(), id_dataset, LICENCIA_HYPERKVASIR)
+    casos.revisar(db, revisor, id_caso, "aprobar", "Aponte-Martín et al. (2025), guía colombiana de tamizaje")
+    casos.revisar(db, revisor, id_caso, "publicar", None)
+    print(f"Caso de tamizaje publicado: {id_caso}")
+    return id_caso
+
+
+def main() -> None:
+    aplicar_esquema()
+    with SessionLocal() as db:
+        crear_admin_inicial(db)
+        publicar_caso_demo(db)
+        agregar_imagen_demo(db)
+        agregar_imagenes_etapa_2(db)
+        publicar_caso_tamizaje(db)
+
+
+if __name__ == "__main__":
+    main()
