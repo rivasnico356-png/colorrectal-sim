@@ -12,6 +12,7 @@
 Cada paso es idempotente: se puede ejecutar en cada arranque. Uso: python -m app.preparar
 """
 import hashlib
+import json
 import os
 import secrets
 from pathlib import Path
@@ -166,6 +167,56 @@ def agregar_imagenes_etapa_2(db: Session, carpeta: str | None = None) -> int:
     return agregadas
 
 
+# RF-002: caso de tamizaje aportado por Valentina (PR #25). Las imágenes del JSON se resuelven a archivos reales de HyperKvasir.
+CASO_TAMIZAJE = Path(__file__).parent / "demo" / "caso_tamizaje.json"
+IMAGENES_TAMIZAJE = {
+    "polipo_etapa1.jpg": "IMAGEN_DEMO",
+    "bbps_etapa2.jpg": "preparacion-intestinal.jpg",
+    "reseccion_etapa3.jpg": "reseccion.jpg",
+}
+
+
+def _imagen_tamizaje(nombre: str) -> Path | None:
+    destino = IMAGENES_TAMIZAJE.get(nombre, nombre)
+    if destino == "IMAGEN_DEMO":
+        ruta = Path(os.getenv("IMAGEN_DEMO", "modelos/ejemplo-kvasir.jpg"))
+    else:
+        ruta = Path(__file__).parent / "demo" / destino
+    return ruta if ruta.is_file() else None
+
+
+def publicar_caso_tamizaje(db: Session, ruta: Path | None = None) -> int | None:
+    """Publica una sola vez el caso de tamizaje de 3 etapas con sus imágenes de HyperKvasir. Devuelve su id."""
+    if os.getenv("CASO_DEMO", "") != "1":
+        return None
+    datos = json.loads((ruta or CASO_TAMIZAJE).read_text(encoding="utf-8"))
+    if db.execute(text("SELECT 1 FROM caso WHERE titulo = :t AND NOT eliminado"), {"t": datos["titulo"]}).first():
+        return None
+    autor = _crear_usuario(db, "Profesional de la salud", "Autor de demostración",
+                           f"demo-autor-{secrets.token_hex(3)}@ejemplo.com", secrets.token_urlsafe(24) + "a1")
+    revisor = _crear_usuario(db, "Profesional de la salud", "Revisor de demostración",
+                             f"demo-revisor-{secrets.token_hex(3)}@ejemplo.com", secrets.token_urlsafe(24) + "a1")
+    db.commit()
+    id_caso = casos.crear_caso(db, autor, CasoIn(
+        titulo=datos["titulo"], tema=datos["tema"], nivel_dificultad=datos["nivel"],
+        descripcion=datos["descripcion"], contexto_simulado=datos["paciente"]["nota"]))
+    id_dataset = db.execute(text("SELECT id_dataset FROM dataset WHERE nombre = 'HyperKvasir'")).scalar()
+    for etapa in datos["etapas"]:
+        opciones = [OpcionIn(texto=o["texto"], puntaje=o["puntos"], es_correcta=o["correcta"],
+                             recomendada_ia=o["sugerida_por_ia"], retroalimentacion=o["retroalimentacion"],
+                             fuente=etapa["fuente"]) for o in etapa["opciones"]]
+        imagen = _imagen_tamizaje(etapa["imagen_url"])
+        id_etapa = casos.guardar_etapa(db, autor, id_caso, EtapaIn(
+            orden=etapa["etapa"], enunciado=etapa["enunciado"], recomendacion_ia=etapa["sugerencia_ia"]["texto"],
+            usa_modelo_vision=bool(etapa["modelo_vision_activo"] and imagen), opciones=opciones))
+        if imagen and id_dataset is not None:
+            casos.guardar_recurso(db, autor, id_etapa, imagen.name, imagen.read_bytes(), id_dataset, LICENCIA_HYPERKVASIR)
+    casos.revisar(db, revisor, id_caso, "aprobar", "Aponte-Martín et al. (2025), guía colombiana de tamizaje")
+    casos.revisar(db, revisor, id_caso, "publicar", None)
+    print(f"Caso de tamizaje publicado: {id_caso}")
+    return id_caso
+
+
 def main() -> None:
     aplicar_esquema()
     with SessionLocal() as db:
@@ -173,6 +224,7 @@ def main() -> None:
         publicar_caso_demo(db)
         agregar_imagen_demo(db)
         agregar_imagenes_etapa_2(db)
+        publicar_caso_tamizaje(db)
 
 
 if __name__ == "__main__":
