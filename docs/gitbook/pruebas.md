@@ -2,15 +2,17 @@
 
 ## Integración continua
 
-Cada cambio en GitHub ejecuta tres revisiones automáticas: **backend** (estilo con ruff y pruebas con cobertura sobre PostgreSQL 16), **frontend** (compilación) y **secretos** (gitleaks). Las ramas `main` y `develop` solo aceptan cambios por Pull Request con las tres en verde.
+Cada cambio en GitHub ejecuta tres revisiones automáticas: **backend** (estilo con ruff y pruebas con cobertura sobre PostgreSQL 16; la revisión falla si la cobertura baja del 70 %), **frontend** (compilación) y **secretos** (gitleaks). Los cambios entran a `develop` por Pull Request revisado por otro integrante y con las tres revisiones en verde.
 
-## Resultado del ciclo 1 (11/11/2026)
+## Resultados
 
-| Indicador | Valor |
-|---|---|
-| Pruebas automáticas | 37 aprobadas, 0 fallidas |
-| Casos en la Matriz de Pruebas Unitarias | 48 |
-| Cobertura del backend | 91 % |
+| Indicador | Ciclo 1 (11/11/2026) | Último resultado (15/11/2026) |
+|---|---|---|
+| Pruebas automáticas del backend | 37 aprobadas, 0 fallidas | 74 aprobadas, 0 fallidas |
+| Casos en la Matriz de Pruebas Unitarias | 48 | 52 (ciclo 2 del 12/11/2026) |
+| Cobertura del backend | 91 % | 91 % |
+
+La matriz con el detalle de cada caso está en la carpeta de pruebas del equipo.
 
 ## Tipos de prueba del plan
 
@@ -27,7 +29,17 @@ Funcionales: unitarias, integración, sistema, aceptación y regresión. No func
 | Sistema de punta a punta | Playwright | Flujo completo aprobado en Chrome, Firefox, Safari, Chrome Android y Safari iPhone |
 | Accesibilidad | axe y Lighthouse | Sin hallazgos en las 10 pantallas del flujo; Lighthouse 100 en accesibilidad |
 
+Además, un monitoreo automático (`monitoreo.yml`) revisa cada 2 horas que la demostración pública responda.
+
 El detalle, con los defectos que se encontraron y cómo se corrigieron, está en `docs/pruebas-no-funcionales.md` del repositorio.
+
+## Pendientes
+
+| Prueba | Fecha |
+|---|---|
+| Usabilidad SUS con al menos 5 usuarios (criterio C-04: SUS ≥ 68) | 23 al 25/11/2026 |
+| Latencia de inferencia del modelo de visión en el servidor | Antes del cierre |
+| Informe de Pruebas y Calidad | 29/11/2026 |
 
 ## Flujo de ramas
 

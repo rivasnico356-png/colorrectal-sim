@@ -33,7 +33,7 @@ services:
       - key: CASO_DEMO
         value: "1"
       - key: ADMIN_NOMBRE
-        value: Nicolás Rivas Castillo
+        value: Nicolas Rivas Castillo
       - key: ADMIN_CORREO
         sync: false
       - key: ADMIN_CONTRASENA

@@ -7,6 +7,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.errores import ErrorNegocio
+from app.modules.casos import estados
 from app.modules.casos.schemas import CasoIn, EtapaIn
 from app.modules.usuarios.service import bitacora
 
@@ -140,32 +141,12 @@ def guardar_recurso(db: Session, editor: str, id_etapa: int, nombre: str, conten
 
 
 def revisar(db: Session, revisor: str, id_caso: int, accion: str, fuente_clinica: str | None) -> str:
-    """RF-002 2.5: Borrador → Revisado → Publicado. El autor no puede revisar su propio caso."""
+    """RF-002 2.5: Borrador → Revisado → Publicado con el patrón State (casos/estados.py).
+    El autor no puede revisar su propio caso."""
     caso = _caso_editable(db, id_caso)
     if str(caso["id_autor"]) == revisor:
         raise ErrorNegocio("El autor del caso no puede ser su propio revisor.", 403)
-    if accion == "aprobar":
-        if caso["estado"] != "borrador":
-            raise ErrorNegocio("Solo se aprueban casos en borrador.", 409)
-        if not (fuente_clinica and fuente_clinica.strip()):
-            raise ErrorNegocio("Registra la fuente clínica de respaldo.", 422)
-        etapas_validas = db.execute(text("""SELECT count(*) FROM etapa e WHERE e.id_caso = :c AND EXISTS
-                                            (SELECT 1 FROM opcion_decision o WHERE o.id_etapa = e.id_etapa AND o.es_correcta)"""),
-                                    {"c": id_caso}).scalar()
-        if not etapas_validas:
-            raise ErrorNegocio("El caso necesita al menos una etapa con solución esperada.", 422)
-        db.execute(text("""UPDATE caso SET estado = 'revisado', id_revisor = CAST(:r AS uuid), fuente_clinica = :f,
-                                  fecha_revision = now() WHERE id_caso = :c"""), {"r": revisor, "f": fuente_clinica, "c": id_caso})
-        nuevo = "revisado"
-    elif accion == "publicar":
-        if caso["estado"] != "revisado":
-            raise ErrorNegocio("Solo se publican casos revisados.", 409)
-        db.execute(text("UPDATE caso SET estado = 'publicado', fecha_publicacion = now() WHERE id_caso = :c"), {"c": id_caso})
-        nuevo = "publicado"
-    else:
-        db.execute(text("""UPDATE caso SET estado = 'borrador', id_revisor = NULL, fecha_revision = NULL, fecha_publicacion = NULL
-                           WHERE id_caso = :c"""), {"c": id_caso})
-        nuevo = "borrador"
+    nuevo = estados.CasoClinico(db, id_caso, str(caso["id_autor"]), caso["estado"]).ejecutar(accion, revisor, fuente_clinica)
     bitacora(db, revisor, "caso", str(id_caso), accion, {"fuente_clinica": fuente_clinica} if fuente_clinica else None)
     db.commit()
     return nuevo

@@ -1,0 +1,126 @@
+{
+  "id": "tamizaje-ccr-nivel-2",
+  "titulo": "Tamizaje de cáncer colorrectal: cuándo empezar y cómo saber si el examen fue bueno",
+  "tema": "tamizaje",
+  "nivel": 2,
+  "descripcion": "Acompañas a una persona simulada que se hace una colonoscopia de tamizaje. Decides cuándo empezar, si el examen se hizo en buenas condiciones y cada cuánto repetirlo. Es un caso educativo elaborado por el equipo (pendiente de validación clínica) y no reemplaza la consulta médica.",
+  "creditos_imagenes": {
+    "fuente": "HyperKvasir: A Comprehensive Multi-Class Image and Video Dataset for Gastrointestinal Endoscopy",
+    "autores": "Borgli et al. (2020)",
+    "licencia": "CC BY 4.0"
+  },
+  "paciente": {
+    "edad": 47,
+    "sintomas": false,
+    "antecedentes_familiares_ccr": false,
+    "nota": "Persona simulada de 47 años, sin síntomas y sin familiares con cáncer colorrectal. Todos los datos son ficticios."
+  },
+  "etapas": [
+    {
+      "etapa": 1,
+      "titulo": "¿Cuándo empezar?",
+      "imagen_url": "polipo_etapa1.jpg",
+      "modelo_vision_activo": true,
+      "enunciado": "Una persona de 47 años, sin síntomas y sin familiares con cáncer colorrectal, pregunta si ya debe hacerse el tamizaje. La imagen muestra un pólipo, una lesión que puede encontrarse en una colonoscopia de tamizaje; algunos pólipos pueden convertirse en cáncer con el tiempo. ¿Qué recomienda la guía colombiana más reciente?",
+      "sugerencia_ia": {
+        "texto": "Que empiece ahora, porque ya superó los 45 años.",
+        "es_correcta": true
+      },
+      "opciones": [
+        {
+          "texto": "Esperar hasta los 50 años",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "Esa era la edad de la guía anterior. La actualización de 2025 adelantó el inicio a los 45 años."
+        },
+        {
+          "texto": "Empezar ahora, porque ya tiene más de 45 años",
+          "puntos": 100,
+          "correcta": true,
+          "sugerida_por_ia": true,
+          "retroalimentacion": "La guía recomienda iniciar el tamizaje a los 45 años en adultos sin síntomas y sin riesgo especial, porque este cáncer ha aumentado en menores de 50."
+        },
+        {
+          "texto": "Esperar a tener síntomas, como sangrado",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "El tamizaje se hace en personas sin síntomas. Si hay síntomas, hay que consultar al médico."
+        }
+      ],
+      "fuente": "Aponte-Martín et al. (2025), Recomendación 1."
+    },
+    {
+      "etapa": 2,
+      "titulo": "¿El examen fue bueno?",
+      "imagen_url": "bbps_etapa2.jpg",
+      "modelo_vision_activo": false,
+      "enunciado": "A esta persona le hacen una colonoscopia que llega hasta el ciego (el inicio del colon). No se encuentran pólipos, pero en parte del recorrido la imagen se ve así. ¿Qué conclusión es la correcta sobre la calidad del examen?",
+      "sugerencia_ia": {
+        "texto": "Que la preparación no fue adecuada.",
+        "es_correcta": true
+      },
+      "opciones": [
+        {
+          "texto": "Fue normal y de buena calidad: se repite en 10 años",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "Para esperar 10 años, la colonoscopia debe ser normal y tener una preparación adecuada. Con restos como los de la imagen se pueden esconder pólipos pequeños."
+        },
+        {
+          "texto": "La preparación no es adecuada, así que no se cumple la condición para esperar 10 años",
+          "puntos": 100,
+          "correcta": true,
+          "sugerida_por_ia": true,
+          "retroalimentacion": "Una colonoscopia de alta calidad llega hasta el ciego y tiene la limpieza suficiente para ver pólipos de más de 5 mm. Cómo seguir lo decide el equipo médico."
+        },
+        {
+          "texto": "La limpieza del colon no influye en lo que se ve",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "La limpieza es clave: los restos de heces pueden tapar la mucosa y ocultar lesiones."
+        }
+      ],
+      "fuente": "Aponte-Martín et al. (2025), Recomendación 5 y punto de buena práctica 4."
+    },
+    {
+      "etapa": 3,
+      "titulo": "¿Cada cuánto repetir?",
+      "imagen_url": "reseccion_etapa3.jpg",
+      "modelo_vision_activo": false,
+      "enunciado": "En una colonoscopia de alta calidad se retira por completo un adenoma (un tipo de pólipo) de 12 mm (dato simulado). La imagen muestra el sitio donde se retiró. La patología confirma que es un adenoma. ¿Cuándo se recomienda repetir la colonoscopia?",
+      "sugerencia_ia": {
+        "texto": "Repetirla en 10 años.",
+        "es_correcta": false,
+        "nota_tutor": "Alerta de prueba: La IA se equivoca a propósito en este punto para evaluar si el estudiante cuestiona las recomendaciones del sistema."
+      },
+      "opciones": [
+        {
+          "texto": "En 10 años",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": true,
+          "retroalimentacion": "La IA se equivocó. Con un adenoma de 10 mm o más retirado por completo, la guía recomienda repetir a los 3 años. Revisa siempre lo que sugiere la IA."
+        },
+        {
+          "texto": "A los 3 años",
+          "puntos": 100,
+          "correcta": true,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "Los adenomas de 10 mm o más son de mayor riesgo y se vigilan más de cerca."
+        },
+        {
+          "texto": "Al año",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "El control anual se reserva para casos como más de 10 adenomas."
+        }
+      ],
+      "fuente": "Aponte-Martín et al. (2025), Recomendación 6 y punto de buena práctica 5."
+    }
+  ]
+}

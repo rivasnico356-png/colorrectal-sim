@@ -49,4 +49,12 @@ def al_registrar_decision(evento: DecisionRegistrada) -> dict:
     return {"nivel_nuevo": nivel["nombre"] if subio else None, "insignias_nuevas": nuevas}
 
 
-suscribir(DecisionRegistrada, al_registrar_decision)
+class ObsGamificacion:
+    """Observador de M06: reacciona a DecisionRegistrada después de M07 y M08."""
+
+    def __call__(self, evento: DecisionRegistrada) -> dict:
+        return al_registrar_decision(evento)
+
+
+obs_gamificacion = ObsGamificacion()
+suscribir(DecisionRegistrada, obs_gamificacion, orden=30)
