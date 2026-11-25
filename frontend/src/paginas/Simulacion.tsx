@@ -47,14 +47,12 @@ export default function Simulacion({ idCaso, volver }: { idCaso: number; volver:
 
   if (error) return <div className="tarjeta"><p className="error" role="alert">{error}</p><button onClick={volver}>Volver</button></div>;
 
-  // Pantalla 04 · Aviso de alcance (RF-003 3.1) — Texto ajustado a entorno educativo
+  // Pantalla 04 · Aviso de alcance (RF-003 3.1): texto fijo del SRS, viene de app/core/textos.py
   if (!intento && aviso)
     return (
       <div className="tarjeta estrecha">
         <h1>Antes de empezar</h1>
-        <p>
-          Colorrectal-Sim es una plataforma educativa de simulación. Los casos utilizan imágenes de datasets públicos para el aprendizaje e interpretación de hallazgos. La inteligencia artificial actúa como un tutor experimental de apoyo y no reemplaza el juicio clínico profesional.
-        </p>
+        <p>{aviso}</p>
         <button className="primario" onClick={() => iniciar(true)}>Entiendo y quiero continuar</button>
         <button className="enlace" onClick={volver}>Volver al catálogo</button>
       </div>
@@ -99,6 +97,7 @@ function Visor({ recurso, roi }: { recurso: Recurso; roi?: { x: number; y: numbe
   );
 }
 
+// RF-003 3.3b: reproducir, pausar y avanzar cuadro a cuadro (se asumen 25 cuadros por segundo)
 function VisorVideo({ recurso, fuente }: { recurso: Recurso; fuente: JSX.Element }) {
   const video = useRef<HTMLVideoElement>(null);
   const CUADRO = 1 / 25;
@@ -162,10 +161,8 @@ function EtapaVista({ estado, alDecidir }: { estado: EstadoIntento; alDecidir: (
             <div className="tarjeta">
               <strong>Modelo de visión: {etapa.modelo_vision.clasificacion} · confianza {etapa.modelo_vision.confianza} %</strong>
               <p className="meta">{etapa.modelo_vision.que_significa}</p>
-              {/* Rótulo ajustado sin mencionar "su médico" */}
-              <p className="rotulo">
-                Resultado experimental de apoyo a la detección e interpretación; no reemplaza el juicio clínico profesional.
-              </p>
+              {/* RNF-007: rótulo exacto del SRS, viene del backend */}
+              <p className="rotulo">{etapa.modelo_vision.rotulo}</p>
             </div>
           )}
         </div>
