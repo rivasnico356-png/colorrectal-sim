@@ -11,13 +11,53 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 | 29-11-2026 | Entrega del Informe de Pruebas y Calidad |
 | Hacia el 12-12-2026 | Vence la base de datos gratuita de Render (30 días desde su creación) |
 
+## 24-11-2026
+
+| Hora | Qué | Evidencia | Resultado |
+|---|---|---|---|
+| 19:55 | Disponibilidad del enlace público (RNF-002) calculada con el monitoreo: 38 de 38 muestras exitosas del 12-11 al 24-11 | GitHub Actions › Monitoreo de disponibilidad | 100 % (meta: más de 95 %) |
+| 19:52 | PR #27: pruebas de gamificación (CP042, cambio de nivel, y reglas de insignias como pruebas unitarias puras) | PR #27 | Abierto; espera aprobación de María Camila o David |
+| 19:43 | Plan de cierre con las tareas de cada integrante para el 24 y 25-11 | Documento en Claude Docs | Compartido con el equipo |
+| 19:37 | PR #26 fusionado con la aprobación de Valentina: el caso de tamizaje se publica solo en la biblioteca, con imágenes de HyperKvasir en sus 3 etapas | PR #26; CI del commit e089f5c | Fusionado; Render lo publica al arrancar |
+| 16:13 | PR #25 de Valentina fusionado: archivo `caso_tamizaje.json` con el caso de tamizaje de 3 etapas | PR #25 | Fusionado |
+
+## 23-11-2026
+
+| Hora | Qué | Evidencia | Resultado |
+|---|---|---|---|
+| 23:54 | Lecciones aprendidas entregadas en Moodle (35 lecciones de los 5 integrantes) | Moodle › Cargar Lecciones Aprendidas | Enviado para calificar |
+| 18:50 | PR #24 de Valentina ajustado y fusionado: las imágenes de HyperKvasir se cargan en la base desde `preparar.py`; se quitaron un archivo de prueba y una ficha de texto guardada como .jpg | PR #24 | Fusionado; 76 pruebas aprobadas |
+| 18:38 | PR #23 fusionado con la aprobación de Valentina: la escala de confianza se lee bien en pantallas anchas. Cierra el issue #18 | PR #23, issue #18 | Fusionado |
+| 14:00 | Defecto reportado por Valentina: las etiquetas de la escala de confianza se partían letra por letra en pantallas anchas | Issue #18 | Corregido en el PR #23 |
+
+## 22-11-2026
+
+| Hora | Qué | Evidencia | Resultado |
+|---|---|---|---|
+| 22:17 | PR #22, #16 y #12 fusionados con la aprobación de María Camila: correcciones de la entrega del 15-11, mensajes claros al registrarse y bitácora del 15-11 | PR #22, #16, #12 | Fusionados |
+| 22:15 | Matriz de Pruebas Unitarias corregida y entregada de nuevo en Moodle (CP012, CP013 y CP042, y códigos de requisito según la trazabilidad) | Moodle › Cargar Matriz de Pruebas Unitarias | Enviado para calificar |
+| 17:02 | Ciclo 2 de pruebas ejecutado por María Camila Viveros | Corrida CI #192, commit 94ecce7 | 74 pruebas aprobadas, 0 fallidas; cobertura 90,76 % |
+
+## 21-11-2026
+
+| Hora | Qué | Evidencia | Resultado |
+|---|---|---|---|
+| 19:25 | PR #19, #20 y #21 de Juan Camilo fusionados: logo, arquitectura del sistema y del software v1.1, glosario médico y control de tamaño de letra | PR #19, #20, #21 | Fusionados |
+
+## 17-11-2026
+
+| Hora | Qué | Evidencia | Resultado |
+|---|---|---|---|
+| 10:03 | PR #14 de Juan Camilo (política de tratamiento de datos) y PR #15 de David (la CI falla si la cobertura baja del 70 %) fusionados | PR #14, #15 | Fusionados |
+| Durante el día | Plan de acción: solicitudes de cambio SC-01 (cronograma), SC-02 (RF-010) y SC-03 (vínculo por correo), acta v1.1 y protección de las ramas `develop`, `qa` y `main` | Documentos del plan de acción; GitHub › Branches | Hecho; firmas del profesor pendientes |
+
 ## 15-11-2026
 
 | Hora | Qué | Evidencia | Resultado |
 |---|---|---|---|
 | 18:20 | Limpieza de ramas temporales del día: quedan solo `main`, `develop`, `qa` y `feature/desarrollo` | GitHub › Branches | Hecho |
 | 18:19 | PR #11 fusionado en `develop`: aprobado por María Camila Viveros. Une los PR #7, #8 y #10, que se cerraron | PR #11 | GitBook y Render se actualizan solos |
-| 18:16 | PR #6 de David Muñoz (volumen para los estudios y base solo en localhost) fusionado con la aprobación de María Camila. Queda pendiente la prueba manual con Docker (Nicolás) | PR #6 | Fusionado |
+| 18:16 | PR #6 de David Muñoz (volumen para los estudios y base solo en localhost) fusionado con la aprobación de María Camila. Queda pendiente la prueba manual con Docker (Nicolas) | PR #6 | Fusionado |
 | 17:50 | HyperKvasir como único dataset: catálogo de la base con un solo dataset y licencia CC BY 4.0 verificada (`db/07_solo_hyperkvasir.sql`); el modelo de visión usa sus 1.000 imágenes segmentadas de pólipos | PR #10 → #11 · `docs/datasets.md` | 74 pruebas, cobertura 91 % |
 | 17:30 | Retroalimentación del docente en Moodle aplicada al GitBook: identificación, alcance, tiempo y calidad, roles TSP, ejecución secuencial, hitos con duración cero y criterios TSP/ISO 25010, Valor Ganado, justificación, módulos pendientes de aprobación; página del modelo de visión en lenguaje sencillo; revisión completa de las 13 páginas | PR #7 → #11 | Pendientes: enlace de Instagantt, antecedentes e informe de uso de IA |
 | 17:10 | Los 8 patrones del documento 1.3.2.2 implementados en el backend con los nombres del documento (Adapter, Factory Method, Strategy, Facade, State, Observer con 3 observadores, Chain of Responsibility y Template Method) | PR #8 → #11 · `tests/test_patrones.py` | CI en verde |
