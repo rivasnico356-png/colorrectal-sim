@@ -1,7 +1,6 @@
 """Pruebas de RF-010 (estudios propios), RF-003 3.4/IE-04 (modelo de visión) y RF-001 1.3 (recuperación)."""
 import io
 import re
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -82,11 +81,45 @@ def test_formato_no_permitido():
         seguridad.desidentificar("archivo.pdf", b"%PDF")
 
 
-def test_cifrado_en_reposo(tmp_path, monkeypatch):
-    monkeypatch.setattr(seguridad.get_settings(), "estudios_dir", str(tmp_path))
-    ruta = seguridad.guardar_cifrado(1, b"\x89PNG datos")
-    assert b"PNG" not in Path(ruta).read_bytes()
-    assert seguridad.leer_cifrado(ruta) == b"\x89PNG datos"
+class _BaseEnMemoria:
+    """Sustituye a la sesión de base de datos en las pruebas del cifrado (sin PostgreSQL)."""
+
+    def __init__(self):
+        self.filas: dict[int, bytes] = {}
+
+    def execute(self, sentencia, params):
+        sql = str(sentencia)
+        if sql.lstrip().startswith("INSERT"):
+            self.filas[params["e"]] = params["d"]
+        elif sql.lstrip().startswith("DELETE"):
+            self.filas.pop(params["e"], None)
+        return self
+
+    def scalar(self):
+        return self._ultimo
+
+
+def test_cifrado_en_reposo_en_la_base():
+    """RNF-003: el estudio se guarda cifrado en la base y solo se lee con la clave."""
+    db = _BaseEnMemoria()
+    ruta = seguridad.guardar_cifrado(db, 7, b"\x89PNG datos")
+    assert ruta == "base:7"
+    assert b"PNG" not in db.filas[7]
+    db._ultimo = db.filas[7]
+    assert seguridad.leer_cifrado(db, ruta) == b"\x89PNG datos"
+    seguridad.borrar(db, ruta)
+    assert 7 not in db.filas
+
+
+def test_lee_estudios_guardados_en_disco_antes_del_cambio(tmp_path):
+    """Las instalaciones anteriores guardaban el archivo cifrado en ESTUDIOS_DIR: se siguen leyendo y borrando."""
+    archivo = tmp_path / "1.bin"
+    archivo.write_bytes(seguridad._fernet().encrypt(b"\x89PNG antiguo"))
+    assert seguridad.leer_cifrado(None, str(archivo)) == b"\x89PNG antiguo"
+    seguridad.borrar(None, str(archivo))
+    assert not archivo.exists()
+    with pytest.raises(seguridad.ErrorNegocio):
+        seguridad.leer_cifrado(None, str(archivo))
 
 
 def test_resultado_del_modelo_desde_mascara():
@@ -153,7 +186,8 @@ def test_estudio_completo_compartir_comentar_y_eliminar(cliente, admin, modelo_f
     assert cliente.put(f"{API}/estudios/{id_estudio}/compartir", headers=cab, json={"id_vinculo": None}).status_code == 204
     assert cliente.get(f"{API}/estudios/{id_estudio}", headers=prof).status_code == 404
     assert cliente.delete(f"{API}/estudios/{id_estudio}", headers=cab).status_code == 204
-    assert not list(tmp_path.iterdir())
+    with create_engine(DB_URL).connect() as c:
+        assert c.execute(text("SELECT count(*) FROM estudio_contenido WHERE id_estudio = :e"), {"e": id_estudio}).scalar() == 0
     assert cliente.get(f"{API}/estudios", headers=cab).json() == []
 
 
@@ -167,13 +201,14 @@ def test_suprimir_la_cuenta_borra_los_estudios(cliente, modelo_falso, tmp_path, 
                      data={"confirma_sin_datos_visibles": "true"})
     assert r.status_code == 201, r.text
     id_estudio = r.json()["id_estudio"]
-    assert list(tmp_path.iterdir())  # el archivo cifrado existe antes de suprimir
+    with create_engine(DB_URL).connect() as c:  # el contenido cifrado existe antes de suprimir
+        assert c.execute(text("SELECT count(*) FROM estudio_contenido WHERE id_estudio = :e"), {"e": id_estudio}).scalar() == 1
 
     assert cliente.request("DELETE", f"{API}/usuarios/me", headers=cab,
                            json={"contrasena": "Segura123", "confirmar": True}).status_code == 204
-    assert not list(tmp_path.iterdir())
     with create_engine(DB_URL).connect() as c:
         fila = c.execute(text("""SELECT eliminado, ruta_cifrada,
                                         (SELECT count(*) FROM interpretacion_estudio WHERE id_estudio = :e) AS interpretaciones
                                  FROM estudio_propio WHERE id_estudio = :e"""), {"e": id_estudio}).mappings().one()
-    assert fila["eliminado"] and fila["ruta_cifrada"] == "" and fila["interpretaciones"] == 0
+        contenido = c.execute(text("SELECT count(*) FROM estudio_contenido WHERE id_estudio = :e"), {"e": id_estudio}).scalar()
+    assert fila["eliminado"] and fila["ruta_cifrada"] == "" and fila["interpretaciones"] == 0 and contenido == 0

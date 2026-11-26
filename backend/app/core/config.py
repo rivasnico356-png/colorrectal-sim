@@ -38,6 +38,8 @@ class Settings(BaseSettings):
     # solo en desarrollo; en producción debe definirse.
     clave_cifrado_estudios: str = ""
     estudios_dir: str = "estudios"
+    # RF-010 en el enlace público: solo con ESTUDIOS_EN_DEMO=1 se permite cargar estudios (con aviso de uso académico).
+    estudios_en_demo: bool = False
     # IE-04: modelo de visión exportado a ONNX (lo entrena el equipo con vision/entrenar.py).
     modelo_vision_ruta: str = "modelos/vision.onnx"
     # IE-05: correo SMTP para la recuperación de contraseña. Sin servidor configurado no se envía (desarrollo).
