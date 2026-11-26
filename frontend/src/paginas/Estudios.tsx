@@ -9,6 +9,7 @@ type Detalle = {
   comentarios: { id_comentario: number; profesional: string; texto: string; fecha: string }[];
 };
 type Vinculo = { id_vinculo: number; nombre: string };
+type Condiciones = { demostracion: boolean; habilitado: boolean; aviso: string | null };
 
 export function ImagenEstudio({ id, roi }: { id: number; roi?: Roi | Record<string, never> }) {
   const [url, setUrl] = useState<string | null>(null);
@@ -37,10 +38,14 @@ export default function Estudios() {
   const [confirma, setConfirma] = useState(false);
   const [msg, setMsg] = useState("");
   const [cargando, setCargando] = useState(false);
+  const [condiciones, setCondiciones] = useState<Condiciones | null>(null);
 
   const cargar = () => Promise.all([api<Fila[]>("/estudios"), api<Vinculo[]>("/vinculos")])
     .then(([f, v]) => { setFilas(f); setVinculos(v); }).catch((e) => setMsg(e.message));
-  useEffect(() => { cargar(); }, []);
+  useEffect(() => {
+    cargar();
+    api<Condiciones>("/estudios/condiciones").then(setCondiciones).catch(() => setCondiciones(null));
+  }, []);
 
   const abrir = async (id: number) => setDetalle(await api<Detalle>(`/estudios/${id}`));
 
@@ -65,12 +70,13 @@ export default function Estudios() {
       {msg && <p className="aviso" role="status">{msg}</p>}
       <div className="tarjeta">
         <h2>Cargar un estudio</h2>
+        {condiciones?.aviso && <p className="aviso" role="note"><strong>{condiciones.aviso}</strong></p>}
         <p className="meta">JPG, PNG o DICOM, hasta 20 MB. Antes de guardarlo quitamos los datos personales del archivo y lo guardamos cifrado.</p>
         <label>Archivo del estudio
           <input type="file" accept=".jpg,.jpeg,.png,.dcm" onChange={(e) => setArchivo(e.target.files?.[0] ?? null)} /></label>
         <label className="casilla"><input type="checkbox" checked={confirma} onChange={(e) => setConfirma(e.target.checked)} />
           Confirmo que la imagen no muestra mi nombre, documento ni otros datos escritos sobre ella.</label>
-        <button className="primario" onClick={subir} disabled={!archivo || cargando}>{cargando ? "Analizando… (puede tardar unos segundos)" : "Cargar"}</button>
+        <button className="primario" onClick={subir} disabled={!archivo || cargando || condiciones?.habilitado === false}>{cargando ? "Analizando… (puede tardar unos segundos)" : "Cargar"}</button>
       </div>
       <table>
         <thead><tr><th>Fecha</th><th>Estado</th><th>Compartido con</th><th></th></tr></thead>

@@ -5,6 +5,8 @@ import io
 from pathlib import Path
 
 from cryptography.fernet import Fernet
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.errores import ErrorNegocio
@@ -62,16 +64,33 @@ def desidentificar(nombre: str, contenido: bytes) -> tuple[bytes, bool]:
     return salida.getvalue(), advertencia
 
 
-def guardar_cifrado(id_estudio: int, png: bytes) -> str:
-    ruta = Path(get_settings().estudios_dir) / f"{id_estudio}.bin"
-    ruta.parent.mkdir(parents=True, exist_ok=True)
-    ruta.write_bytes(_fernet().encrypt(png))
-    return ruta.as_posix()
+# Las rutas con este prefijo indican que el archivo cifrado está en la tabla estudio_contenido (db/08).
+# Las demás son archivos en ESTUDIOS_DIR, de instalaciones anteriores a este cambio.
+PREFIJO_BASE = "base:"
 
 
-def leer_cifrado(ruta: str) -> bytes:
-    return _fernet().decrypt(Path(ruta).read_bytes())
+def guardar_cifrado(db: Session, id_estudio: int, png: bytes) -> str:
+    """Guarda el estudio cifrado en la base; así no se pierde si el servidor se reinicia."""
+    db.execute(text("""INSERT INTO estudio_contenido (id_estudio, datos_cifrados) VALUES (:e, :d)
+                       ON CONFLICT (id_estudio) DO UPDATE SET datos_cifrados = EXCLUDED.datos_cifrados"""),
+               {"e": id_estudio, "d": _fernet().encrypt(png)})
+    return f"{PREFIJO_BASE}{id_estudio}"
 
 
-def borrar(ruta: str) -> None:
-    Path(ruta).unlink(missing_ok=True)
+def leer_cifrado(db: Session, ruta: str) -> bytes:
+    if ruta.startswith(PREFIJO_BASE):
+        datos = db.execute(text("SELECT datos_cifrados FROM estudio_contenido WHERE id_estudio = :e"),
+                           {"e": int(ruta.removeprefix(PREFIJO_BASE))}).scalar()
+    else:
+        archivo = Path(ruta)
+        datos = archivo.read_bytes() if ruta and archivo.is_file() else None
+    if datos is None:
+        raise ErrorNegocio("La imagen de este estudio ya no está disponible.", 404)
+    return _fernet().decrypt(bytes(datos))
+
+
+def borrar(db: Session, ruta: str) -> None:
+    if ruta.startswith(PREFIJO_BASE):
+        db.execute(text("DELETE FROM estudio_contenido WHERE id_estudio = :e"), {"e": int(ruta.removeprefix(PREFIJO_BASE))})
+    else:
+        Path(ruta).unlink(missing_ok=True)
