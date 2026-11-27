@@ -191,6 +191,9 @@ def test_recurso_multimedia_exige_formato_dataset_y_licencia(cliente, admin, tmp
     url = f"{API}/editor/etapas/{id_etapa}/recursos"
     assert cliente.post(url, headers=autor, files={"archivo": ("a.pdf", b"%PDF", "application/pdf")},
                         data={"id_dataset": "1", "licencia": "CC BY 4.0"}).status_code == 415
+    # Un archivo de texto renombrado como .jpg no pasa por imagen (así llegaron las del primer Caso 2).
+    assert cliente.post(url, headers=autor, files={"archivo": ("a.jpg", b'{"osf": "ficha"}', "image/jpeg")},
+                        data={"id_dataset": "1", "licencia": "CC BY 4.0"}).status_code == 415
     assert cliente.post(url, headers=autor, files={"archivo": ("a.png", png, "image/png")},
                         data={"id_dataset": "1", "licencia": " "}).status_code == 422
     assert cliente.post(url, headers=autor, files={"archivo": ("a.png", png, "image/png")},

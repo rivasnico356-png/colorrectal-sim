@@ -192,3 +192,61 @@ def test_imagenes_del_caso_de_tamizaje_existen():
     for etapa in datos["etapas"]:
         destino = preparar.IMAGENES_TAMIZAJE[etapa["imagen_url"]]
         assert destino == "IMAGEN_DEMO" or (preparar.CASO_TAMIZAJE.parent / destino).is_file()
+
+
+@requiere_db
+def test_caso_de_vision_reemplaza_la_version_anterior_y_usa_fotos_reales(monkeypatch, tmp_path):
+    """Caso 2: retira la primera versión (sus «imágenes» eran fichas de texto), se publica una vez con una foto de
+    HyperKvasir en cada etapa, el modelo de visión activo en las etapas 1 y 2 y la IA equivocada a propósito en la 2."""
+    import json
+    from io import BytesIO
+
+    from PIL import Image
+
+    imagen = tmp_path / "ejemplo-kvasir.jpg"
+    buffer = BytesIO()
+    Image.new("RGB", (64, 64), (170, 80, 80)).save(buffer, "JPEG")
+    imagen.write_bytes(buffer.getvalue())
+    monkeypatch.setenv("CASO_DEMO", "1")
+    monkeypatch.setenv("IMAGEN_DEMO", str(imagen))
+    datos = json.loads(preparar.CASO_VISION.read_text(encoding="utf-8"))
+    preparar.aplicar_esquema()
+    with SessionLocal() as db:
+        db.execute(text("UPDATE caso SET eliminado = TRUE WHERE titulo IN (:a, :b)"),
+                   {"a": datos["titulo"], "b": preparar.TITULO_VISION_ANTERIOR})
+        autor = preparar._crear_usuario(db, "Profesional de la salud", "Autor anterior",
+                                        f"vision-anterior-{tmp_path.name}@ejemplo.com", "Segura123456")
+        db.execute(text("""INSERT INTO caso (id_autor, titulo, tema, nivel_dificultad, estado)
+                           VALUES (:a, :t, 'pólipos', 1, 'publicado')"""),
+                   {"a": autor, "t": preparar.TITULO_VISION_ANTERIOR})
+        db.commit()
+        id_caso = preparar.publicar_caso_vision(db)
+        assert id_caso is not None
+        assert preparar.publicar_caso_vision(db) is None
+        anteriores = db.execute(text("SELECT count(*) FROM caso WHERE titulo = :t AND NOT eliminado"),
+                                {"t": preparar.TITULO_VISION_ANTERIOR}).scalar()
+        etapas = db.execute(text("""SELECT e.orden, e.usa_modelo_vision, count(r.id_recurso) AS imagenes FROM etapa e
+                                    LEFT JOIN recurso_multimedia r ON r.id_etapa = e.id_etapa
+                                    WHERE e.id_caso = :c GROUP BY e.orden, e.usa_modelo_vision ORDER BY e.orden"""),
+                            {"c": id_caso}).all()
+        ia_erronea = db.execute(text("""SELECT e.orden FROM etapa e WHERE e.id_caso = :c AND e.ia_erronea_intencional"""),
+                                {"c": id_caso}).scalars().all()
+        mimes = db.execute(text("""SELECT c.tipo_mime FROM recurso_contenido c JOIN recurso_multimedia r ON r.id_recurso = c.id_recurso
+                                   JOIN etapa e ON e.id_etapa = r.id_etapa WHERE e.id_caso = :c"""), {"c": id_caso}).scalars().all()
+    assert anteriores == 0
+    assert [(e.orden, e.usa_modelo_vision, e.imagenes) for e in etapas] == [(1, True, 1), (2, True, 1), (3, False, 1)]
+    assert ia_erronea == [2]
+    assert mimes == ["image/jpeg"] * 3
+
+
+def test_imagenes_del_caso_de_vision_son_fotos_reales():
+    """Cada imagen del Caso 2 es un JPEG de verdad (o la imagen de ejemplo del modelo), no un archivo renombrado."""
+    import json
+
+    datos = json.loads(preparar.CASO_VISION.read_text(encoding="utf-8"))
+    for etapa in datos["etapas"]:
+        destino = preparar.IMAGENES_VISION[etapa["imagen_url"]]
+        if destino != "IMAGEN_DEMO":
+            assert (preparar.CASO_VISION.parent / destino).read_bytes().startswith(b"\xff\xd8\xff")
+    assert not any(p.read_bytes()[:1] == b"{" for p in preparar.CASO_VISION.parent.glob("*.jpg"))
+
