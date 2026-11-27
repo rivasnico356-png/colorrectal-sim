@@ -30,7 +30,7 @@ docker compose up --build
 | `MODELO_VISION_RUTA` | Archivo ONNX del modelo de visión |
 | `BREVO_API_KEY` y `SMTP_REMITENTE` | Correo de recuperación de contraseña por la API de Brevo (el remitente debe estar verificado en Brevo). Sin clave, en local se puede usar `SMTP_SERVIDOR` y relacionadas |
 | `ADMIN_CORREO`, `ADMIN_NOMBRE` y `ADMIN_CONTRASENA` | Crean o sincronizan el primer administrador al arrancar |
-| `ENTORNO` y `CASO_DEMO` | `demostracion` bloquea los estudios propios; `CASO_DEMO=1` publica el caso de demostración |
+| `ENTORNO`, `ESTUDIOS_EN_DEMO` y `CASO_DEMO` | `demostracion` bloquea los estudios propios salvo que `ESTUDIOS_EN_DEMO=1`, que los permite con el aviso de usar solo imágenes de datasets públicos; `CASO_DEMO=1` publica el caso de demostración, el de tamizaje y el Caso 2 |
 
 ## Primer administrador
 
