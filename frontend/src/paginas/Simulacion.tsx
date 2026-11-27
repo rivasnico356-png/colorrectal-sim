@@ -47,7 +47,7 @@ export default function Simulacion({ idCaso, volver }: { idCaso: number; volver:
 
   if (error) return <div className="tarjeta"><p className="error" role="alert">{error}</p><button onClick={volver}>Volver</button></div>;
 
-  // Pantalla 04 · Aviso de alcance (RF-003 3.1)
+  // Pantalla 04 · Aviso de alcance (RF-003 3.1): texto fijo del SRS, viene de app/core/textos.py
   if (!intento && aviso)
     return (
       <div className="tarjeta estrecha">
@@ -161,6 +161,7 @@ function EtapaVista({ estado, alDecidir }: { estado: EstadoIntento; alDecidir: (
             <div className="tarjeta">
               <strong>Modelo de visión: {etapa.modelo_vision.clasificacion} · confianza {etapa.modelo_vision.confianza} %</strong>
               <p className="meta">{etapa.modelo_vision.que_significa}</p>
+              {/* RNF-007: rótulo exacto del SRS, viene del backend */}
               <p className="rotulo">{etapa.modelo_vision.rotulo}</p>
             </div>
           )}
@@ -266,12 +267,42 @@ function Retroalimentacion({ r, continuar }: { r: Retro; continuar: () => void }
   );
 }
 
-// Pantalla 07 · Resumen del caso (RF-005 5.4)
+// Pantalla 07 · Resumen del caso (RF-005 5.4) — Con Banner Motivacional Estilo Duolingo
 function ResumenCaso({ r, volver }: { r: Resumen; volver: () => void }) {
   const min = Math.floor(r.tiempo_segundos / 60);
+  const perfecto = r.aciertos === r.etapas && r.errores_ia_detectados === r.errores_ia;
+
   return (
     <div className="tarjeta estrecha">
       <h1>Resumen: {r.titulo}</h1>
+
+      {/* Banner Motivacional Interactivo */}
+      <div 
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "14px",
+          padding: "14px 18px",
+          borderRadius: "12px",
+          backgroundColor: perfecto ? "#e6f4ea" : "#fef7e0",
+          border: `2px solid ${perfecto ? "#34a853" : "#fbbc04"}`,
+          margin: "18px 0",
+          color: perfecto ? "#137333" : "#b06000"
+        }}
+      >
+        <span style={{ fontSize: "2.2rem" }}>{perfecto ? "🩺" : "🎓"}</span>
+        <div>
+          <strong style={{ display: "block", fontSize: "1.05rem", marginBottom: "2px" }}>
+            {perfecto ? "¡Desempeño impecable! 🎉" : "¡Buen esfuerzo de aprendizaje! 📚"}
+          </strong>
+          <span style={{ fontSize: "0.88rem", lineHeight: "1.3", display: "block" }}>
+            {perfecto 
+              ? "¡Excelente trabajo! Resolviste todas las etapas con precisión y detectaste el error de la IA. ¡Demostraste un juicio clínico intachable!" 
+              : "Cada caso completado fortalece tu criterio médico. Revisa la retroalimentación para seguir afinando tu interpretación ante la IA."}
+          </span>
+        </div>
+      </div>
+
       <dl className="cifras">
         <div><dt>Puntaje</dt><dd>{r.puntaje_total}</dd></div>
         <div><dt>Aciertos</dt><dd>{r.aciertos} de {r.etapas}</dd></div>

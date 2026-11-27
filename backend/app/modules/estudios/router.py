@@ -12,7 +12,7 @@ from app.core.config import get_settings
 from app.core.db import get_db
 from app.core.deps import PROFESIONAL, USUARIO, requiere_rol, usuario_actual
 from app.core.errores import ErrorNegocio
-from app.core.textos import ROTULO_IA
+from app.core.textos import AVISO_ESTUDIOS_DEMO, ROTULO_IA
 from app.modules.estudios import seguridad
 from app.modules.estudios.procesamiento import ProcesadorEstudioPropio
 from app.modules.estudios.vision import CON_REGION, ResultadoVision
@@ -69,12 +69,25 @@ def _estudio(db: Session, id_estudio: int, quien: dict) -> dict:
     return dict(fila)
 
 
+def condiciones() -> dict:
+    """RF-010 en la demostración: la carga solo se habilita con ESTUDIOS_EN_DEMO y siempre con el aviso de uso académico."""
+    s = get_settings()
+    demostracion = s.entorno == "demostracion"
+    return {"demostracion": demostracion, "habilitado": not demostracion or s.estudios_en_demo,
+            "aviso": AVISO_ESTUDIOS_DEMO if demostracion else None}
+
+
+@router.get("/estudios/condiciones")
+def ver_condiciones(usuario: dict = Depends(requiere_rol(USUARIO))) -> dict:
+    return condiciones()
+
+
 @router.post("/estudios", status_code=status.HTTP_201_CREATED)
 async def cargar(archivo: UploadFile = File(...), confirma_sin_datos_visibles: bool = Form(False), db: Session = Depends(get_db),
                  usuario: dict = Depends(requiere_rol(USUARIO))) -> dict:
     """RF-010 10.1 y 10.2."""
-    if get_settings().entorno == "demostracion":
-        # Ley 1581: el enlace público de demostración no recibe estudios reales de personas.
+    if not condiciones()["habilitado"]:
+        # Ley 1581: sin ESTUDIOS_EN_DEMO, el enlace público de demostración no recibe estudios.
         raise HTTPException(403, "En la versión de demostración no se pueden cargar estudios. Esta función se habilita en la "
                                  "instalación oficial de la plataforma.")
     sensibles = db.execute(text("""SELECT aceptada FROM autorizacion_datos WHERE id_usuario = CAST(:u AS uuid)
@@ -92,7 +105,7 @@ async def cargar(archivo: UploadFile = File(...), confirma_sin_datos_visibles: b
     id_estudio = db.execute(text("""INSERT INTO estudio_propio (id_usuario, ruta_cifrada, hash_sha256, desidentificado, advertencia_texto)
                                     VALUES (CAST(:u AS uuid), '', :h, TRUE, :a) RETURNING id_estudio"""),
                             {"u": usuario["sub"], "h": hashlib.sha256(png).hexdigest(), "a": advertencia}).scalar_one()
-    ruta = seguridad.guardar_cifrado(id_estudio, png)
+    ruta = seguridad.guardar_cifrado(db, id_estudio, png)
     db.execute(text("UPDATE estudio_propio SET ruta_cifrada = :r WHERE id_estudio = :e"), {"r": ruta, "e": id_estudio})
     procesado = _interpretar(db, id_estudio, procesada.resultado)
     bitacora(db, usuario["sub"], "estudio_propio", str(id_estudio), "cargar")
@@ -137,7 +150,11 @@ def ver_estudio(id_estudio: int, db: Session = Depends(get_db), quien: dict = De
 @router.get("/estudios/{id_estudio}/imagen")
 def imagen(id_estudio: int, db: Session = Depends(get_db), quien: dict = Depends(usuario_actual)) -> Response:
     e = _estudio(db, id_estudio, quien)
-    return Response(seguridad.leer_cifrado(e["ruta_cifrada"]), media_type="image/png", headers={"Cache-Control": "no-store"})
+    try:
+        contenido = seguridad.leer_cifrado(db, e["ruta_cifrada"])
+    except ErrorNegocio as err:
+        raise HTTPException(err.codigo, err.mensaje) from err
+    return Response(contenido, media_type="image/png", headers={"Cache-Control": "no-store"})
 
 
 @router.put("/estudios/{id_estudio}/compartir", status_code=status.HTTP_204_NO_CONTENT)
@@ -163,7 +180,7 @@ def borrar_del_almacenamiento(db: Session, id_estudio: int, ruta_cifrada: str) -
     No hace commit: quien la llama decide cuándo confirmar la transacción.
     """
     if ruta_cifrada:
-        seguridad.borrar(ruta_cifrada)
+        seguridad.borrar(db, ruta_cifrada)
     db.execute(text("DELETE FROM interpretacion_estudio WHERE id_estudio = :e"), {"e": id_estudio})
     db.execute(text("DELETE FROM comentario_estudio WHERE id_estudio = :e"), {"e": id_estudio})
     db.execute(text("""UPDATE estudio_propio SET eliminado = TRUE, ruta_cifrada = '', id_profesional_compartido = NULL

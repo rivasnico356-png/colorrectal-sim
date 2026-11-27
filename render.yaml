@@ -32,6 +32,9 @@ services:
         generateValue: true
       - key: CASO_DEMO
         value: "1"
+      # RF-010: permite cargar estudios en la demostración, con el aviso de usar solo imágenes de datasets públicos.
+      - key: ESTUDIOS_EN_DEMO
+        value: "1"
       - key: ADMIN_NOMBRE
         value: Nicolas Rivas Castillo
       - key: ADMIN_CORREO
