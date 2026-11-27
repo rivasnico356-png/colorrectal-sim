@@ -7,9 +7,38 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 | Fecha | Qué |
 |---|---|
 | 15-11-2026 | GitBook publicado: https://colorrectal-sim.gitbook.io/colorrectal-sim-docs/ |
-| 23 al 25-11-2026 | Prueba de usabilidad SUS con 5 personas (Plan de Pruebas) |
+| 25 al 28-11-2026 | Prueba de usabilidad SUS con 5 personas (Plan de Pruebas); formulario en Google Forms creado el 25-11 |
 | 29-11-2026 | Entrega del Informe de Pruebas y Calidad |
 | Hacia el 12-12-2026 | Vence la base de datos gratuita de Render (30 días desde su creación) |
+
+## 26-11-2026
+
+| Hora | Qué | Evidencia | Resultado |
+|---|---|---|---|
+| 20:15 | PR #41: ajustes de la revisión final (mensaje del resumen, tiempo sin pausas, fechas en hora de Colombia, tutor sin cifras inventadas, versión 1.0.1) | PR #41 | Abierto; espera aprobación |
+| 20:05 | Revisión completa del simulador: código, demostración y documentación | Este registro y PR #40, #41 y #42 | 9 hallazgos; correcciones en PR |
+| 20:03 | PR #40: Caso 2 con fotos reales de HyperKvasir; sus tres archivos `.jpg` eran fichas de texto de OSF y en la demostración salían rotos | PR #40 | Abierto; 87 pruebas aprobadas |
+| 19:48 | Release v0.9 publicada; v1.0 marcada como la última versión | GitHub › Releases | Hecho |
+| 19:46 | Etiqueta `v1.0` sobre `main` (commit 5a2545b) y Release 1.0 publicada | GitHub › Releases | Hecho (RNF-006) |
+| 19:42 | PR #39 (`qa` → `main`) aprobado y fusionado por Juan Camilo Paredes | PR #39; CI de `main` | Fusionado; CI aprobada |
+| 19:26 | PR #34 (`develop` → `qa`) aprobado y fusionado por María Camila Viveros | PR #34; CI de `qa` | 85 pruebas aprobadas, cobertura 90 % |
+
+## 25-11-2026
+
+| Hora | Qué | Evidencia | Resultado |
+|---|---|---|---|
+| 22:01–22:17 | PR #36, #37 y #38 de Valentina: Caso 2 de visión computacional | PR #36 a #38 | Fusionados; corregidos después en el PR #40 |
+| 21:47 | Horas del equipo registradas en Process Dashboard como estimación del director a partir de los PR, pendientes de confirmar por cada integrante | Process Dashboard (`C:\pspdata`) | 45 entradas, 46,25 h |
+| 21:15 | Carga de estudios en el enlace público: imagen con pólipo (96,94 %, con recuadro) y sin pólipo («sin región sospechosa visible», 94,62 %) | Demostración › Mis estudios | Funciona |
+| 21:07 | PR #35 fusionado con la aprobación de Valentina: estudios propios en la demostración con `ESTUDIOS_EN_DEMO=1`, guardados cifrados en la base | PR #35 | Fusionado; 85 pruebas aprobadas |
+| 20:14 | Etiqueta `v0.9` sobre el commit 94ecce7 (ciclo 2) | GitHub › Tags | Hecho |
+| 17:56 | PR #33: aviso y rótulo de la IA con el texto exacto del SRS y cita completa de la guía | PR #33 | Fusionado |
+| 17:45 | PR #30 (`release/1.0` → `main`) aprobado por Valentina: Release 1.0 en `main` | PR #30 | Fusionado |
+| 12:53 | Formulario del cuestionario SUS creado por María Camila Viveros | Google Forms | Pendiente de aplicar a 5 personas |
+| 11:18 | PR #29 (`develop` → `qa`) aprobado por María Camila Viveros | PR #29 | Fusionado |
+| 10:58 | Ciclo 3 de pruebas ejecutado por María Camila Viveros | Actions › CI, corrida 45650037850 | 83 pruebas aprobadas, 0 fallidas; cobertura 90,83 % |
+| 10:45 | Recorrido de la demostración: caso de tamizaje completo, tutor IA, cambio de nivel, insignias, progreso, glosario y tamaño de letra | Demostración | Funciona |
+| 10:20 | PR #27 (pruebas de gamificación, CP042) y PR #28 (bitácora y RNF-002) fusionados con la aprobación de María Camila | PR #27, #28 | Fusionados |
 
 ## 24-11-2026
 
