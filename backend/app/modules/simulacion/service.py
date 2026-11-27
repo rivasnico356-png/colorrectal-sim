@@ -180,7 +180,13 @@ def resumen(db: Session, id_usuario: str, id_intento: int) -> dict:
                                            d.confianza_declarada / 20 AS confianza, d.tiempo_respuesta_ms
                                     FROM decision d JOIN etapa e ON e.id_etapa = d.id_etapa
                                     WHERE d.id_intento = :i ORDER BY e.orden"""), {"i": id_intento}).mappings().all()
-    duracion = (intento["fecha_fin"] - intento["fecha_inicio"]).total_seconds()
+    # Tiempo de trabajo: suma del tiempo de cada decisión. Así no cuenta las pausas si el caso quedó abierto de un día
+    # para otro. Si alguna decisión no trae su tiempo, se usa la duración total del intento.
+    tiempos = [d["tiempo_respuesta_ms"] for d in decisiones]
+    if tiempos and all(t is not None for t in tiempos):
+        duracion = sum(tiempos) / 1000
+    else:
+        duracion = (intento["fecha_fin"] - intento["fecha_inicio"]).total_seconds()
     return {
         "id_intento": id_intento, "titulo": intento["titulo"], "puntaje_total": intento["puntaje_total"],
         "aciertos": sum(d["es_correcta"] for d in decisiones), "etapas": len(decisiones),
