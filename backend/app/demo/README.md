@@ -21,5 +21,17 @@ Imágenes de endoscopia del conjunto de datos público **HyperKvasir** (Borgli e
 
 Pendiente: el nombre exacto de cada archivo dentro de su carpeta de HyperKvasir.
 
+## Caso 2: visión computacional (`caso_vision_polipos.json`)
+
+Caso aportado por Valentina Ramírez (PR #36 a #38) y corregido en el PR siguiente. Usa las mismas fotos reales de HyperKvasir:
+
+| Nombre en el JSON | Archivo real | Etapa | Modelo de visión |
+| :--- | :--- | :---: | :---: |
+| `polipo_vision_etapa1.jpg` | `modelos/ejemplo-kvasir.jpg` (variable `IMAGEN_DEMO`), carpeta `polyps` | 1 | Sí |
+| `preparacion_vision_etapa2.jpg` | `preparacion-intestinal.jpg`, carpeta `bbps-0-1` | 2 | Sí (la IA se equivoca a propósito) |
+| `reseccion_vision_etapa3.jpg` | `reseccion.jpg`, carpeta `dyed-resection-margins` | 3 | No |
+
+Los porcentajes de confianza y el recuadro los calcula el modelo en el momento; el caso no trae cifras escritas a mano. La primera versión del caso se retira de la biblioteca porque sus tres archivos `.jpg` eran fichas de texto de OSF y no fotos. Pendiente de validación clínica.
+
 ## Cita Académica del Dataset
 Borgli, H., Thambawita, V., Smedsrud, P. H., Hicks, S., Jha, D., Eskeland, S. L., Randel, K. R., Pogorelov, K., Lux, M., Nguyen, D. T. D., Johansen, D., Griwodz, C., Stensland, H. K., Garcia-Ceja, E., Schmidt, P. T., Hammer, H. L., Riegler, M. A., Halvorsen, P., & de Lange, T. (2020). *HyperKvasir, a comprehensive multi-class image and video dataset for gastrointestinal endoscopy*. Scientific Data, 7(1), 283. https://doi.org/10.1038/s41597-020-00622-y
