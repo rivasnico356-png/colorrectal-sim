@@ -1,6 +1,8 @@
 # Usuarios y funcionalidades
 
-## Usuario (persona con cáncer colorrectal)
+## Usuario
+
+Persona adulta, sin formación médica, que usa la plataforma para aprender con casos simulados, cargar sus propios estudios y consultar su progreso. Es el usuario final del sistema.
 
 * Crea su cuenta aceptando la política de tratamiento de datos y decide si autoriza datos sensibles y compartir su avance.
 * Busca casos por tema, nivel y estado; los casos más difíciles se desbloquean al subir de nivel.
