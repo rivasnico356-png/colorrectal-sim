@@ -8,3 +8,7 @@ ROTULO_IA = ("Resultado experimental de apoyo a la detección e interpretación;
 AVISO_ALCANCE = ("Colorrectal-Sim es una plataforma educativa de simulación. Los casos usan imágenes de datasets públicos "
                  "y no corresponden a su historia clínica. La inteligencia artificial es un apoyo experimental y "
                  "no reemplaza la valoración de su médico.")
+
+# RF-010 en la demostración pública: solo imágenes de datasets públicos, nunca estudios reales (Ley 1581 de 2012).
+AVISO_ESTUDIOS_DEMO = ("Versión de demostración académica: carga solo imágenes de endoscopia de datasets públicos, como "
+                       "HyperKvasir. No subas estudios reales tuyos ni de otras personas.")

@@ -1,0 +1,86 @@
+{
+  "id_caso": 2,
+  "titulo": "Detección y Caracterización de Pólipos por Visión Computacional",
+  "descripcion": "Caso interactivo enfocado en el uso del modelo de visión, delimitación de regiones de interés (ROI), evaluación de confianza y discriminación de falsos positivos en colonoscopia.",
+  "contexto_simulado": "Paciente masculino de 58 años que acude a colonoscopia de tamizaje. El estudio explora el colon ascendente y el ángulo hepático.",
+  "etapas": [
+    {
+      "id_etapa": 1,
+      "enunciado": "Durante la exploración del colon ascendente, el modelo de visión identifica una elevación mucosa con 94.8% de confianza. Revisa el visor y la caja ROI. ¿Cuál es la conducta adecuada?",
+      "recursos": [
+        {
+          "url": "/polipo_sesil_etapa1.jpg",
+          "tipo": "imagen",
+          "dataset": "HyperKvasir",
+          "licencia": "CC BY 4.0"
+        }
+      ],
+      "modelo_vision": {
+        "disponible": true,
+        "clasificacion": "Pólipo sésil (París 0-IIa)",
+        "confianza": 94.8,
+        "que_significa": "Alta concordancia visual con lesiones elevadas no pedunculadas en el dataset de entrenamiento.",
+        "rotulo": "Resultado experimental de apoyo a la detección e interpretación; no reemplaza el juicio clínico profesional.",
+        "roi": { "x": 0.52, "y": 0.22, "ancho": 0.24, "alto": 0.30 }
+      },
+      "opciones": [
+        { "id_opcion": 1, "texto": "Confirmar lesión sésil delimitada por el modelo de visión y planear polipectomía / resección de mucosa." },
+        { "id_opcion": 2, "texto": "Desestimar el hallazgo por tratarse de un pliegue mucoso fisiológico normal." },
+        { "id_opcion": 3, "texto": "Detener el examen y diferir el estudio a tomografía computarizada." }
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id_etapa": 2,
+      "enunciado": "En el ángulo hepático, el modelo marca un área con 62.4% de confianza. Al aplicar aspiración y lavado con agua, la mancha se desplaza. ¿Cómo evalúas el resultado del modelo?",
+      "recursos": [
+        {
+          "url": "/artefacto_etapa2.jpg",
+          "tipo": "imagen",
+          "dataset": "HyperKvasir",
+          "licencia": "CC BY 4.0"
+        }
+      ],
+      "modelo_vision": {
+        "disponible": true,
+        "clasificacion": "Posible lesión / Artefacto fecal",
+        "confianza": 62.4,
+        "que_significa": "Confianza moderada-baja. El patrón presenta textura compatible con contenido fecal o sombra de pliegue.",
+        "rotulo": "Resultado experimental de apoyo a la detección e interpretación; no reemplaza el juicio clínico profesional.",
+        "roi": { "x": 0.30, "y": 0.40, "ancho": 0.18, "alto": 0.15 }
+      },
+      "opciones": [
+        { "id_opcion": 1, "texto": "Identificar falso positivo de la IA generado por residuo fecal / artefacto tras el lavado de mucosa." },
+        { "id_opcion": 2, "texto": "Tomar biopsia a ciegas del tejido sin limpiar la zona." },
+        { "id_opcion": 3, "texto": "Confirmar neoplasia maligna definitiva basada en la sugerencia del modelo." }
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id_etapa": 3,
+      "enunciado": "En el colon descendente se aprecia una lesión de pedículo largo (París Ip). El modelo resalta la estructura completa. ¿Cuál es el procedimiento técnico recomendado previo al corte?",
+      "recursos": [
+        {
+          "url": "/polipo_pedunculado_etapa3.jpg",
+          "tipo": "imagen",
+          "dataset": "HyperKvasir",
+          "licencia": "CC BY 4.0"
+        }
+      ],
+      "modelo_vision": {
+        "disponible": true,
+        "clasificacion": "Pólipo pedunculado (París Ip)",
+        "confianza": 97.2,
+        "que_significa": "Fuerte delimitación de pedículo con cabeza lobulada.",
+        "rotulo": "Resultado experimental de apoyo a la detección e interpretación; no reemplaza el juicio clínico profesional.",
+        "roi": { "x": 0.20, "y": 0.15, "ancho": 0.45, "alto": 0.50 }
+      },
+      "opciones": [
+        { "id_opcion": 1, "texto": "Asegurar el pedículo (inyección / endoloop o diatermia) y realizar resección completa con asa." },
+        { "id_opcion": 2, "texto": "Remover únicamente la superficie superior con pinza de biopsia estándar." },
+        { "id_opcion": 3, "texto": "Dejar la lesión in situ y recomendar seguimiento en 10 años." }
+      ],
+      "respuesta_correcta": 1
+    }
+  ]
+}

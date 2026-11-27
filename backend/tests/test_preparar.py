@@ -44,6 +44,21 @@ def test_demostracion_no_recibe_estudios(cliente, monkeypatch):
                      files={"archivo": ("a.png", b"x", "image/png")}, data={"confirma_sin_datos_visibles": "true"})
     assert r.status_code == 403
     assert "demostración" in r.json()["detail"]
+    condiciones = cliente.get("/api/v1/estudios/condiciones", headers=cab_usuario).json()
+    assert condiciones["demostracion"] and not condiciones["habilitado"]
+
+
+@requiere_db
+def test_demostracion_recibe_estudios_con_estudios_en_demo(cliente, monkeypatch):
+    """Con ESTUDIOS_EN_DEMO=1 la demostración permite cargar, con el aviso de usar solo imágenes de datasets públicos."""
+    monkeypatch.setattr(get_settings(), "entorno", "demostracion")
+    monkeypatch.setattr(get_settings(), "estudios_en_demo", True)
+    _, cab_usuario = registrar_usuario(cliente)
+    condiciones = cliente.get("/api/v1/estudios/condiciones", headers=cab_usuario).json()
+    assert condiciones["habilitado"] and "HyperKvasir" in condiciones["aviso"]
+    r = cliente.post("/api/v1/estudios", headers=cab_usuario,
+                     files={"archivo": ("a.png", b"x", "image/png")}, data={"confirma_sin_datos_visibles": "true"})
+    assert "demostración" not in r.json()["detail"]  # ya no la bloquea la demostración, sino la autorización de datos sensibles
 
 
 @requiere_db
