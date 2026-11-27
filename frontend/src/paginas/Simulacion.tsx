@@ -267,40 +267,35 @@ function Retroalimentacion({ r, continuar }: { r: Retro; continuar: () => void }
   );
 }
 
-// Pantalla 07 · Resumen del caso (RF-005 5.4) — Con Banner Motivacional Estilo Duolingo
+// Pantalla 07 · Resumen del caso (RF-005 5.4), con un mensaje de ánimo según el resultado
+function mensajeResumen(r: Resumen): { titulo: string; texto: string; perfecto: boolean } {
+  const todoBien = r.aciertos === r.etapas;
+  const huboErrorIa = r.errores_ia > 0;
+  const detectoTodo = r.errores_ia_detectados === r.errores_ia;
+  if (todoBien && huboErrorIa && detectoTodo)
+    return { perfecto: true, titulo: "¡Muy bien hecho!",
+             texto: "Acertaste en todas las etapas y te diste cuenta de cuándo la IA se equivocaba. Esa mirada crítica es justo lo que busca el simulador." };
+  if (todoBien)
+    return { perfecto: true, titulo: "¡Muy bien hecho!",
+             texto: "Acertaste en todas las etapas. Repasa la retroalimentación para recordar por qué cada respuesta era la adecuada." };
+  if (huboErrorIa && !detectoTodo)
+    return { perfecto: false, titulo: "Buen trabajo, sigue practicando",
+             texto: "En este caso la IA se equivocó a propósito en alguna etapa. Revisa la retroalimentación: la sugerencia de la IA es un apoyo, no la última palabra." };
+  return { perfecto: false, titulo: "Buen trabajo, sigue practicando",
+           texto: "Cada caso que completas te ayuda a entender mejor tu examen. Revisa la retroalimentación y vuelve a intentarlo cuando quieras." };
+}
+
 function ResumenCaso({ r, volver }: { r: Resumen; volver: () => void }) {
   const min = Math.floor(r.tiempo_segundos / 60);
-  const perfecto = r.aciertos === r.etapas && r.errores_ia_detectados === r.errores_ia;
+  const mensaje = mensajeResumen(r);
 
   return (
     <div className="tarjeta estrecha">
       <h1>Resumen: {r.titulo}</h1>
 
-      {/* Banner Motivacional Interactivo */}
-      <div 
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "14px",
-          padding: "14px 18px",
-          borderRadius: "12px",
-          backgroundColor: perfecto ? "#e6f4ea" : "#fef7e0",
-          border: `2px solid ${perfecto ? "#34a853" : "#fbbc04"}`,
-          margin: "18px 0",
-          color: perfecto ? "#137333" : "#b06000"
-        }}
-      >
-        <span style={{ fontSize: "2.2rem" }}>{perfecto ? "🩺" : "🎓"}</span>
-        <div>
-          <strong style={{ display: "block", fontSize: "1.05rem", marginBottom: "2px" }}>
-            {perfecto ? "¡Desempeño impecable! 🎉" : "¡Buen esfuerzo de aprendizaje! 📚"}
-          </strong>
-          <span style={{ fontSize: "0.88rem", lineHeight: "1.3", display: "block" }}>
-            {perfecto 
-              ? "¡Excelente trabajo! Resolviste todas las etapas con precisión y detectaste el error de la IA. ¡Demostraste un juicio clínico intachable!" 
-              : "Cada caso completado fortalece tu criterio médico. Revisa la retroalimentación para seguir afinando tu interpretación ante la IA."}
-          </span>
-        </div>
+      <div className={`animo ${mensaje.perfecto ? "animo-logrado" : "animo-practica"}`} role="status">
+        <strong>{mensaje.titulo}</strong>
+        <p>{mensaje.texto}</p>
       </div>
 
       <dl className="cifras">

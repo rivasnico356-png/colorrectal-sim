@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { api, fecha } from "../api";
 
+// Números con coma decimal, como se escriben en español (1,7 y no 1.7).
+const decimal = (n: number | null) => (n === null ? "—" : n.toLocaleString("es-CO", { maximumFractionDigits: 1 }));
+
 export interface DatosProgreso {
   puntaje_acumulado: number; nivel: string | null; siguiente_nivel_desde: number | null;
   porcentaje_aciertos: number | null; tasa_deteccion_errores_ia: number | null;
@@ -35,8 +38,8 @@ export function VistaProgreso({ p, historial }: { p: DatosProgreso; historial: I
         </div>
       )}
       <h2>Calibración de tu confianza</h2>
-      <p>Cuando aciertas declaras en promedio <strong>{p.calibracion.confianza_en_aciertos ?? "—"}</strong> de 5; cuando te equivocas,
-        <strong> {p.calibracion.confianza_en_errores ?? "—"}</strong> de 5. {p.calibracion.explicacion}</p>
+      <p>Cuando aciertas declaras en promedio <strong>{decimal(p.calibracion.confianza_en_aciertos)}</strong> de 5; cuando te equivocas,
+        <strong> {decimal(p.calibracion.confianza_en_errores)}</strong> de 5. {p.calibracion.explicacion}</p>
       {p.insignias.length > 0 && (
         <>
           <h2>Insignias</h2>
