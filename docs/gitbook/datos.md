@@ -24,4 +24,4 @@ PostgreSQL 16 con **23 tablas**. El esquema se crea con siete scripts numerados 
 ## En la demostración pública
 
 * La base es PostgreSQL 16 gratuita de Render (`colorrectal-sim-db`). Vence hacia el 12-12-2026; antes hay que respaldarla o pasarla a otro plan.
-* Con `ENTORNO=demostracion` la API rechaza subir estudios propios (responde 403), para no recibir datos reales de pacientes.
+* Con `ENTORNO=demostracion` la API rechaza subir estudios propios (responde 403), para no recibir datos reales de personas, salvo que `ESTUDIOS_EN_DEMO=1`: entonces los acepta con el aviso de usar solo imágenes de datasets públicos como HyperKvasir.

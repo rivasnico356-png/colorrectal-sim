@@ -1,7 +1,7 @@
 # 🩺 Colorrectal-Sim
 
-![Estado](https://img.shields.io/badge/estado-en%20desarrollo-yellow)
-![Versión](https://img.shields.io/badge/versión-0.5.0-blue)
+![Estado](https://img.shields.io/badge/estado-versión%201.0-green)
+![Versión](https://img.shields.io/badge/versión-1.0.1-blue)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
@@ -30,7 +30,7 @@ Proyecto ONCO-AI_USC 2026 B · Universidad Santiago de Cali.
 - **Progreso y niveles** (Explorador, Analista, Experto).
 - **Estudios propios**: la persona puede cargar imágenes de su colonoscopia; se quitan los datos personales, se guardan cifradas y un modelo experimental marca regiones de interés.
 - **Protección de datos** según la Ley 1581 de 2012: autorizaciones que se pueden revocar, contraseñas con hash, supresión de la cuenta y exportación seudonimizada.
-- **Accesible y en español**, pensado para personas con cáncer colorrectal.
+- **Accesible y en español**, pensado para el Usuario: una persona adulta, sin formación médica, que usa la plataforma para aprender con casos simulados, cargar sus propios estudios y consultar su progreso. Es el usuario final del sistema.
 
 ## 🚀 Tecnologías
 
@@ -123,9 +123,9 @@ colorrectal-sim/
 
 1. En [Render](https://render.com) entra con GitHub y elige **New › Blueprint** sobre este repositorio.
 2. Escribe en el panel `ADMIN_CORREO` y `ADMIN_CONTRASENA` (primer administrador) y, si se tiene, `IA_API_KEY`.
-3. Al arrancar, `python -m app.preparar` carga el esquema, crea el administrador y publica un caso de demostración con texto de prueba. La contraseña del administrador inicial siempre queda igual a `ADMIN_CONTRASENA`: para cambiarla, se cambia la variable en Render.
+3. Al arrancar, `python -m app.preparar` carga el esquema, crea el administrador y publica los casos de la demostración: el caso de demostración, el caso de tamizaje y el Caso 2 de visión computacional, con imágenes de HyperKvasir. La contraseña del administrador inicial siempre queda igual a `ADMIN_CONTRASENA`: para cambiarla, se cambia la variable en Render.
 
-Limitaciones del plan gratuito: el servicio se duerme tras 15 minutos sin uso y tarda cerca de un minuto en despertar; la base gratuita vence a los 30 días. Las imágenes y videos de los casos se guardan en la base, así que no se pierden al reiniciar. En la demostración (`ENTORNO=demostracion`) no se pueden cargar estudios propios, para no recibir datos reales de personas en un servidor de pruebas (Ley 1581 de 2012).
+Limitaciones del plan gratuito: el servicio se duerme tras 15 minutos sin uso y tarda cerca de un minuto en despertar; la base gratuita vence a los 30 días. Las imágenes y videos de los casos se guardan en la base, así que no se pierden al reiniciar. En la demostración (`ENTORNO=demostracion`) los estudios propios solo se pueden cargar si `ESTUDIOS_EN_DEMO=1` (así está en `render.yaml`), con un aviso de usar solo imágenes de datasets públicos como HyperKvasir y nunca estudios reales (Ley 1581 de 2012). El estudio se guarda cifrado en la base.
 
 ### Versión 1.0
 

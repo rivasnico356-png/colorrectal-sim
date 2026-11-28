@@ -1,86 +1,118 @@
 {
-  "id_caso": 2,
-  "titulo": "Detección y Caracterización de Pólipos por Visión Computacional",
-  "descripcion": "Caso interactivo enfocado en el uso del modelo de visión, delimitación de regiones de interés (ROI), evaluación de confianza y discriminación de falsos positivos en colonoscopia.",
-  "contexto_simulado": "Paciente masculino de 58 años que acude a colonoscopia de tamizaje. El estudio explora el colon ascendente y el ángulo hepático.",
+  "id": "caso-vision-polipos",
+  "titulo": "Visión computacional en colonoscopia: qué ve el modelo y cuándo dudar de él",
+  "tema": "pólipos",
+  "nivel": 2,
+  "descripcion": "Caso educativo sobre cómo leer el resultado del modelo de visión: qué significa la confianza, por qué una imagen de mala calidad no permite descartar lesiones y para qué se revisan los bordes después de retirar un pólipo. Elaborado por el equipo a partir del aporte de Valentina Ramírez (PR #36 a #38); pendiente de validación clínica. No reemplaza la consulta médica.",
+  "creditos_imagenes": "Imágenes de HyperKvasir (Borgli et al., 2020), licencia CC BY 4.0.",
+  "paciente": {
+    "nota": "Persona simulada de 58 años en una colonoscopia de tamizaje. Todos los datos son ficticios."
+  },
   "etapas": [
     {
-      "id_etapa": 1,
-      "enunciado": "Durante la exploración del colon ascendente, el modelo de visión identifica una elevación mucosa con 94.8% de confianza. Revisa el visor y la caja ROI. ¿Cuál es la conducta adecuada?",
-      "recursos": [
-        {
-          "url": "/polipo_sesil_etapa1.jpg",
-          "tipo": "imagen",
-          "dataset": "HyperKvasir",
-          "licencia": "CC BY 4.0"
-        }
-      ],
-      "modelo_vision": {
-        "disponible": true,
-        "clasificacion": "Pólipo sésil (París 0-IIa)",
-        "confianza": 94.8,
-        "que_significa": "Alta concordancia visual con lesiones elevadas no pedunculadas en el dataset de entrenamiento.",
-        "rotulo": "Resultado experimental de apoyo a la detección e interpretación; no reemplaza el juicio clínico profesional.",
-        "roi": { "x": 0.52, "y": 0.22, "ancho": 0.24, "alto": 0.30 }
+      "etapa": 1,
+      "titulo": "¿Qué significa la confianza?",
+      "imagen_url": "polipo_vision_etapa1.jpg",
+      "modelo_vision_activo": true,
+      "enunciado": "El modelo de visión analizó la imagen y marcó una región con un recuadro. Arriba ves su resultado y su porcentaje de confianza. ¿Qué significa ese porcentaje?",
+      "sugerencia_ia": {
+        "texto": "Que lo que ve se parece mucho a los pólipos con que fue entrenado; la decisión la toma el equipo médico.",
+        "es_correcta": true
       },
       "opciones": [
-        { "id_opcion": 1, "texto": "Confirmar lesión sésil delimitada por el modelo de visión y planear polipectomía / resección de mucosa." },
-        { "id_opcion": 2, "texto": "Desestimar el hallazgo por tratarse de un pliegue mucoso fisiológico normal." },
-        { "id_opcion": 3, "texto": "Detener el examen y diferir el estudio a tomografía computarizada." }
+        {
+          "texto": "Que hay esa misma probabilidad de que la lesión sea cáncer",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "La confianza no es una probabilidad de enfermedad. Solo indica qué tan parecida es la imagen a los ejemplos con que se entrenó el modelo."
+        },
+        {
+          "texto": "Que lo que ve se parece mucho a los pólipos con que fue entrenado; la decisión la toma el equipo médico",
+          "puntos": 100,
+          "correcta": true,
+          "sugerida_por_ia": true,
+          "retroalimentacion": "Correcto. El modelo señala una región parecida a un pólipo para ayudar a mirarla, pero no confirma qué es ni decide la conducta."
+        },
+        {
+          "texto": "Que la lesión se debe retirar sin más evaluación",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "El resultado del modelo es experimental y de apoyo. Cómo seguir lo decide el equipo médico con todo el examen."
+        }
       ],
-      "respuesta_correcta": 1
+      "fuente": "Rótulo y explicación del modelo de visión del simulador (RNF-007); modelo entrenado con HyperKvasir (Borgli et al., 2020)"
     },
     {
-      "id_etapa": 2,
-      "enunciado": "En el ángulo hepático, el modelo marca un área con 62.4% de confianza. Al aplicar aspiración y lavado con agua, la mancha se desplaza. ¿Cómo evalúas el resultado del modelo?",
-      "recursos": [
-        {
-          "url": "/artefacto_etapa2.jpg",
-          "tipo": "imagen",
-          "dataset": "HyperKvasir",
-          "licencia": "CC BY 4.0"
-        }
-      ],
-      "modelo_vision": {
-        "disponible": true,
-        "clasificacion": "Posible lesión / Artefacto fecal",
-        "confianza": 62.4,
-        "que_significa": "Confianza moderada-baja. El patrón presenta textura compatible con contenido fecal o sombra de pliegue.",
-        "rotulo": "Resultado experimental de apoyo a la detección e interpretación; no reemplaza el juicio clínico profesional.",
-        "roi": { "x": 0.30, "y": 0.40, "ancho": 0.18, "alto": 0.15 }
+      "etapa": 2,
+      "titulo": "Cuando la imagen no es buena",
+      "imagen_url": "preparacion_vision_etapa2.jpg",
+      "modelo_vision_activo": true,
+      "enunciado": "En otro tramo del colon quedan restos que cubren la mucosa: la preparación no fue adecuada. Mira lo que responde el modelo arriba. ¿Qué conclusión es la correcta?",
+      "sugerencia_ia": {
+        "texto": "Que el colon está sano, porque el modelo no encontró una región sospechosa.",
+        "es_correcta": false
       },
       "opciones": [
-        { "id_opcion": 1, "texto": "Identificar falso positivo de la IA generado por residuo fecal / artefacto tras el lavado de mucosa." },
-        { "id_opcion": 2, "texto": "Tomar biopsia a ciegas del tejido sin limpiar la zona." },
-        { "id_opcion": 3, "texto": "Confirmar neoplasia maligna definitiva basada en la sugerencia del modelo." }
+        {
+          "texto": "El colon está sano, porque el modelo no encontró una región sospechosa",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": true,
+          "retroalimentacion": "Aquí la IA se equivocó a propósito. Si los restos tapan la mucosa, ni el modelo ni el médico pueden ver bien, así que un resultado sin hallazgos no da tranquilidad."
+        },
+        {
+          "texto": "No se puede descartar una lesión: con restos que tapan la mucosa, la calidad del examen no es suficiente",
+          "puntos": 100,
+          "correcta": true,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "Correcto. Una colonoscopia de calidad necesita una limpieza suficiente para ver los pólipos. Si no la hay, cómo seguir lo decide el equipo médico."
+        },
+        {
+          "texto": "El modelo no sirve y hay que ignorarlo siempre",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "El modelo puede ayudar cuando la imagen es buena. El problema de este tramo es la preparación, no la herramienta."
+        }
       ],
-      "respuesta_correcta": 1
+      "fuente": "Aponte-Martín et al. (2025), guía colombiana de tamizaje, Recomendación 5 y punto de buena práctica 4"
     },
     {
-      "id_etapa": 3,
-      "enunciado": "En el colon descendente se aprecia una lesión de pedículo largo (París Ip). El modelo resalta la estructura completa. ¿Cuál es el procedimiento técnico recomendado previo al corte?",
-      "recursos": [
-        {
-          "url": "/polipo_pedunculado_etapa3.jpg",
-          "tipo": "imagen",
-          "dataset": "HyperKvasir",
-          "licencia": "CC BY 4.0"
-        }
-      ],
-      "modelo_vision": {
-        "disponible": true,
-        "clasificacion": "Pólipo pedunculado (París Ip)",
-        "confianza": 97.2,
-        "que_significa": "Fuerte delimitación de pedículo con cabeza lobulada.",
-        "rotulo": "Resultado experimental de apoyo a la detección e interpretación; no reemplaza el juicio clínico profesional.",
-        "roi": { "x": 0.20, "y": 0.15, "ancho": 0.45, "alto": 0.50 }
+      "etapa": 3,
+      "titulo": "Después de retirar el pólipo",
+      "imagen_url": "reseccion_vision_etapa3.jpg",
+      "modelo_vision_activo": false,
+      "enunciado": "La imagen muestra el sitio donde se retiró un pólipo, teñido para ver mejor sus bordes. En esta etapa no se usa el modelo de visión. ¿Para qué se revisan los bordes?",
+      "sugerencia_ia": {
+        "texto": "Para comprobar que no quedó tejido de la lesión.",
+        "es_correcta": true
       },
       "opciones": [
-        { "id_opcion": 1, "texto": "Asegurar el pedículo (inyección / endoloop o diatermia) y realizar resección completa con asa." },
-        { "id_opcion": 2, "texto": "Remover únicamente la superficie superior con pinza de biopsia estándar." },
-        { "id_opcion": 3, "texto": "Dejar la lesión in situ y recomendar seguimiento en 10 años." }
+        {
+          "texto": "Para comprobar que no quedó tejido de la lesión",
+          "puntos": 100,
+          "correcta": true,
+          "sugerida_por_ia": true,
+          "retroalimentacion": "Correcto. El tinte ayuda a ver los bordes del sitio de resección y a confirmar que la lesión se retiró por completo; luego la patología confirma qué era."
+        },
+        {
+          "texto": "Para medir el porcentaje de confianza del modelo",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "En esta etapa no se usa el modelo. La revisión de los bordes la hace el equipo médico durante el procedimiento."
+        },
+        {
+          "texto": "Para decidir a qué edad empezar el tamizaje",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "La edad de inicio se decide antes del examen. Revisar los bordes sirve para saber si la resección fue completa."
+        }
       ],
-      "respuesta_correcta": 1
+      "fuente": "HyperKvasir, clase «dyed-resection-margins»: sitio de resección teñido (Borgli et al., 2020)"
     }
   ]
 }

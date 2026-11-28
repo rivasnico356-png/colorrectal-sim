@@ -14,7 +14,7 @@ Estados: **Implementado** (código y prueba automática), **Parcial** (falta alg
 | 1.5 | Administración de usuarios | Implementado | `usuarios/router.py`, `Admin.tsx` | `test_flujo::test_administracion_de_usuarios` |
 | 1.6 | Vínculo directo Usuario–Profesional | Implementado | `vinculos/router.py` | `test_flujo::test_simulacion_completa…` |
 | 2.1 / 2.1b / 2.1c | Crear, editar (con versiones) y eliminar casos | Implementado | `casos/service.py` | `test_flujo::test_borrador_no_aparece_y_editar_conserva_version` |
-| 2.1 (contenido) | Casos publicados en la demostración: caso de demostración (2 etapas) y caso de tamizaje de 3 etapas (aporte de Valentina, PR #25) | Implementado | `preparar.py::publicar_caso_tamizaje`, `demo/caso_tamizaje.json` | `test_preparar::test_caso_de_tamizaje_se_publica_una_vez_con_sus_imagenes` |
+| 2.1 (contenido) | Casos publicados en la demostración: caso de demostración (2 etapas), caso de tamizaje de 3 etapas (PR #25 y #26) y Caso 2 de visión computacional (PR #36 a #38, corregido en el PR #40) | Implementado | `preparar.py::publicar_caso_tamizaje`, `preparar.py::publicar_caso_vision`, `demo/*.json` | `test_preparar::test_caso_de_tamizaje_se_publica_una_vez_con_sus_imagenes`, `test_preparar::test_caso_de_vision_reemplaza_la_version_anterior_y_usa_fotos_reales` |
 | 2.2 | Recursos multimedia con dataset y licencia, guardados en la base | Implementado | `casos/service.py::guardar_recurso`, `casos/medios.py`, `db/05` | `test_flujo::test_recurso_multimedia_exige_formato_dataset_y_licencia` |
 | 2.3 / 2.4 | Opciones, puntaje, explicación, fuente y recomendación de la IA | Implementado | `casos/schemas.py` | `test_reglas` |
 | 2.5 | Revisión por persona distinta al autor y publicación | Implementado | `casos/service.py::revisar` | `test_flujo` |
@@ -42,7 +42,7 @@ Modelo de visión entrenado el 12-11-2026 con Kvasir-SEG (800/100/100 imágenes,
 | RNF-003 Seguridad | Implementado | bcrypt, roles, secretos en variables de entorno, gitleaks, estudios cifrados, cabeceras de seguridad, OWASP ZAP sin fallas ni avisos (120 reglas), pip-audit y npm audit de producción sin vulnerabilidades. HTTPS en el enlace público de Render. La demostración no recibe estudios propios (Ley 1581) |
 | RNF-004 Usabilidad | Pendiente | Cuestionario SUS con 5 personas |
 | RNF-005 Web y móvil | Implementado | Flujo completo aprobado en Chrome, Firefox, Safari (WebKit), Chrome Android y Safari iPhone, sin desborde horizontal ([resultados](pruebas-no-funcionales.md)). Falta confirmarlo en un teléfono físico |
-| RNF-006 Mantenibilidad | Parcial | Docker, CI y pruebas; etiquetas `v0.1` y `v0.5` creadas. Faltan `v0.9` y `v1.0`, que se crean con la Release 1.0 (develop → qa → main) |
+| RNF-006 Mantenibilidad | Implementado | Docker, CI y pruebas (87 pruebas, 91 % de cobertura). Etiquetas y Releases `v0.1`, `v0.5`, `v0.9` y `v1.0` publicadas en GitHub; `v1.0` sobre `main` (commit 5a2545b, 26-11-2026), aprobada en `qa` por María Camila Viveros (PR #34) y en `main` por Juan Camilo Paredes (PR #39) |
 | RNF-007 Transparencia de la IA | Implementado | Rótulo exacto del SRS (`core/textos.py`); versiones de modelo y prompt guardadas en `interaccion_ia` |
 | RNF-008 Accesibilidad | Implementado | Lighthouse: 100 en accesibilidad (escritorio y móvil); axe sin hallazgos en las 10 pantallas del flujo en los 5 navegadores |
 
