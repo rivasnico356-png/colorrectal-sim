@@ -40,4 +40,4 @@ Todas las consultas entran por la fachada del tutor (`FachadaTutor`), que hace s
 | `validacion.py` | La cadena de validación |
 | `servicio.py` | `ServicioTutor` y las estrategias |
 | `proveedores.py` | Adaptadores de IA y `FabricaProveedores` |
-| `prompt.py` | El prompt del sistema, versionado (`tutor-v0.3`). Cualquier cambio en el texto sube la versión |
+| `prompt.py` | El prompt del sistema, versionado (`tutor-v0.4`). Cualquier cambio en el texto sube la versión |

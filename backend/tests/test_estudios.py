@@ -11,6 +11,7 @@ from app.core.correo import buzon_desarrollo
 from app.core.textos import ROTULO_IA
 from app.modules.estudios import seguridad
 from app.modules.estudios.vision import CON_REGION, SIN_REGION, ResultadoVision, fijar_modelo, resultado_desde_mascara
+from app.modules.tutor.prompt import VERSION_PROMPT
 from tests.conftest import DB_URL, correo, crear_profesional, registrar_usuario, requiere_db, token
 
 API = "/api/v1"
@@ -168,6 +169,9 @@ def test_estudio_completo_compartir_comentar_y_eliminar(cliente, admin, modelo_f
     detalle = cliente.get(f"{API}/estudios/{id_estudio}", headers=cab).json()
     assert detalle["interpretacion"]["clasificacion"] == CON_REGION and detalle["interpretacion"]["rotulo"] == ROTULO_IA
     assert detalle["interpretacion"]["explicacion"]  # explicación del tutor (predefinida si no hay IA)
+    # RNF-007: la interpretación guarda la versión del modelo y la del prompt del tutor.
+    assert detalle["interpretacion"]["version_modelo"] == ModeloFalso.version
+    assert detalle["interpretacion"]["version_prompt"] == VERSION_PROMPT
     imagen = cliente.get(f"{API}/estudios/{id_estudio}/imagen", headers=cab)
     assert imagen.status_code == 200 and not Image.open(io.BytesIO(imagen.content)).getexif()
 
