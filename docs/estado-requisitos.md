@@ -31,7 +31,7 @@ Estados: **Implementado** (código y prueba automática), **Parcial** (falta alg
 | 9.1–9.3 | Autorizaciones, consulta, rectificación y supresión | Implementado | `privacidad/router.py` | `test_flujo::test_privacidad_rectificar_y_suprimir` |
 | 10.1–10.5 | Estudios propios: carga, desidentificación, interpretación, compartir, eliminar | Implementado | `estudios/` | `test_estudios` (en el enlace público de demostración la carga está desactivada, Ley 1581) |
 
-Modelo de visión entrenado el 12-11-2026 con Kvasir-SEG (800/100/100 imágenes, semilla 2026, 30 épocas en CPU): **Dice 0,872 e IoU 0,805** en la partición de prueba. Falta medir la generalización con PolypGen (requiere registro). Sin el archivo del modelo, la plataforma informa que no está disponible (`vision/README.md`).
+Modelo de visión entrenado el 12-11-2026 con las 1.000 imágenes segmentadas de pólipos de HyperKvasir (800/100/100 imágenes, semilla 2026, 30 épocas en CPU): **Dice 0,872 e IoU 0,805** en la partición de prueba. Falta medir la generalización con PolypGen (requiere registro). Sin el archivo del modelo, la plataforma informa que no está disponible (`vision/README.md`).
 
 ## No funcionales
 
@@ -40,9 +40,9 @@ Modelo de visión entrenado el 12-11-2026 con Kvasir-SEG (800/100/100 imágenes,
 | RNF-001 Rendimiento | Implementado | Carga con 30 usuarios: p90 10 ms y 0 % de errores; estrés hasta 150 usuarios sin fallas ([resultados](pruebas-no-funcionales.md)) |
 | RNF-002 Disponibilidad | Implementado | Monitoreo automático del enlace público cada 2 horas (`.github/workflows/monitoreo.yml`). Del 12-11 al 24-11-2026: 38 de 38 muestras exitosas = **100 %** (meta: más de 95 %). GitHub omitió parte de las corridas programadas (se esperaban unas 146), así que la medición tiene menos muestras de las previstas |
 | RNF-003 Seguridad | Implementado | bcrypt, roles, secretos en variables de entorno, gitleaks, estudios cifrados, cabeceras de seguridad, OWASP ZAP sin fallas ni avisos (120 reglas), pip-audit y npm audit de producción sin vulnerabilidades. HTTPS en el enlace público de Render. La demostración no recibe estudios propios (Ley 1581) |
-| RNF-004 Usabilidad | Pendiente | Cuestionario SUS con 5 personas |
+| RNF-004 Usabilidad | Implementado | Cuestionario SUS (formulario de Google) respondido por 5 personas de 19 a 45 años: puntajes 82,5, 92,5, 52,5, 82,5 y 32,5; **promedio 68,5** (meta: 68 o más). Fuente: calculadora SUS del equipo (filas P6 a P10; las filas P1 a P5 son copias usadas para probar la calculadora). Dos participantes quedaron por debajo de 68, con lo que la usabilidad cumple la meta por poco margen |
 | RNF-005 Web y móvil | Implementado | Flujo completo aprobado en Chrome, Firefox, Safari (WebKit), Chrome Android y Safari iPhone, sin desborde horizontal ([resultados](pruebas-no-funcionales.md)). Falta confirmarlo en un teléfono físico |
-| RNF-006 Mantenibilidad | Implementado | Docker, CI y pruebas (87 pruebas, 91 % de cobertura). Etiquetas y Releases `v0.1`, `v0.5`, `v0.9` y `v1.0` publicadas en GitHub; `v1.0` sobre `main` (commit 5a2545b, 26-11-2026), aprobada en `qa` por María Camila Viveros (PR #34) y en `main` por Juan Camilo Paredes (PR #39) |
+| RNF-006 Mantenibilidad | Implementado | Docker, CI y pruebas (91 pruebas, 91 % de cobertura). Etiquetas y Releases `v0.1`, `v0.5`, `v0.9`, `v1.0` y `v1.0.1` publicadas en GitHub; `v1.0` sobre `main` (commit 5a2545b, 26-11-2026), aprobada en `qa` por María Camila Viveros (PR #34) y en `main` por Juan Camilo Paredes (PR #39) |
 | RNF-007 Transparencia de la IA | Implementado | Rótulo exacto del SRS (`core/textos.py`). Versiones de modelo y prompt guardadas en `interaccion_ia` (la recomendación escrita por el autor del caso queda como `configurada`) y en `interpretacion_estudio` para los estudios propios (`db/09`) |
 | RNF-008 Accesibilidad | Implementado | Lighthouse: 100 en accesibilidad (escritorio y móvil); axe sin hallazgos en las 10 pantallas del flujo en los 5 navegadores |
 

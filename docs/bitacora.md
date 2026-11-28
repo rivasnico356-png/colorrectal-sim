@@ -7,9 +7,27 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 | Fecha | Qué |
 |---|---|
 | 15-11-2026 | GitBook publicado: https://colorrectal-sim.gitbook.io/colorrectal-sim-docs/ |
-| 25 al 28-11-2026 | Prueba de usabilidad SUS con 5 personas (Plan de Pruebas); formulario en Google Forms creado el 25-11 |
 | 29-11-2026 | Entrega del Informe de Pruebas y Calidad |
 | Hacia el 12-12-2026 | Vence la base de datos gratuita de Render (30 días desde su creación) |
+
+## 28-11-2026
+
+| Hora | Qué | Evidencia | Resultado |
+|---|---|---|---|
+| 12:55 | PR #50: cada una de las 10 etapas clínicas con su propia foto de HyperKvasir (pólipos de la partición de prueba del modelo, preparación deficiente y resección), extraídas con el flujo `imagenes-casos.yml` | PR #50, CI: 91 pruebas, 91 % | Abierto, por aprobar |
+| 12:37 | PR #49: `.env.example` con todas las variables que lee el backend (`JWT_MINUTOS_EXPIRACION` en lugar de `JWT_MINUTOS`, que se ignoraba) | PR #49 (David Muñoz), CI | Fusionado |
+| 12:36 | PR #48: la interpretación de estudios guarda la versión del prompt del tutor y la recomendación configurada queda rotulada (RNF-007, `db/09`) | PR #48 (David Muñoz), CI: 89 pruebas, 91 % | Fusionado |
+| 09:16 | PR #47: Caso 3 «Señales de alarma, antecedentes y resultados» (4 etapas). Con el caso de tamizaje y el Caso 2 suman los 10 escenarios del Acta de constitución | PR #47, aprobado por David Muñoz; demostración en la versión 1.0.2 | Fusionado |
+
+## 27-11-2026
+
+| Hora | Qué | Evidencia | Resultado |
+|---|---|---|---|
+| 22:35 | Resultado del cuestionario SUS (RNF-004) con 5 participantes | Calculadora SUS del equipo (filas P6 a P10) | Promedio 68,5 (meta: 68): cumple |
+| 21:50 | Release v1.0.1 publicada sobre `main` (commit 7726c6d) y marcada como la última versión | GitHub › Releases | Hecho |
+| 21:44 | PR #45 (`qa` → `main`) aprobado por Juan Camilo Paredes | PR #45; CI de `main` | Fusionado |
+| 21:38 | PR #44 (`develop` → `qa`) aprobado por María Camila Viveros | PR #44 | Fusionado |
+| 15:35 | Caso 2 corregido recorrido en la demostración: 3 imágenes reales, modelo de visión en las etapas 1 y 2, IA equivocada a propósito en la 2 | Demostración | Funciona |
 
 ## 26-11-2026
 
