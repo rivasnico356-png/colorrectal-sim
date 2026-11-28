@@ -217,6 +217,10 @@ def test_recurso_multimedia_exige_formato_dataset_y_licencia(cliente, admin, tmp
     assert publicado.status_code == 200 and publicado.content == png
     assert publicado.headers["content-type"] == "image/png"
     assert publicado.headers["cross-origin-resource-policy"] == "same-site"
+    # El navegador revalida con el ETag: si la foto no cambió responde 304; si cambió, se descarga la nueva.
+    assert publicado.headers["cache-control"] == "public, no-cache"
+    assert cliente.get(url_recurso, headers={"If-None-Match": publicado.headers["etag"]}).status_code == 304
+    assert cliente.get(url_recurso, headers={"If-None-Match": '"otra"'}).status_code == 200
     # Peticiones parciales para el visor de video cuadro a cuadro (RF-003 3.3b).
     parcial = cliente.get(url_recurso, headers={"Range": "bytes=0-7"})
     assert parcial.status_code == 206 and parcial.content == png[:8]
