@@ -174,21 +174,23 @@ CASO_VISION = Path(__file__).parent / "demo" / "caso_vision_polipos.json"
 # Caso 3: completa los 10 escenarios clínicos de decisión del Acta de constitución (3 + 3 + 4 etapas; el caso de
 # demostración tiene 2 etapas de práctica sin contenido clínico y no cuenta).
 CASO_SENALES = Path(__file__).parent / "demo" / "caso_senales_alarma.json"
+# Cada etapa clínica tiene su propia foto de HyperKvasir (demo/etapas/, origen en demo/etapas/manifiesto.json): los
+# pólipos son de la partición de prueba del modelo de visión y ninguna foto se repite entre etapas.
 IMAGENES_TAMIZAJE = {
-    "polipo_etapa1.jpg": "IMAGEN_DEMO",
-    "bbps_etapa2.jpg": "preparacion-intestinal.jpg",
-    "reseccion_etapa3.jpg": "reseccion.jpg",
+    "polipo_etapa1.jpg": "etapas/tamizaje_e1_polipo.jpg",
+    "bbps_etapa2.jpg": "etapas/tamizaje_e2_preparacion.jpg",
+    "reseccion_etapa3.jpg": "etapas/tamizaje_e3_reseccion.jpg",
 }
 IMAGENES_VISION = {
-    "polipo_vision_etapa1.jpg": "IMAGEN_DEMO",
-    "preparacion_vision_etapa2.jpg": "preparacion-intestinal.jpg",
-    "reseccion_vision_etapa3.jpg": "reseccion.jpg",
+    "polipo_vision_etapa1.jpg": "etapas/vision_e1_polipo.jpg",
+    "preparacion_vision_etapa2.jpg": "etapas/vision_e2_preparacion.jpg",
+    "reseccion_vision_etapa3.jpg": "etapas/vision_e3_reseccion.jpg",
 }
 IMAGENES_SENALES = {
-    "polipo_senales_etapa1.jpg": "IMAGEN_DEMO",
-    "reseccion_senales_etapa2.jpg": "reseccion.jpg",
-    "polipo_senales_etapa3.jpg": "IMAGEN_DEMO",
-    "preparacion_senales_etapa4.jpg": "preparacion-intestinal.jpg",
+    "polipo_senales_etapa1.jpg": "etapas/senales_e1_polipo.jpg",
+    "reseccion_senales_etapa2.jpg": "etapas/senales_e2_reseccion.jpg",
+    "polipo_senales_etapa3.jpg": "etapas/senales_e3_polipo.jpg",
+    "preparacion_senales_etapa4.jpg": "etapas/senales_e4_preparacion.jpg",
 }
 # Primera versión del Caso 2 (PR #36 a #38): sus imágenes eran fichas de texto de OSF y no fotos, así que se retira.
 TITULO_VISION_ANTERIOR = "Detección y Caracterización de Pólipos por Visión Computacional"
@@ -205,12 +207,41 @@ def _imagen_tamizaje(nombre: str, mapa: dict[str, str] | None = None) -> Path | 
     return ruta if ruta.is_file() else None
 
 
+def actualizar_imagenes_caso(db: Session, id_caso: int, datos: dict, imagenes: dict[str, str]) -> int:
+    """Si un caso ya publicado tiene en alguna etapa una foto distinta de la que fija su mapa, cambia el contenido del
+    recurso por la foto nueva (mismo recurso, así se conservan los intentos). Devuelve cuántas fotos cambió."""
+    cambiadas = 0
+    for etapa in datos["etapas"]:
+        imagen = _imagen_tamizaje(etapa["imagen_url"], imagenes)
+        if imagen is None:
+            continue
+        contenido = imagen.read_bytes()
+        huella = hashlib.sha256(contenido).hexdigest()
+        recurso = db.execute(text("""SELECT r.id_recurso, c.sha256 FROM recurso_multimedia r
+                                     JOIN etapa e ON e.id_etapa = r.id_etapa
+                                     JOIN recurso_contenido c ON c.id_recurso = r.id_recurso
+                                     WHERE e.id_caso = :c AND e.orden = :o AND r.tipo = 'imagen'
+                                     ORDER BY r.id_recurso LIMIT 1"""), {"c": id_caso, "o": etapa["etapa"]}).first()
+        if recurso is None or recurso.sha256 == huella:
+            continue
+        db.execute(text("""UPDATE recurso_contenido SET datos = :d, sha256 = :h, tamano_bytes = :t, tipo_mime = 'image/jpeg'
+                           WHERE id_recurso = :i"""), {"d": contenido, "h": huella, "t": len(contenido), "i": recurso.id_recurso})
+        cambiadas += 1
+    db.commit()
+    if cambiadas:
+        print(f"Caso {datos['titulo']}: {cambiadas} fotos actualizadas.")
+    return cambiadas
+
+
 def _publicar_caso_json(db: Session, ruta: Path, imagenes: dict[str, str], fuente_revision: str) -> int | None:
-    """Publica una sola vez un caso escrito en JSON (formato de caso_tamizaje.json) con sus imágenes de HyperKvasir."""
+    """Publica una sola vez un caso escrito en JSON (formato de caso_tamizaje.json) con sus imágenes de HyperKvasir.
+    Si el caso ya existe, solo pone al día sus fotos."""
     if os.getenv("CASO_DEMO", "") != "1" or not ruta.is_file():
         return None
     datos = json.loads(ruta.read_text(encoding="utf-8"))
-    if db.execute(text("SELECT 1 FROM caso WHERE titulo = :t AND NOT eliminado"), {"t": datos["titulo"]}).first():
+    existente = db.execute(text("SELECT id_caso FROM caso WHERE titulo = :t AND NOT eliminado"), {"t": datos["titulo"]}).scalar()
+    if existente is not None:
+        actualizar_imagenes_caso(db, existente, datos, imagenes)
         return None
     autor = _crear_usuario(db, "Profesional de la salud", "Autor de demostración",
                            f"demo-autor-{secrets.token_hex(3)}@ejemplo.com", secrets.token_urlsafe(24) + "a1")
