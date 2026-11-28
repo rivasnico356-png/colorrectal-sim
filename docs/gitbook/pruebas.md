@@ -8,7 +8,7 @@ Cada cambio en GitHub ejecuta tres revisiones automáticas: **backend** (estilo 
 
 | Indicador | Ciclo 1 (11/11/2026) | Ciclo 2 (22/11/2026) | Ciclo 3 (25/11/2026) | Cierre (28/11/2026) |
 |---|---|---|---|---|
-| Pruebas automáticas del backend | 37 aprobadas | 74 aprobadas | 83 aprobadas | 91 aprobadas, 0 fallidas |
+| Pruebas automáticas del backend | 37 aprobadas | 74 aprobadas | 83 aprobadas | 95 aprobadas, 0 fallidas |
 | Cobertura del backend | 91 % | 90,76 % | 90,83 % | 91 % |
 | Casos de la Matriz de Pruebas Unitarias (42) | 30 aprobados, 7 parciales, 5 sin ejecutar | 41 aprobados | 42 aprobados | 42 aprobados |
 
