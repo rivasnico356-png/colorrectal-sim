@@ -207,6 +207,14 @@ def _imagen_tamizaje(nombre: str, mapa: dict[str, str] | None = None) -> Path | 
     return ruta if ruta.is_file() else None
 
 
+def actualizar_descripcion_caso(db: Session, id_caso: int, descripcion: str) -> bool:
+    """Pone al día la descripción de un caso ya publicado si cambió en su JSON. Devuelve True si la cambió."""
+    cambiada = db.execute(text("""UPDATE caso SET descripcion = :d WHERE id_caso = :c AND descripcion IS DISTINCT FROM :d
+                                  RETURNING id_caso"""), {"d": descripcion, "c": id_caso}).first()
+    db.commit()
+    return cambiada is not None
+
+
 def actualizar_imagenes_caso(db: Session, id_caso: int, datos: dict, imagenes: dict[str, str]) -> int:
     """Si un caso ya publicado tiene en alguna etapa una foto distinta de la que fija su mapa, cambia el contenido del
     recurso por la foto nueva (mismo recurso, así se conservan los intentos). Devuelve cuántas fotos cambió."""
@@ -242,6 +250,7 @@ def _publicar_caso_json(db: Session, ruta: Path, imagenes: dict[str, str], fuent
     existente = db.execute(text("SELECT id_caso FROM caso WHERE titulo = :t AND NOT eliminado"), {"t": datos["titulo"]}).scalar()
     if existente is not None:
         actualizar_imagenes_caso(db, existente, datos, imagenes)
+        actualizar_descripcion_caso(db, existente, datos["descripcion"])
         return None
     autor = _crear_usuario(db, "Profesional de la salud", "Autor de demostración",
                            f"demo-autor-{secrets.token_hex(3)}@ejemplo.com", secrets.token_urlsafe(24) + "a1")

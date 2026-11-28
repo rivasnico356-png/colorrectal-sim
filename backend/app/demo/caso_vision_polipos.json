@@ -3,7 +3,7 @@
   "titulo": "Visión computacional en colonoscopia: qué ve el modelo y cuándo dudar de él",
   "tema": "pólipos",
   "nivel": 2,
-  "descripcion": "Caso educativo sobre cómo leer el resultado del modelo de visión: qué significa la confianza, por qué una imagen de mala calidad no permite descartar lesiones y para qué se revisan los bordes después de retirar un pólipo. Elaborado por el equipo a partir del aporte de Valentina Ramírez (PR #36 a #38); pendiente de validación clínica. No reemplaza la consulta médica.",
+  "descripcion": "Aprendes a leer el resultado del modelo de visión: qué significa la confianza, por qué una imagen de mala calidad no permite descartar lesiones y para qué se revisan los bordes después de retirar un pólipo. Es un caso educativo elaborado por el equipo (pendiente de validación clínica) y no reemplaza la consulta médica.",
   "creditos_imagenes": "Imágenes de HyperKvasir (Borgli et al., 2020), licencia CC BY 4.0.",
   "paciente": {
     "nota": "Persona simulada de 58 años en una colonoscopia de tamizaje. Todos los datos son ficticios."
