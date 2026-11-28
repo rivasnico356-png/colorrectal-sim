@@ -171,6 +171,8 @@ def agregar_imagenes_etapa_2(db: Session, carpeta: str | None = None) -> int:
 # de HyperKvasir; ningún nombre del JSON se carga tal cual.
 CASO_TAMIZAJE = Path(__file__).parent / "demo" / "caso_tamizaje.json"
 CASO_VISION = Path(__file__).parent / "demo" / "caso_vision_polipos.json"
+# Caso 3: completa los 10 escenarios de decisión del Acta de constitución (2 + 3 + 3 + 4 etapas con decisión).
+CASO_SENALES = Path(__file__).parent / "demo" / "caso_senales_alarma.json"
 IMAGENES_TAMIZAJE = {
     "polipo_etapa1.jpg": "IMAGEN_DEMO",
     "bbps_etapa2.jpg": "preparacion-intestinal.jpg",
@@ -180,6 +182,12 @@ IMAGENES_VISION = {
     "polipo_vision_etapa1.jpg": "IMAGEN_DEMO",
     "preparacion_vision_etapa2.jpg": "preparacion-intestinal.jpg",
     "reseccion_vision_etapa3.jpg": "reseccion.jpg",
+}
+IMAGENES_SENALES = {
+    "polipo_senales_etapa1.jpg": "IMAGEN_DEMO",
+    "reseccion_senales_etapa2.jpg": "reseccion.jpg",
+    "polipo_senales_etapa3.jpg": "IMAGEN_DEMO",
+    "preparacion_senales_etapa4.jpg": "preparacion-intestinal.jpg",
 }
 # Primera versión del Caso 2 (PR #36 a #38): sus imágenes eran fichas de texto de OSF y no fotos, así que se retira.
 TITULO_VISION_ANTERIOR = "Detección y Caracterización de Pólipos por Visión Computacional"
@@ -251,6 +259,13 @@ def publicar_caso_vision(db: Session, ruta: Path | None = None) -> int | None:
                                "Aponte-Martín et al. (2025) y documentación del modelo de visión (RNF-007)")
 
 
+def publicar_caso_senales(db: Session, ruta: Path | None = None) -> int | None:
+    """Caso 3: señales de alarma, antecedentes familiares, prueba de sangre oculta positiva y preparación, con la IA
+    equivocada a propósito en la etapa 2."""
+    return _publicar_caso_json(db, ruta or CASO_SENALES, IMAGENES_SENALES,
+                               "Aponte-Martín et al. (2025), guía colombiana de tamizaje")
+
+
 def main() -> None:
     aplicar_esquema()
     with SessionLocal() as db:
@@ -260,6 +275,7 @@ def main() -> None:
         agregar_imagenes_etapa_2(db)
         publicar_caso_tamizaje(db)
         publicar_caso_vision(db)
+        publicar_caso_senales(db)
 
 
 if __name__ == "__main__":

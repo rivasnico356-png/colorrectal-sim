@@ -250,3 +250,53 @@ def test_imagenes_del_caso_de_vision_son_fotos_reales():
             assert (preparar.CASO_VISION.parent / destino).read_bytes().startswith(b"\xff\xd8\xff")
     assert not any(p.read_bytes()[:1] == b"{" for p in preparar.CASO_VISION.parent.glob("*.jpg"))
 
+
+
+def test_imagenes_del_caso_3_existen_y_suman_10_escenarios():
+    """El Caso 3 nombra solo imágenes reales de HyperKvasir y, con los demás casos de la demostración, completa los
+    10 escenarios de decisión del Acta de constitución (2 del caso de demostración + 3 + 3 + 4)."""
+    import json
+
+    datos = json.loads(preparar.CASO_SENALES.read_text(encoding="utf-8"))
+    for etapa in datos["etapas"]:
+        destino = preparar.IMAGENES_SENALES[etapa["imagen_url"]]
+        assert destino == "IMAGEN_DEMO" or (preparar.CASO_SENALES.parent / destino).is_file()
+        assert sum(o["correcta"] for o in etapa["opciones"]) == 1
+    tamizaje = json.loads(preparar.CASO_TAMIZAJE.read_text(encoding="utf-8"))
+    vision = json.loads(preparar.CASO_VISION.read_text(encoding="utf-8"))
+    assert 2 + len(tamizaje["etapas"]) + len(vision["etapas"]) + len(datos["etapas"]) == 10
+
+
+@requiere_db
+def test_caso_3_se_publica_una_vez_con_la_ia_equivocada_en_la_etapa_2(monkeypatch, tmp_path):
+    """Caso 3: 4 etapas con una foto de HyperKvasir cada una, modelo de visión en la etapa 3 e IA errada en la 2."""
+    import json
+    from io import BytesIO
+
+    from PIL import Image
+
+    imagen = tmp_path / "ejemplo-kvasir.jpg"
+    buffer = BytesIO()
+    Image.new("RGB", (64, 64), (175, 85, 80)).save(buffer, "JPEG")
+    imagen.write_bytes(buffer.getvalue())
+    monkeypatch.setenv("CASO_DEMO", "1")
+    monkeypatch.setenv("IMAGEN_DEMO", str(imagen))
+    datos = json.loads(preparar.CASO_SENALES.read_text(encoding="utf-8"))
+    preparar.aplicar_esquema()
+    with SessionLocal() as db:
+        db.execute(text("UPDATE caso SET eliminado = TRUE WHERE titulo = :t"), {"t": datos["titulo"]})
+        db.commit()
+        id_caso = preparar.publicar_caso_senales(db)
+        assert id_caso is not None
+        assert preparar.publicar_caso_senales(db) is None
+        caso = db.execute(text("SELECT estado, tema FROM caso WHERE id_caso = :c"), {"c": id_caso}).one()
+        etapas = db.execute(text("""SELECT e.orden, e.usa_modelo_vision, count(r.id_recurso) AS imagenes FROM etapa e
+                                    LEFT JOIN recurso_multimedia r ON r.id_etapa = e.id_etapa
+                                    WHERE e.id_caso = :c GROUP BY e.orden, e.usa_modelo_vision ORDER BY e.orden"""),
+                            {"c": id_caso}).all()
+        ia_erronea = db.execute(text("""SELECT o.es_correcta FROM opcion_decision o JOIN etapa e ON e.id_etapa = o.id_etapa
+                                        WHERE e.id_caso = :c AND e.orden = 2 AND o.recomendada_ia"""), {"c": id_caso}).scalar()
+    assert caso.estado == "publicado" and caso.tema == "tamizaje"
+    assert [(e.orden, e.usa_modelo_vision, e.imagenes) for e in etapas] == [
+        (1, False, 1), (2, False, 1), (3, True, 1), (4, False, 1)]
+    assert ia_erronea is False

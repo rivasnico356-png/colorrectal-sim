@@ -33,5 +33,18 @@ Caso aportado por Valentina Ramírez (PR #36 a #38) y corregido en el PR siguien
 
 Los porcentajes de confianza y el recuadro los calcula el modelo en el momento; el caso no trae cifras escritas a mano. La primera versión del caso se retira de la biblioteca porque sus tres archivos `.jpg` eran fichas de texto de OSF y no fotos. Pendiente de validación clínica.
 
+## Caso 3: señales de alarma, antecedentes y resultados (`caso_senales_alarma.json`)
+
+Caso de 4 etapas agregado en la v1.0.2 para completar los **10 escenarios de decisión** que fija el Acta de constitución («Se incluirá un conjunto inicial de 10 escenarios»). Cada escenario es un momento de decisión con imagen, recomendación de la IA y decisión del usuario: 2 en el caso de demostración, 3 en el de tamizaje, 3 en el Caso 2 y 4 en este caso.
+
+| Etapa | Tema | Archivo real | Modelo de visión | IA |
+| :---: | :--- | :--- | :---: | :--- |
+| 1 | Señales de alarma: con síntomas no se espera la edad del tamizaje | `modelos/ejemplo-kvasir.jpg` (`IMAGEN_DEMO`), carpeta `polyps` | No | Correcta |
+| 2 | Familiar de primer grado: empezar a los 40 años o 10 años antes de la edad del familiar | `reseccion.jpg`, carpeta `dyed-resection-margins` | No | **Equivocada a propósito** |
+| 3 | Prueba inmunoquímica (FIT) positiva: se estudia con colonoscopia | `modelos/ejemplo-kvasir.jpg` (`IMAGEN_DEMO`), carpeta `polyps` | Sí | Correcta |
+| 4 | Preparación inadecuada: los restos pueden ocultar pólipos | `preparacion-intestinal.jpg`, carpeta `bbps-0-1` | No | Correcta |
+
+Fuente: Aponte-Martín et al. (2025). Pendiente de validación clínica.
+
 ## Cita Académica del Dataset
 Borgli, H., Thambawita, V., Smedsrud, P. H., Hicks, S., Jha, D., Eskeland, S. L., Randel, K. R., Pogorelov, K., Lux, M., Nguyen, D. T. D., Johansen, D., Griwodz, C., Stensland, H. K., Garcia-Ceja, E., Schmidt, P. T., Hammer, H. L., Riegler, M. A., Halvorsen, P., & de Lange, T. (2020). *HyperKvasir, a comprehensive multi-class image and video dataset for gastrointestinal endoscopy*. Scientific Data, 7(1), 283. https://doi.org/10.1038/s41597-020-00622-y
