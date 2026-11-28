@@ -6,15 +6,16 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 
 | Fecha | Qué |
 |---|---|
-| 15-11-2026 | GitBook publicado: https://colorrectal-sim.gitbook.io/colorrectal-sim-docs/ |
-| 29-11-2026 | Entrega del Informe de Pruebas y Calidad |
-| Hacia el 12-12-2026 | Vence la base de datos gratuita de Render (30 días desde su creación) |
+| 29-11-2026 | Entregas de cierre en Moodle (plan e informe de pruebas, artefactos TSP, acta de cierre, documentación completa, manual de usuario, informe final, enlaces y video) y sustentación |
+| Hacia el 12-12-2026 | Vence la base de datos gratuita de Render (30 días desde su creación): respaldarla antes |
 
 ## 28-11-2026
 
 | Hora | Qué | Evidencia | Resultado |
 |---|---|---|---|
-| 12:55 | PR #50: cada una de las 10 etapas clínicas con su propia foto de HyperKvasir (pólipos de la partición de prueba del modelo, preparación deficiente y resección), extraídas con el flujo `imagenes-casos.yml` | PR #50, CI: 91 pruebas, 91 % | Abierto, por aprobar |
+| 13:05 | PR #51: GitBook al día (versión 1.0.2, casos publicados con sus 10 escenarios, aviso de la demostración y fechas reales de los hitos) | PR #51 | Abierto |
+| 13:01 | PR #46: resultado del SUS (RNF-004 implementado), resultados finales de pruebas y bitácora | PR #46, aprobado por Juan Camilo Paredes | Fusionado |
+| 12:55 | PR #50: cada una de las 10 etapas clínicas con su propia foto de HyperKvasir (pólipos de la partición de prueba del modelo, preparación deficiente y resección), extraídas con el flujo `imagenes-casos.yml` | PR #50, aprobado por Juan Camilo Paredes; CI: 91 pruebas, 91 % | Fusionado (13:02) |
 | 12:37 | PR #49: `.env.example` con todas las variables que lee el backend (`JWT_MINUTOS_EXPIRACION` en lugar de `JWT_MINUTOS`, que se ignoraba) | PR #49 (David Muñoz), CI | Fusionado |
 | 12:36 | PR #48: la interpretación de estudios guarda la versión del prompt del tutor y la recomendación configurada queda rotulada (RNF-007, `db/09`) | PR #48 (David Muñoz), CI: 89 pruebas, 91 % | Fusionado |
 | 09:16 | PR #47: Caso 3 «Señales de alarma, antecedentes y resultados» (4 etapas). Con el caso de tamizaje y el Caso 2 suman los 10 escenarios del Acta de constitución | PR #47, aprobado por David Muñoz; demostración en la versión 1.0.2 | Fusionado |
