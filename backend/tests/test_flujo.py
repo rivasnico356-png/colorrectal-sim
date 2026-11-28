@@ -2,7 +2,9 @@
 
 Los casos de estas pruebas son datos de prueba del software, no contenido clínico.
 """
-from tests.conftest import correo, crear_profesional, registrar_usuario, requiere_db, token
+from sqlalchemy import create_engine, text
+
+from tests.conftest import DB_URL, correo, crear_profesional, registrar_usuario, requiere_db, token
 
 API = "/api/v1"
 
@@ -85,6 +87,11 @@ def test_simulacion_completa_con_tutor_progreso_y_profesional(cliente, admin):
     assert estado["progreso"] == {"actual": 1, "total": 2}
     assert "es_correcta" not in str(etapa["opciones"])  # la solución no se envía antes de decidir
     assert etapa["recomendacion_ia"]["rotulo"].startswith("Resultado experimental de apoyo")
+    # RNF-007: toda salida registrada de la IA lleva versión de modelo y de prompt, también la recomendación configurada.
+    with create_engine(DB_URL).connect() as c:
+        sin_version = c.execute(text("""SELECT count(*) FROM interaccion_ia WHERE id_intento = :i
+                                        AND (version_modelo IS NULL OR version_prompt IS NULL)"""), {"i": id_intento}).scalar()
+    assert sin_version == 0
 
     # RF-004 4.5: sin clave de IA, el tutor responde con la explicación predefinida y no bloquea.
     tutor = cliente.post(f"{API}/intentos/{id_intento}/etapas/{etapa['id_etapa']}/tutor", headers=usuario, json={})
