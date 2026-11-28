@@ -43,7 +43,7 @@ Modelo de visión entrenado el 12-11-2026 con Kvasir-SEG (800/100/100 imágenes,
 | RNF-004 Usabilidad | Pendiente | Cuestionario SUS con 5 personas |
 | RNF-005 Web y móvil | Implementado | Flujo completo aprobado en Chrome, Firefox, Safari (WebKit), Chrome Android y Safari iPhone, sin desborde horizontal ([resultados](pruebas-no-funcionales.md)). Falta confirmarlo en un teléfono físico |
 | RNF-006 Mantenibilidad | Implementado | Docker, CI y pruebas (87 pruebas, 91 % de cobertura). Etiquetas y Releases `v0.1`, `v0.5`, `v0.9` y `v1.0` publicadas en GitHub; `v1.0` sobre `main` (commit 5a2545b, 26-11-2026), aprobada en `qa` por María Camila Viveros (PR #34) y en `main` por Juan Camilo Paredes (PR #39) |
-| RNF-007 Transparencia de la IA | Implementado | Rótulo exacto del SRS (`core/textos.py`); versiones de modelo y prompt guardadas en `interaccion_ia` |
+| RNF-007 Transparencia de la IA | Implementado | Rótulo exacto del SRS (`core/textos.py`). Versiones de modelo y prompt guardadas en `interaccion_ia` (la recomendación escrita por el autor del caso queda como `configurada`) y en `interpretacion_estudio` para los estudios propios (`db/09`) |
 | RNF-008 Accesibilidad | Implementado | Lighthouse: 100 en accesibilidad (escritorio y móvil); axe sin hallazgos en las 10 pantallas del flujo en los 5 navegadores |
 
 ## Cambios que deben reflejarse en los documentos

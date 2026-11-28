@@ -17,6 +17,7 @@ from app.modules.estudios import seguridad
 from app.modules.estudios.procesamiento import ProcesadorEstudioPropio
 from app.modules.estudios.vision import CON_REGION, ResultadoVision
 from app.modules.tutor.fachada import FachadaTutor
+from app.modules.tutor.prompt import VERSION_PROMPT
 from app.modules.usuarios.service import bitacora
 
 router = APIRouter(tags=["Estudios propios"])
@@ -48,10 +49,12 @@ def _interpretar(db: Session, id_estudio: int, r: ResultadoVision | None) -> boo
         return False
     con_region = r.clasificacion == CON_REGION
     explicacion = FachadaTutor().explicar_estudio(r.clasificacion, r.confianza, EXPLICACION_FIJA[con_region], PREGUNTA_ESTUDIO)
-    db.execute(text("""INSERT INTO interpretacion_estudio (id_estudio, roi, clasificacion, confianza, explicacion, version_modelo)
-                       VALUES (:e, CAST(:r AS jsonb), :c, :f, :x, :v)"""),
+    # RNF-007: queda registrada la versión del modelo de visión y la del prompt del tutor que escribió la explicación.
+    db.execute(text("""INSERT INTO interpretacion_estudio (id_estudio, roi, clasificacion, confianza, explicacion, version_modelo,
+                                                           version_prompt)
+                       VALUES (:e, CAST(:r AS jsonb), :c, :f, :x, :v, :p)"""),
                {"e": id_estudio, "r": json.dumps(r.roi or {}), "c": r.clasificacion, "f": r.confianza, "x": explicacion,
-                "v": r.version_modelo})
+                "v": r.version_modelo, "p": VERSION_PROMPT})
     return True
 
 
@@ -131,7 +134,8 @@ def mis_estudios(db: Session = Depends(get_db), usuario: dict = Depends(requiere
 @router.get("/estudios/{id_estudio}")
 def ver_estudio(id_estudio: int, db: Session = Depends(get_db), quien: dict = Depends(usuario_actual)) -> dict:
     e = _estudio(db, id_estudio, quien)
-    interp = db.execute(text("""SELECT roi, clasificacion, confianza, explicacion, version_modelo, fecha FROM interpretacion_estudio
+    interp = db.execute(text("""SELECT roi, clasificacion, confianza, explicacion, version_modelo, version_prompt, fecha
+                                FROM interpretacion_estudio
                                 WHERE id_estudio = :e ORDER BY fecha DESC LIMIT 1"""), {"e": id_estudio}).mappings().first()
     comentarios = db.execute(text("""SELECT c.id_comentario, u.nombre AS profesional, c.texto, c.fecha, c.leido
                                      FROM comentario_estudio c JOIN usuario u ON u.id_usuario = c.id_profesional
