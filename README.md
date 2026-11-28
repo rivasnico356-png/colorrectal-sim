@@ -30,7 +30,7 @@ Proyecto ONCO-AI_USC 2026 B · Universidad Santiago de Cali.
 - **Progreso y niveles** (Explorador, Analista, Experto).
 - **Estudios propios**: la persona puede cargar imágenes de su colonoscopia; se quitan los datos personales, se guardan cifradas y un modelo experimental marca regiones de interés.
 - **Protección de datos** según la Ley 1581 de 2012: autorizaciones que se pueden revocar, contraseñas con hash, supresión de la cuenta y exportación seudonimizada.
-- **Accesible y en español**, pensado para personas con cáncer colorrectal.
+- **Accesible y en español**, pensado para el Usuario: una persona adulta, sin formación médica, que usa la plataforma para aprender con casos simulados, cargar sus propios estudios y consultar su progreso. Es el usuario final del sistema.
 
 ## 🚀 Tecnologías
 
