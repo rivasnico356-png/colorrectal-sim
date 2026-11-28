@@ -13,7 +13,9 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 
 | Hora | Qué | Evidencia | Resultado |
 |---|---|---|---|
-| 13:05 | PR #51: GitBook al día (versión 1.0.2, casos publicados con sus 10 escenarios, aviso de la demostración y fechas reales de los hitos) | PR #51 | Abierto |
+| 13:35 | PR #54: descripción del Caso 2 sin datos internos y caso de demostración convertido en recorrido guiado de 2 etapas (sin textos de relleno) | PR #54, CI: 95 pruebas, 91 % | Por aprobar |
+| 13:12 | PR #52 (`develop` → `qa`, versión 1.0.2) aprobado por María Camila Viveros | PR #52 | Fusionado |
+| 13:05 | PR #51: GitBook al día (versión 1.0.2, casos publicados con sus 10 escenarios, aviso de la demostración y fechas reales de los hitos) | PR #51, aprobado por Juan Camilo Paredes | Fusionado |
 | 13:01 | PR #46: resultado del SUS (RNF-004 implementado), resultados finales de pruebas y bitácora | PR #46, aprobado por Juan Camilo Paredes | Fusionado |
 | 12:55 | PR #50: cada una de las 10 etapas clínicas con su propia foto de HyperKvasir (pólipos de la partición de prueba del modelo, preparación deficiente y resección), extraídas con el flujo `imagenes-casos.yml` | PR #50, aprobado por Juan Camilo Paredes; CI: 91 pruebas, 91 % | Fusionado (13:02) |
 | 12:37 | PR #49: `.env.example` con todas las variables que lee el backend (`JWT_MINUTOS_EXPIRACION` en lugar de `JWT_MINUTOS`, que se ignoraba) | PR #49 (David Muñoz), CI | Fusionado |
