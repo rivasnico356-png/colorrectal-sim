@@ -29,7 +29,8 @@ services:
       - ./data/media:/app/media
       - ./db:/app/db:ro
       - ./backend/modelos:/app/modelos:ro
-      # RF-010 y RNF-003: estudios propios cifrados; el volumen sobrevive a recrear el contenedor y solo lo monta el backend.
+      # RF-010 y RNF-003: desde db/08 los estudios cifrados se guardan en la base (tabla estudio_contenido). Este volumen
+      # solo conserva los estudios cargados antes de ese cambio, que se siguen leyendo desde disco.
       - estudios_cifrados:/app/estudios
     ports:
       - "8000:8000"
