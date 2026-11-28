@@ -23,6 +23,19 @@ Persona adulta, sin formación médica, que usa la plataforma para aprender con 
 
 * Busca cuentas, crea profesionales, cambia roles y activa o desactiva cuentas, con registro en la bitácora.
 
+## Casos publicados en la demostración
+
+El Acta de constitución fija un conjunto inicial de 10 escenarios de decisión: cada escenario presenta una imagen, la recomendación de la IA y el momento de decisión del usuario. La biblioteca los reparte en tres casos clínicos, cada etapa con su propia foto de HyperKvasir (Borgli et al., 2020) y con la guía colombiana de tamizaje como fuente (Aponte-Martín et al., 2025).
+
+| Caso | Tema | Etapas (escenarios) | IA equivocada a propósito | Modelo de visión |
+|---|---|---|---|---|
+| Tamizaje de cáncer colorrectal: cuándo empezar y cómo saber si el examen fue bueno | Tamizaje | 3 | Etapa 3 | Etapa 1 |
+| Visión computacional en colonoscopia: qué ve el modelo y cuándo dudar de él | Pólipos | 3 | Etapa 2 | Etapas 1 y 2 |
+| Señales de alarma, antecedentes y resultados: cuándo ir a la colonoscopia | Tamizaje | 4 | Etapa 2 | Etapa 3 |
+| **Total** | | **10** | | |
+
+Además hay un caso de demostración de 2 etapas, sin contenido clínico, para conocer el flujo. Los casos quedan pendientes de validación clínica, que el acta excluye del alcance.
+
 ## Módulos pendientes de aprobación
 
 | Requisito | Estado | Qué falta |
