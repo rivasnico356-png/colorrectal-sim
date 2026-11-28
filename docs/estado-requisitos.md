@@ -31,7 +31,7 @@ Estados: **Implementado** (código y prueba automática), **Parcial** (falta alg
 | 9.1–9.3 | Autorizaciones, consulta, rectificación y supresión | Implementado | `privacidad/router.py` | `test_flujo::test_privacidad_rectificar_y_suprimir` |
 | 10.1–10.5 | Estudios propios: carga, desidentificación, interpretación, compartir, eliminar | Implementado | `estudios/` | `test_estudios` (en el enlace público de demostración la carga está desactivada, Ley 1581) |
 
-Modelo de visión entrenado el 12-11-2026 con Kvasir-SEG (800/100/100 imágenes, semilla 2026, 30 épocas en CPU): **Dice 0,872 e IoU 0,805** en la partición de prueba. Falta medir la generalización con PolypGen (requiere registro). Sin el archivo del modelo, la plataforma informa que no está disponible (`vision/README.md`).
+Modelo de visión entrenado el 12-11-2026 con las 1.000 imágenes segmentadas de pólipos de HyperKvasir (800/100/100 imágenes, semilla 2026, 30 épocas en CPU): **Dice 0,872 e IoU 0,805** en la partición de prueba. Falta medir la generalización con PolypGen (requiere registro). Sin el archivo del modelo, la plataforma informa que no está disponible (`vision/README.md`).
 
 ## No funcionales
 

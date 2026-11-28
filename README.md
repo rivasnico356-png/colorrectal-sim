@@ -1,7 +1,7 @@
 # 🩺 Colorrectal-Sim
 
 ![Estado](https://img.shields.io/badge/estado-versión%201.0-green)
-![Versión](https://img.shields.io/badge/versión-1.0.1-blue)
+![Versión](https://img.shields.io/badge/versión-1.0.2-blue)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.162-009688?logo=fastapi&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)

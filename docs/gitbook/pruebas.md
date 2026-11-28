@@ -6,13 +6,13 @@ Cada cambio en GitHub ejecuta tres revisiones automáticas: **backend** (estilo 
 
 ## Resultados
 
-| Indicador | Ciclo 1 (11/11/2026) | Último resultado (15/11/2026) |
-|---|---|---|
-| Pruebas automáticas del backend | 37 aprobadas, 0 fallidas | 74 aprobadas, 0 fallidas |
-| Casos en la Matriz de Pruebas Unitarias | 48 | 52 (ciclo 2 del 12/11/2026) |
-| Cobertura del backend | 91 % | 91 % |
+| Indicador | Ciclo 1 (11/11/2026) | Ciclo 2 (22/11/2026) | Ciclo 3 (25/11/2026) | Cierre (28/11/2026) |
+|---|---|---|---|---|
+| Pruebas automáticas del backend | 37 aprobadas | 74 aprobadas | 83 aprobadas | 89 aprobadas, 0 fallidas |
+| Cobertura del backend | 91 % | 90,76 % | 90,83 % | 91 % |
+| Casos de la Matriz de Pruebas Unitarias (42) | 30 aprobados, 7 parciales, 5 sin ejecutar | 41 aprobados | 42 aprobados | 42 aprobados |
 
-La matriz con el detalle de cada caso está en la carpeta de pruebas del equipo.
+Los ciclos 2 y 3 los ejecutó María Camila Viveros (tester). La matriz con el detalle de cada caso está en la carpeta de pruebas del equipo.
 
 ## Tipos de prueba del plan
 
@@ -33,13 +33,18 @@ Además, un monitoreo automático (`monitoreo.yml`) revisa cada 2 horas que la d
 
 El detalle, con los defectos que se encontraron y cómo se corrigieron, está en `docs/pruebas-no-funcionales.md` del repositorio.
 
-## Pendientes
+## Usabilidad (SUS)
 
-| Prueba | Fecha |
+Cinco personas usaron la plataforma y respondieron el cuestionario SUS entre el 25 y el 27/11/2026. Puntajes: 82,5; 92,5; 52,5; 82,5 y 32,5. **Promedio: 68,5** (criterio C-04: SUS ≥ 68), por lo que RNF-004 se cumple.
+
+## Pendiente después del cierre
+
+| Prueba | Motivo |
 |---|---|
-| Usabilidad SUS con al menos 5 usuarios (criterio C-04: SUS ≥ 68) | 23 al 25/11/2026 |
-| Latencia de inferencia del modelo de visión en el servidor | Antes del cierre |
-| Informe de Pruebas y Calidad | 29/11/2026 |
+| Latencia de inferencia del modelo de visión en el servidor | No se midió por separado de la carga del estudio |
+| Generalización del modelo con un dataset externo (por ejemplo, PolypGen) | Exige registro; queda como recomendación |
+
+El Informe de Pruebas y Calidad del proyecto (29/11/2026) reúne todos los resultados.
 
 ## Flujo de ramas
 
