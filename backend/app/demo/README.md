@@ -35,7 +35,7 @@ Los porcentajes de confianza y el recuadro los calcula el modelo en el momento; 
 
 ## Caso 3: señales de alarma, antecedentes y resultados (`caso_senales_alarma.json`)
 
-Caso de 4 etapas agregado en la v1.0.2 para completar los **10 escenarios de decisión** que fija el Acta de constitución («Se incluirá un conjunto inicial de 10 escenarios»). Cada escenario es un momento de decisión con imagen, recomendación de la IA y decisión del usuario: 2 en el caso de demostración, 3 en el de tamizaje, 3 en el Caso 2 y 4 en este caso.
+Caso de 4 etapas agregado en la v1.0.2 para completar los **10 escenarios de decisión** que fija el Acta de constitución («Se incluirá un conjunto inicial de 10 escenarios»). Cada escenario es un momento de decisión con imagen, recomendación de la IA y decisión del usuario: 3 en el caso de tamizaje, 3 en el Caso 2 y 4 en este caso. El caso de demostración tiene además 2 etapas de práctica sin contenido clínico, que no se cuentan.
 
 | Etapa | Tema | Archivo real | Modelo de visión | IA |
 | :---: | :--- | :--- | :---: | :--- |

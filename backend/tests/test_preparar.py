@@ -253,8 +253,9 @@ def test_imagenes_del_caso_de_vision_son_fotos_reales():
 
 
 def test_imagenes_del_caso_3_existen_y_suman_10_escenarios():
-    """El Caso 3 nombra solo imágenes reales de HyperKvasir y, con los demás casos de la demostración, completa los
-    10 escenarios de decisión del Acta de constitución (2 del caso de demostración + 3 + 3 + 4)."""
+    """El Caso 3 nombra solo imágenes reales de HyperKvasir y, con los casos de tamizaje y de visión, completa los
+    10 escenarios clínicos de decisión del Acta de constitución (3 + 3 + 4). El caso de demostración no cuenta: sus
+    2 etapas son de práctica, sin contenido clínico."""
     import json
 
     datos = json.loads(preparar.CASO_SENALES.read_text(encoding="utf-8"))
@@ -264,7 +265,7 @@ def test_imagenes_del_caso_3_existen_y_suman_10_escenarios():
         assert sum(o["correcta"] for o in etapa["opciones"]) == 1
     tamizaje = json.loads(preparar.CASO_TAMIZAJE.read_text(encoding="utf-8"))
     vision = json.loads(preparar.CASO_VISION.read_text(encoding="utf-8"))
-    assert 2 + len(tamizaje["etapas"]) + len(vision["etapas"]) + len(datos["etapas"]) == 10
+    assert len(tamizaje["etapas"]) + len(vision["etapas"]) + len(datos["etapas"]) == 10
 
 
 @requiere_db

@@ -171,7 +171,8 @@ def agregar_imagenes_etapa_2(db: Session, carpeta: str | None = None) -> int:
 # de HyperKvasir; ningún nombre del JSON se carga tal cual.
 CASO_TAMIZAJE = Path(__file__).parent / "demo" / "caso_tamizaje.json"
 CASO_VISION = Path(__file__).parent / "demo" / "caso_vision_polipos.json"
-# Caso 3: completa los 10 escenarios de decisión del Acta de constitución (2 + 3 + 3 + 4 etapas con decisión).
+# Caso 3: completa los 10 escenarios clínicos de decisión del Acta de constitución (3 + 3 + 4 etapas; el caso de
+# demostración tiene 2 etapas de práctica sin contenido clínico y no cuenta).
 CASO_SENALES = Path(__file__).parent / "demo" / "caso_senales_alarma.json"
 IMAGENES_TAMIZAJE = {
     "polipo_etapa1.jpg": "IMAGEN_DEMO",
