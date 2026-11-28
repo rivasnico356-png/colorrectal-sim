@@ -34,7 +34,7 @@ El Acta de constitución fija un conjunto inicial de 10 escenarios de decisión:
 | Señales de alarma, antecedentes y resultados: cuándo ir a la colonoscopia | Tamizaje | 4 | Etapa 2 | Etapa 3 |
 | **Total** | | **10** | | |
 
-Además hay un caso de demostración de 2 etapas, sin contenido clínico, para conocer el flujo. Los casos quedan pendientes de validación clínica, que el acta excluye del alcance.
+Además hay un caso de demostración: un recorrido guiado de 2 etapas, sin contenido clínico, que enseña a leer una etapa, qué significa la confianza del modelo de visión y qué hacer con la sugerencia de la IA (que en la etapa 2 se equivoca a propósito). Los casos quedan pendientes de validación clínica, que el acta excluye del alcance.
 
 ## Módulos pendientes de aprobación
 

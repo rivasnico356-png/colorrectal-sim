@@ -380,3 +380,45 @@ def test_un_caso_ya_publicado_recibe_la_descripcion_nueva(monkeypatch):
         assert preparar.actualizar_descripcion_caso(db, id_caso, datos["descripcion"]) is False
         actual = db.execute(text("SELECT descripcion FROM caso WHERE id_caso = :c"), {"c": id_caso}).scalar()
     assert actual == datos["descripcion"]
+
+
+def test_el_caso_de_demostracion_no_tiene_textos_de_relleno():
+    """El recorrido guiado tiene enunciados, opciones y explicaciones de verdad, y la IA se equivoca a propósito en la etapa 2."""
+    textos = [preparar.DESCRIPCION_DEMO]
+    for enunciado, sugerencia, opciones in preparar.ETAPAS_DEMO:
+        textos += [enunciado, sugerencia] + [o[0] for o in opciones] + [o[4] for o in opciones]
+        assert sum(o[2] for o in opciones) == 1 and sum(o[3] for o in opciones) == 1
+    assert not any(x in t for t in textos for x in ("Aquí irá", "Opción A", "de demostración:", "Texto de demostración"))
+    assert [any(r and not c for _, _, c, r, _ in op) for _, _, op in preparar.ETAPAS_DEMO] == [False, True]
+
+
+@requiere_db
+def test_el_caso_de_demostracion_publicado_recibe_el_recorrido_guiado_sin_perder_sus_opciones(monkeypatch):
+    """Un caso de demostración publicado con los textos de relleno recibe los del recorrido guiado al arrancar; conserva
+    sus etapas y opciones (y con ellas los intentos), y una segunda pasada no cambia nada."""
+    monkeypatch.setenv("CASO_DEMO", "1")
+    preparar.aplicar_esquema()
+    with SessionLocal() as db:
+        db.execute(text("UPDATE caso SET eliminado = TRUE WHERE titulo = :t"), {"t": preparar.TITULO_DEMO})
+        db.commit()
+        assert preparar.publicar_caso_demo(db) is True
+        id_caso = db.execute(text("SELECT id_caso FROM caso WHERE titulo = :t AND NOT eliminado"), {"t": preparar.TITULO_DEMO}).scalar()
+        # Simula la versión anterior con textos de relleno.
+        db.execute(text("UPDATE etapa SET enunciado = 'Etapa de demostración. Aquí irá la pregunta del caso clínico.' WHERE id_caso = :c"),
+                   {"c": id_caso})
+        db.execute(text("""UPDATE opcion_decision SET texto = 'Opción A' WHERE id_etapa IN (SELECT id_etapa FROM etapa WHERE id_caso = :c)"""),
+                   {"c": id_caso})
+        db.commit()
+        antes = db.execute(text("""SELECT o.id_opcion FROM opcion_decision o JOIN etapa e ON e.id_etapa = o.id_etapa
+                                   WHERE e.id_caso = :c ORDER BY o.id_opcion"""), {"c": id_caso}).scalars().all()
+        assert preparar.publicar_caso_demo(db) is False
+        assert preparar.actualizar_caso_demo(db) is False
+        etapas = db.execute(text("SELECT orden, enunciado, ia_erronea_intencional FROM etapa WHERE id_caso = :c ORDER BY orden"),
+                            {"c": id_caso}).all()
+        opciones = db.execute(text("""SELECT o.id_opcion, o.texto, o.recomendada_ia FROM opcion_decision o
+                                      JOIN etapa e ON e.id_etapa = o.id_etapa
+                                      WHERE e.id_caso = :c ORDER BY o.id_opcion"""), {"c": id_caso}).all()
+    assert [e.enunciado for e in etapas] == [x[0] for x in preparar.ETAPAS_DEMO]
+    assert [e.ia_erronea_intencional for e in etapas] == [False, True]
+    assert [o.id_opcion for o in opciones] == antes
+    assert "Opción A" not in [o.texto for o in opciones]

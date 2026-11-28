@@ -88,10 +88,43 @@ def crear_admin_inicial(db: Session) -> bool:
     return True
 
 
+DESCRIPCION_DEMO = ("Recorrido guiado de 2 etapas para aprender a usar el simulador: cómo leer una etapa, qué significa "
+                    "la confianza del modelo de visión y qué hacer con la sugerencia de la IA. No tiene contenido clínico.")
+FUENTE_DEMO = "Guía de uso de Colorrectal-Sim y documentación del modelo de visión (RNF-007)"
+# Cada etapa: enunciado, sugerencia de la IA y opciones (texto, puntaje, es_correcta, recomendada_ia, retroalimentación).
+ETAPAS_DEMO = (
+    ("Así funciona cada etapa: lees el enunciado, observas la imagen y eliges una opción. Sobre la imagen aparece el "
+     "resultado del modelo de visión, con un recuadro y un porcentaje de confianza. Para practicar: ¿qué indica ese porcentaje?",
+     "Indica qué tan parecida es la imagen a los ejemplos con los que se entrenó el modelo.",
+     (("Qué tan parecida es la imagen a los ejemplos con los que se entrenó el modelo; no es la probabilidad de una enfermedad",
+       100, True, True,
+       "Correcto. La confianza mide el parecido con las imágenes de entrenamiento. El resultado del modelo es experimental y "
+       "no reemplaza la valoración del médico."),
+      ("La probabilidad de que la persona tenga cáncer", 0, False, False,
+       "No. El modelo no calcula probabilidades de enfermedad: señala zonas parecidas a pólipos y dice qué tan parecidas son "
+       "a los ejemplos con los que aprendió."))),
+    ("En cada etapa el tutor de IA muestra una sugerencia y puedes pedirle que la explique. En algunas etapas la IA se "
+     "equivoca a propósito para que aprendas a cuestionarla, como en esta. ¿Qué conviene hacer con su sugerencia?",
+     "Elige siempre lo que sugiere la IA: es más precisa que una persona.",
+     (("Compararla con la imagen y el enunciado, y elegir lo que tenga más sentido aunque no coincida con la IA",
+       100, True, False,
+       "Correcto. La IA puede equivocarse. Al final de cada caso verás cuántas veces la seguiste y cuántos de sus errores "
+       "detectaste."),
+      ("Elegir siempre lo que sugiere la IA", 0, False, True,
+       "La IA se equivocó a propósito en esta etapa. Seguirla sin revisar es justo lo que el simulador te ayuda a evitar."))),
+)
+
+
+def _opciones_demo(opciones: tuple) -> list[OpcionIn]:
+    return [OpcionIn(texto=t, puntaje=p, es_correcta=c, recomendada_ia=r, retroalimentacion=x, fuente=FUENTE_DEMO)
+            for t, p, c, r, x in opciones]
+
+
 def publicar_caso_demo(db: Session) -> bool:
     if os.getenv("CASO_DEMO", "") != "1":
         return False
     if db.execute(text("SELECT 1 FROM caso WHERE titulo = :t AND NOT eliminado"), {"t": TITULO_DEMO}).first():
+        actualizar_caso_demo(db)
         return False
     # Autor y revisor internos: cuentas sin contraseña conocida, solo para firmar el caso de demostración.
     autor = _crear_usuario(db, "Profesional de la salud", "Autor de demostración",
@@ -100,20 +133,48 @@ def publicar_caso_demo(db: Session) -> bool:
                              f"demo-revisor-{secrets.token_hex(3)}@ejemplo.com", secrets.token_urlsafe(24) + "a1")
     db.commit()
     id_caso = casos.crear_caso(db, autor, CasoIn(
-        titulo=TITULO_DEMO, tema="pólipos", nivel_dificultad=1,
-        descripcion="Caso de prueba para conocer cómo funciona el simulador. El texto no tiene contenido clínico.",
-        contexto_simulado="Persona simulada de demostración."))
-    for orden in (1, 2):
-        opciones = [OpcionIn(texto=f"Opción {x}", puntaje=p, es_correcta=p == 100, recomendada_ia=x == "A",
-                             retroalimentacion="Explicación de demostración: aquí el profesional explica la respuesta.",
-                             fuente="Texto de demostración") for x, p in (("A", 100), ("B", 0))]
-        casos.guardar_etapa(db, autor, id_caso, EtapaIn(
-            orden=orden, enunciado=f"Etapa {orden} de demostración. Aquí irá la pregunta del caso clínico.",
-            recomendacion_ia="Sugerencia de demostración del tutor de IA.", opciones=opciones))
-    casos.revisar(db, revisor, id_caso, "aprobar", "Texto de demostración")
+        titulo=TITULO_DEMO, tema="pólipos", nivel_dificultad=1, descripcion=DESCRIPCION_DEMO,
+        contexto_simulado="Recorrido guiado: no hay paciente simulado."))
+    for orden, (enunciado, sugerencia, opciones) in enumerate(ETAPAS_DEMO, start=1):
+        casos.guardar_etapa(db, autor, id_caso, EtapaIn(orden=orden, enunciado=enunciado, recomendacion_ia=sugerencia,
+                                                        opciones=_opciones_demo(opciones)))
+    casos.revisar(db, revisor, id_caso, "aprobar", FUENTE_DEMO)
     casos.revisar(db, revisor, id_caso, "publicar", None)
     print(f"Caso de demostración publicado: {id_caso}")
     return True
+
+
+def actualizar_caso_demo(db: Session) -> bool:
+    """Pone los textos del recorrido guiado en el caso de demostración ya publicado, sin cambiar sus etapas ni sus
+    opciones (así se conservan los intentos). Devuelve True si cambió algo."""
+    id_caso = db.execute(text("SELECT id_caso FROM caso WHERE titulo = :t AND NOT eliminado"), {"t": TITULO_DEMO}).scalar()
+    if id_caso is None:
+        return False
+    cambio = db.execute(text("""UPDATE caso SET descripcion = :d, contexto_simulado = :x WHERE id_caso = :c
+                                AND (descripcion IS DISTINCT FROM :d OR contexto_simulado IS DISTINCT FROM :x) RETURNING id_caso"""),
+                        {"d": DESCRIPCION_DEMO, "x": "Recorrido guiado: no hay paciente simulado.", "c": id_caso}).first() is not None
+    for orden, (enunciado, sugerencia, opciones) in enumerate(ETAPAS_DEMO, start=1):
+        etapa = db.execute(text("SELECT id_etapa, enunciado FROM etapa WHERE id_caso = :c AND orden = :o"),
+                           {"c": id_caso, "o": orden}).first()
+        if etapa is None or etapa.enunciado == enunciado:
+            continue
+        erronea = any(r and not c for _, _, c, r, _ in opciones)
+        db.execute(text("""UPDATE etapa SET enunciado = :e, recomendacion_ia = :r, ia_erronea_intencional = :i
+                           WHERE id_etapa = :id"""), {"e": enunciado, "r": sugerencia, "i": erronea, "id": etapa.id_etapa})
+        ids = db.execute(text("SELECT id_opcion FROM opcion_decision WHERE id_etapa = :e ORDER BY id_opcion"),
+                         {"e": etapa.id_etapa}).scalars().all()
+        if len(ids) != len(opciones):
+            continue
+        db.execute(text("UPDATE opcion_decision SET recomendada_ia = FALSE WHERE id_etapa = :e"), {"e": etapa.id_etapa})
+        for id_opcion, (t, p, c, r, x) in zip(ids, opciones, strict=True):
+            db.execute(text("""UPDATE opcion_decision SET texto = :t, puntaje = :p, es_correcta = :c, recomendada_ia = :r,
+                               retroalimentacion = :x, fuente = :f WHERE id_opcion = :i"""),
+                       {"t": t, "p": p, "c": c, "r": r, "x": x, "f": FUENTE_DEMO, "i": id_opcion})
+        cambio = True
+    db.commit()
+    if cambio:
+        print("Caso de demostración: textos del recorrido guiado actualizados.")
+    return cambio
 
 
 def agregar_imagen_demo(db: Session, ruta: str | None = None) -> bool:
