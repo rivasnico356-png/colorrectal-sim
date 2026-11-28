@@ -1,6 +1,8 @@
 # Usuarios y funcionalidades
 
-## Usuario (persona con cáncer colorrectal)
+## Usuario
+
+Persona adulta, sin formación médica, que usa la plataforma para aprender con casos simulados, cargar sus propios estudios y consultar su progreso. Es el usuario final del sistema.
 
 * Crea su cuenta aceptando la política de tratamiento de datos y decide si autoriza datos sensibles y compartir su avance.
 * Busca casos por tema, nivel y estado; los casos más difíciles se desbloquean al subir de nivel.
@@ -25,7 +27,7 @@
 
 | Requisito | Estado | Qué falta |
 |---|---|---|
-| RF-010 Estudios propios | Construido, **pendiente de aprobación** del propietario del proyecto (hito 004) | La decisión registrada del propietario. Mientras tanto está bloqueado en la demostración pública; si no se aprueba, se desactiva y pasa a *Won't have* |
+| RF-010 Estudios propios | Construido, **pendiente de aprobación** del propietario del proyecto (hito 004) | La decisión registrada del propietario. En la demostración pública se puede cargar con `ESTUDIOS_EN_DEMO=1`, solo con imágenes de datasets públicos y con aviso visible (Ley 1581 de 2012); si no se aprueba, se desactiva y pasa a *Won't have* |
 | RF-001 1.6 Vínculo con el profesional | Construido con vínculo por correo, **pendiente de aprobación** de la solicitud de cambio | El SRS describe grupos y código de vinculación; la solicitud de cambio propone el vínculo por correo |
 
 ## Pantallas

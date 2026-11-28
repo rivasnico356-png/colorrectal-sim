@@ -109,6 +109,17 @@ def guardar_etapa(db: Session, editor: str, id_caso: int, datos: EtapaIn) -> int
     return id_etapa
 
 
+def _contenido_coincide(extension: str, contenido: bytes) -> bool:
+    """Revisa la firma del archivo: evita guardar, por ejemplo, una ficha de texto renombrada como .jpg."""
+    if extension in (".jpg", ".jpeg"):
+        return contenido.startswith(b"\xff\xd8\xff")
+    if extension == ".png":
+        return contenido.startswith(b"\x89PNG\r\n\x1a\n")
+    if extension == ".mp4":
+        return contenido[4:8] == b"ftyp"
+    return False
+
+
 def guardar_recurso(db: Session, editor: str, id_etapa: int, nombre: str, contenido_archivo: bytes, id_dataset: int,
                     licencia: str) -> int:
     """RF-002 2.2: solo JPG, PNG o MP4, con tamaño máximo y con fuente (dataset) y licencia obligatorias."""
@@ -116,6 +127,8 @@ def guardar_recurso(db: Session, editor: str, id_etapa: int, nombre: str, conten
     tipo = FORMATOS.get(extension)
     if tipo is None:
         raise ErrorNegocio("Formato no permitido. Usa JPG, PNG o MP4.", 415)
+    if not _contenido_coincide(extension, contenido_archivo):
+        raise ErrorNegocio("El archivo no es una imagen o un video válido.", 415)
     if len(contenido_archivo) > MAX_BYTES[tipo]:
         raise ErrorNegocio("El archivo supera el tamaño máximo permitido.", 413)
     if not licencia.strip():

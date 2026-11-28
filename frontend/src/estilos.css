@@ -118,3 +118,10 @@ th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--borde); 
   .cabecera { flex-direction: column; align-items: flex-start; gap: 8px; }
   .glosario-lista { grid-template-columns: 1fr; }
 }
+
+/* Mensaje de ánimo del resumen del caso (RF-005 5.4) */
+.animo { border-radius: 8px; padding: 12px 14px; margin: 16px 0; border: 1px solid var(--borde); }
+.animo strong { display: block; margin-bottom: 4px; }
+.animo p { margin: 0; }
+.animo-logrado { background: #e8f5ec; border-color: #9fd3b0; }
+.animo-practica { background: #fff7e6; border-color: #f3d9a4; }

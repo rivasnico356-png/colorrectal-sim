@@ -115,7 +115,8 @@ def test_simulacion_completa_con_tutor_progreso_y_profesional(cliente, admin):
     etapa2 = cliente.get(f"{API}/intentos/{id_intento}", headers=usuario).json()["etapa"]
     parcial = next(o for o in etapa2["opciones"] if o["texto"] == "Dos B")
     d2 = cliente.post(f"{API}/intentos/{id_intento}/decisiones", headers=usuario,
-                      json={"id_etapa": etapa2["id_etapa"], "id_opcion": parcial["id_opcion"], "confianza": 2}).json()
+                      json={"id_etapa": etapa2["id_etapa"], "id_opcion": parcial["id_opcion"], "confianza": 2,
+                            "tiempo_ms": 6000}).json()
     assert d2["resultado"] == "parcial" and d2["puntaje"] == 50
     assert d2["ia_estaba_equivocada"] and d2["detectaste_error_ia"] and d2["intento_finalizado"]
     assert d2["respuesta_esperada"] == "Dos A" and d2["fuente"]
@@ -124,6 +125,8 @@ def test_simulacion_completa_con_tutor_progreso_y_profesional(cliente, admin):
     # RF-005 5.4: resumen coherente con lo registrado.
     resumen = cliente.get(f"{API}/intentos/{id_intento}/resumen", headers=usuario).json()
     assert resumen["puntaje_total"] == 150 and resumen["aciertos"] == 1 and resumen["errores_ia_detectados"] == 1
+    # El tiempo es la suma del tiempo de cada decisión (4 s + 6 s), sin contar pausas entre etapas.
+    assert resumen["tiempo_segundos"] == 10
 
     # RF-008 8.1 y 8.2.
     assert cliente.get(f"{API}/progreso/historial", headers=usuario).json()[0]["puntaje_total"] == 150
@@ -190,6 +193,9 @@ def test_recurso_multimedia_exige_formato_dataset_y_licencia(cliente, admin, tmp
     png = b"\x89PNG\r\n\x1a\n" + b"0" * 64
     url = f"{API}/editor/etapas/{id_etapa}/recursos"
     assert cliente.post(url, headers=autor, files={"archivo": ("a.pdf", b"%PDF", "application/pdf")},
+                        data={"id_dataset": "1", "licencia": "CC BY 4.0"}).status_code == 415
+    # Un archivo de texto renombrado como .jpg no pasa por imagen (así llegaron las del primer Caso 2).
+    assert cliente.post(url, headers=autor, files={"archivo": ("a.jpg", b'{"osf": "ficha"}', "image/jpeg")},
                         data={"id_dataset": "1", "licencia": "CC BY 4.0"}).status_code == 415
     assert cliente.post(url, headers=autor, files={"archivo": ("a.png", png, "image/png")},
                         data={"id_dataset": "1", "licencia": " "}).status_code == 422

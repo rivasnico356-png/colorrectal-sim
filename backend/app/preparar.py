@@ -167,7 +167,8 @@ def agregar_imagenes_etapa_2(db: Session, carpeta: str | None = None) -> int:
     return agregadas
 
 
-# RF-002: caso de tamizaje aportado por Valentina (PR #25). Las imágenes del JSON se resuelven a archivos reales de HyperKvasir.
+# RF-002: casos aportados por Valentina (PR #25 y PR #36 a #38). Las imágenes del JSON se resuelven a archivos reales
+# de HyperKvasir; ningún nombre del JSON se carga tal cual.
 CASO_TAMIZAJE = Path(__file__).parent / "demo" / "caso_tamizaje.json"
 CASO_VISION = Path(__file__).parent / "demo" / "caso_vision_polipos.json"
 IMAGENES_TAMIZAJE = {
@@ -175,10 +176,19 @@ IMAGENES_TAMIZAJE = {
     "bbps_etapa2.jpg": "preparacion-intestinal.jpg",
     "reseccion_etapa3.jpg": "reseccion.jpg",
 }
+IMAGENES_VISION = {
+    "polipo_vision_etapa1.jpg": "IMAGEN_DEMO",
+    "preparacion_vision_etapa2.jpg": "preparacion-intestinal.jpg",
+    "reseccion_vision_etapa3.jpg": "reseccion.jpg",
+}
+# Primera versión del Caso 2 (PR #36 a #38): sus imágenes eran fichas de texto de OSF y no fotos, así que se retira.
+TITULO_VISION_ANTERIOR = "Detección y Caracterización de Pólipos por Visión Computacional"
 
 
-def _imagen_tamizaje(nombre: str) -> Path | None:
-    destino = IMAGENES_TAMIZAJE.get(nombre, nombre)
+def _imagen_tamizaje(nombre: str, mapa: dict[str, str] | None = None) -> Path | None:
+    destino = (mapa or IMAGENES_TAMIZAJE).get(nombre)
+    if destino is None:
+        return None
     if destino == "IMAGEN_DEMO":
         ruta = Path(os.getenv("IMAGEN_DEMO", "modelos/ejemplo-kvasir.jpg"))
     else:
@@ -186,11 +196,11 @@ def _imagen_tamizaje(nombre: str) -> Path | None:
     return ruta if ruta.is_file() else None
 
 
-def publicar_caso_tamizaje(db: Session, ruta: Path | None = None) -> int | None:
-    """Publica una sola vez el caso de tamizaje de 3 etapas con sus imágenes de HyperKvasir. Devuelve su id."""
-    if os.getenv("CASO_DEMO", "") != "1":
+def _publicar_caso_json(db: Session, ruta: Path, imagenes: dict[str, str], fuente_revision: str) -> int | None:
+    """Publica una sola vez un caso escrito en JSON (formato de caso_tamizaje.json) con sus imágenes de HyperKvasir."""
+    if os.getenv("CASO_DEMO", "") != "1" or not ruta.is_file():
         return None
-    datos = json.loads((ruta or CASO_TAMIZAJE).read_text(encoding="utf-8"))
+    datos = json.loads(ruta.read_text(encoding="utf-8"))
     if db.execute(text("SELECT 1 FROM caso WHERE titulo = :t AND NOT eliminado"), {"t": datos["titulo"]}).first():
         return None
     autor = _crear_usuario(db, "Profesional de la salud", "Autor de demostración",
@@ -206,62 +216,40 @@ def publicar_caso_tamizaje(db: Session, ruta: Path | None = None) -> int | None:
         opciones = [OpcionIn(texto=o["texto"], puntaje=o["puntos"], es_correcta=o["correcta"],
                              recomendada_ia=o["sugerida_por_ia"], retroalimentacion=o["retroalimentacion"],
                              fuente=etapa["fuente"]) for o in etapa["opciones"]]
-        imagen = _imagen_tamizaje(etapa["imagen_url"])
+        imagen = _imagen_tamizaje(etapa["imagen_url"], imagenes)
         id_etapa = casos.guardar_etapa(db, autor, id_caso, EtapaIn(
             orden=etapa["etapa"], enunciado=etapa["enunciado"], recomendacion_ia=etapa["sugerencia_ia"]["texto"],
             usa_modelo_vision=bool(etapa["modelo_vision_activo"] and imagen), opciones=opciones))
         if imagen and id_dataset is not None:
             casos.guardar_recurso(db, autor, id_etapa, imagen.name, imagen.read_bytes(), id_dataset, LICENCIA_HYPERKVASIR)
-    casos.revisar(db, revisor, id_caso, "aprobar", "Aponte-Martín et al. (2025), guía colombiana de tamizaje")
+    casos.revisar(db, revisor, id_caso, "aprobar", fuente_revision)
     casos.revisar(db, revisor, id_caso, "publicar", None)
-    print(f"Caso de tamizaje publicado: {id_caso}")
+    print(f"Caso publicado: {datos['titulo']} ({id_caso})")
     return id_caso
 
+
+def publicar_caso_tamizaje(db: Session, ruta: Path | None = None) -> int | None:
+    """Publica una sola vez el caso de tamizaje de 3 etapas con sus imágenes de HyperKvasir. Devuelve su id."""
+    return _publicar_caso_json(db, ruta or CASO_TAMIZAJE, IMAGENES_TAMIZAJE,
+                               "Aponte-Martín et al. (2025), guía colombiana de tamizaje")
+
+
+def retirar_caso_vision_anterior(db: Session) -> bool:
+    """Saca de la biblioteca la primera versión del Caso 2, cuyas imágenes no eran fotos."""
+    retirado = db.execute(text("UPDATE caso SET eliminado = TRUE WHERE titulo = :t AND NOT eliminado RETURNING id_caso"),
+                          {"t": TITULO_VISION_ANTERIOR}).first()
+    db.commit()
+    return retirado is not None
+
+
 def publicar_caso_vision(db: Session, ruta: Path | None = None) -> int | None:
-    """Publica el caso de caracterización de pólipos por visión computacional (Caso 2)."""
+    """Caso 2: cómo leer el resultado del modelo de visión, con la IA equivocada a propósito en la etapa 2."""
     if os.getenv("CASO_DEMO", "") != "1":
         return None
-    archivo_json = ruta or CASO_VISION
-    if not archivo_json.is_file():
-        return None
-    datos = json.loads(archivo_json.read_text(encoding="utf-8"))
-    if db.execute(text("SELECT 1 FROM caso WHERE titulo = :t AND NOT eliminado"), {"t": datos["titulo"]}).first():
-        return None
-    autor = _crear_usuario(db, "Profesional de la salud", "Autor de visión",
-                           f"demo-vision-autor-{secrets.token_hex(3)}@ejemplo.com", secrets.token_urlsafe(24) + "a1")
-    revisor = _crear_usuario(db, "Profesional de la salud", "Revisor de visión",
-                             f"demo-vision-revisor-{secrets.token_hex(3)}@ejemplo.com", secrets.token_urlsafe(24) + "a1")
-    db.commit()
-    id_caso = casos.crear_caso(db, autor, CasoIn(
-        titulo=datos["titulo"], tema="pólipos", nivel_dificultad=1,
-        descripcion=datos["descripcion"], contexto_simulado=datos["contexto_simulado"]))
-    id_dataset = db.execute(text("SELECT id_dataset FROM dataset WHERE nombre = 'HyperKvasir'")).scalar()
-    
-    base_demo = Path(__file__).parent / "demo"
-    for etapa in datos["etapas"]:
-        opciones = [OpcionIn(texto=o["texto"], 
-                             puntaje=100 if o["id_opcion"] == etapa["respuesta_correcta"] else 0,
-                             es_correcta=(o["id_opcion"] == etapa["respuesta_correcta"]),
-                             recomendada_ia=(o["id_opcion"] == 1),
-                             retroalimentacion="Explicación de la opción basada en visión computacional.",
-                             fuente="HyperKvasir / Visión Computacional") for o in etapa["opciones"]]
-        
-        nombre_img = etapa["recursos"][0]["url"].lstrip("/")
-        imagen = base_demo / nombre_img
-        
-        id_etapa = casos.guardar_etapa(db, autor, id_caso, EtapaIn(
-            orden=etapa["id_etapa"], 
-            enunciado=etapa["enunciado"], 
-            recomendacion_ia=etapa["modelo_vision"]["rotulo"],
-            usa_modelo_vision=bool(etapa.get("modelo_vision") and etapa["modelo_vision"].get("disponible")), 
-            opciones=opciones))
-        if imagen.is_file() and id_dataset is not None:
-            casos.guardar_recurso(db, autor, id_etapa, imagen.name, imagen.read_bytes(), id_dataset, LICENCIA_HYPERKVASIR)
-            
-    casos.revisar(db, revisor, id_caso, "aprobar", "Caso de visión computacional verificado")
-    casos.revisar(db, revisor, id_caso, "publicar", None)
-    print(f"Caso de visión publicado: {id_caso}")
-    return id_caso
+    retirar_caso_vision_anterior(db)
+    return _publicar_caso_json(db, ruta or CASO_VISION, IMAGENES_VISION,
+                               "Aponte-Martín et al. (2025) y documentación del modelo de visión (RNF-007)")
+
 
 def main() -> None:
     aplicar_esquema()

@@ -38,7 +38,7 @@ def progreso(db: Session, id_usuario: str) -> dict:
                                   avg(d.confianza_declarada / 20.0) FILTER (WHERE NOT d.es_correcta) AS confianza_en_errores
                            FROM decision d JOIN intento i ON i.id_intento = d.id_intento JOIN etapa e ON e.id_etapa = d.id_etapa
                            WHERE i.id_usuario = CAST(:u AS uuid)"""), {"u": id_usuario}).mappings().first()
-    evolucion = db.execute(text("""SELECT i.fecha_fin::date AS fecha, c.titulo, i.puntaje_total FROM intento i
+    evolucion = db.execute(text("""SELECT (i.fecha_fin AT TIME ZONE 'America/Bogota')::date AS fecha, c.titulo, i.puntaje_total FROM intento i
                                    JOIN caso c ON c.id_caso = i.id_caso
                                    WHERE i.id_usuario = CAST(:u AS uuid) AND i.estado = 'finalizado' ORDER BY i.fecha_fin"""),
                            {"u": id_usuario}).mappings().all()
