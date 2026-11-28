@@ -13,14 +13,14 @@ Colorrectal-Sim es una herramienta educativa. Todo resultado generado por la IA 
 | | |
 |---|---|
 | **Para quién** | Usuario (una persona adulta, sin formación médica, que usa la plataforma para aprender con casos simulados, cargar sus propios estudios y consultar su progreso. Es el usuario final del sistema), profesionales de la salud y administradores |
-| **Qué hace** | Casos de simulación por etapas con imágenes y videos de colonoscopia del dataset público HyperKvasir, tutor de IA, retroalimentación, progreso y estudios propios |
+| **Qué hace** | Casos de simulación por etapas con imágenes de colonoscopia del dataset público HyperKvasir (la plataforma también reproduce video), tutor de IA, retroalimentación, progreso y estudios propios |
 | **Cómo está hecho** | React + TypeScript, FastAPI (Python 3.12), PostgreSQL 16, Docker, GitHub Actions |
-| **Versión** | 1.0 (26 de noviembre de 2026), con los ajustes de la 1.0.1 en `develop` |
+| **Versión** | 1.0 (26 de noviembre de 2026), con las correcciones 1.0.1 (27/11/2026) y 1.0.2 (28/11/2026) |
 | **Probarlo** | [colorrectal-sim.onrender.com](https://colorrectal-sim.onrender.com) (versión de demostración de la rama `develop`) |
 | **Código** | [github.com/rivasnico356-png/colorrectal-sim](https://github.com/rivasnico356-png/colorrectal-sim) |
 
 {% hint style="info" %}
-La demostración usa el plan gratuito de Render: si nadie la abre en 15 minutos se duerme y la primera carga tarda cerca de un minuto. En la demostración pública no se pueden subir estudios propios (Ley 1581 de 2012); se usa el caso de demostración con una imagen pública de HyperKvasir (de sus imágenes segmentadas de pólipos).
+La demostración usa el plan gratuito de Render: si nadie la abre en 15 minutos se duerme y la primera carga tarda cerca de un minuto. La demostración tiene tres casos clínicos con **10 escenarios de decisión** (3 + 3 + 4), cada uno con su propia foto de HyperKvasir, y un caso de demostración de 2 etapas para practicar. Allí se pueden cargar estudios, pero solo imágenes de endoscopia de datasets públicos: nunca estudios reales de una persona (Ley 1581 de 2012).
 {% endhint %}
 
 Elaborado por el equipo Medical programmers.
