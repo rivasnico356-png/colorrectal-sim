@@ -7,9 +7,18 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 | Fecha | Qué |
 |---|---|
 | 15-11-2026 | GitBook publicado: https://colorrectal-sim.gitbook.io/colorrectal-sim-docs/ |
-| 25 al 28-11-2026 | Prueba de usabilidad SUS con 5 personas (Plan de Pruebas); formulario en Google Forms creado el 25-11 |
 | 29-11-2026 | Entrega del Informe de Pruebas y Calidad |
 | Hacia el 12-12-2026 | Vence la base de datos gratuita de Render (30 días desde su creación) |
+
+## 27-11-2026
+
+| Hora | Qué | Evidencia | Resultado |
+|---|---|---|---|
+| 22:35 | Resultado del cuestionario SUS (RNF-004) con 5 participantes | Calculadora SUS del equipo (filas P6 a P10) | Promedio 68,5 (meta: 68): cumple |
+| 21:50 | Release v1.0.1 publicada sobre `main` (commit 7726c6d) y marcada como la última versión | GitHub › Releases | Hecho |
+| 21:44 | PR #45 (`qa` → `main`) aprobado por Juan Camilo Paredes | PR #45; CI de `main` | Fusionado |
+| 21:38 | PR #44 (`develop` → `qa`) aprobado por María Camila Viveros | PR #44 | Fusionado |
+| 15:35 | Caso 2 corregido recorrido en la demostración: 3 imágenes reales, modelo de visión en las etapas 1 y 2, IA equivocada a propósito en la 2 | Demostración | Funciona |
 
 ## 26-11-2026
 
