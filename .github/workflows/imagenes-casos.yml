@@ -1,0 +1,68 @@
+# Extrae de HyperKvasir (Borgli et al., 2020; CC BY 4.0) fotos distintas para cada etapa de los casos clínicos y las
+# deja como candidatas en backend/app/demo/candidatas/, con su carpeta de origen. Los pólipos salen de la partición de
+# PRUEBA del modelo de visión (imágenes que el modelo no vio al entrenar), sin repetir la imagen del caso de demostración.
+name: Extraer imágenes de HyperKvasir para los casos
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/imagenes-distintas]
+    paths: [.github/workflows/imagenes-casos.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  extraer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar HyperKvasir (imágenes etiquetadas)
+        run: |
+          mkdir -p data && cd data
+          aia=$(echo | openssl s_client -connect datasets.simula.no:443 -servername datasets.simula.no 2>/dev/null \
+                | openssl x509 -noout -ext authorityInfoAccess | grep -o 'CA Issuers - URI:[^ ]*' | sed 's/CA Issuers - URI://')
+          curl -fsSL "$aia" -o intermedio.crt
+          (openssl x509 -inform DER -in intermedio.crt 2>/dev/null || openssl x509 -in intermedio.crt) > intermedio.pem
+          cat /etc/ssl/certs/ca-certificates.crt intermedio.pem > cadena.pem
+          curl -fsSL --retry 3 --cacert cadena.pem -o hk.zip https://datasets.simula.no/downloads/hyper-kvasir/hyper-kvasir-labeled-images.zip
+          ls -lh hk.zip
+          unzip -qo hk.zip '*polyps/*' '*bbps-0-1/*' '*dyed-resection-margins/*'
+          find . -type d -name polyps -o -type d -name bbps-0-1 -o -type d -name dyed-resection-margins | head
+      - name: Elegir candidatas
+        run: |
+          gh release download modelo-vision -p particiones.json -D salidas
+          python3 - <<'PY'
+          import json, os, glob, shutil
+          prueba = [os.path.basename(p) for p in json.load(open('salidas/particiones.json'))['prueba']]
+          def carpeta(nombre):
+              return [d for d in glob.glob(f'data/**/{nombre}', recursive=True) if os.path.isdir(d)][0]
+          destino = 'backend/app/demo/candidatas'; os.makedirs(destino, exist_ok=True)
+          manifiesto = []
+          polipos = carpeta('polyps'); presentes = set(os.listdir(polipos))
+          elegidas = [n for n in prueba[1:] if n in presentes][:8]
+          print('Pólipos de la partición de prueba presentes en HyperKvasir:', len([n for n in prueba if n in presentes]))
+          for i, n in enumerate(elegidas, 1):
+              shutil.copy(os.path.join(polipos, n), f'{destino}/polipo_{i}.jpg')
+              manifiesto.append({'archivo': f'polipo_{i}.jpg', 'origen': f'lower-gi-tract/pathological-findings/polyps/{n}', 'particion_modelo': 'prueba'})
+          for cat, ruta, pref in (('bbps-0-1', 'lower-gi-tract/quality-of-mucosal-views/bbps-0-1', 'preparacion'),
+                                  ('dyed-resection-margins', 'lower-gi-tract/therapeutic-interventions/dyed-resection-margins', 'reseccion')):
+              d = carpeta(cat); nombres = sorted(os.listdir(d))
+              paso = max(1, len(nombres) // 8)
+              for i, n in enumerate(nombres[::paso][:8], 1):
+                  shutil.copy(os.path.join(d, n), f'{destino}/{pref}_{i}.jpg')
+                  manifiesto.append({'archivo': f'{pref}_{i}.jpg', 'origen': f'{ruta}/{n}'})
+          json.dump({'dataset': 'HyperKvasir (Borgli et al., 2020)', 'licencia': 'CC BY 4.0', 'imagenes': manifiesto},
+                    open(f'{destino}/manifiesto.json', 'w'), ensure_ascii=False, indent=2)
+          print(len(manifiesto), 'candidatas')
+          PY
+      - name: Subir las candidatas a la rama
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/app/demo/candidatas
+          git commit -m "Candidatas de HyperKvasir para las etapas de los casos (flujo imagenes-casos)"
+          git push
