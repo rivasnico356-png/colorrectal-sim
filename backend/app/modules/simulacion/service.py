@@ -84,8 +84,11 @@ def estado(db: Session, id_usuario: str, id_intento: int) -> dict:
     ya = db.execute(text("""SELECT 1 FROM interaccion_ia WHERE id_intento = :i AND id_etapa = :e AND tipo = 'recomendacion'
                             AND proveedor = 'predefinida'"""), {"i": id_intento, "e": etapa["id_etapa"]}).first()
     if not ya:
-        db.execute(text("""INSERT INTO interaccion_ia (id_intento, id_etapa, tipo, proveedor, version_modelo, consulta, respuesta)
-                           VALUES (:i, :e, 'recomendacion', 'predefinida', 'configurada', 'recomendacion de la etapa', :r)"""),
+        # RNF-007: la recomendación la escribe quien crea el caso, no un modelo ni un prompt; queda rotulada como configurada.
+        db.execute(text("""INSERT INTO interaccion_ia (id_intento, id_etapa, tipo, proveedor, version_modelo, version_prompt,
+                                                       consulta, respuesta)
+                           VALUES (:i, :e, 'recomendacion', 'predefinida', 'configurada', 'configurada',
+                                   'recomendacion de la etapa', :r)"""),
                    {"i": id_intento, "e": etapa["id_etapa"], "r": etapa["recomendacion_ia"]})
         db.commit()
     maximo = get_settings().tutor_max_consultas_etapa

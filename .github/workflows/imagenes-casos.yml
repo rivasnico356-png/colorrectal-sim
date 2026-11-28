@@ -1,0 +1,73 @@
+# Extrae de HyperKvasir (Borgli et al., 2020; CC BY 4.0) fotos distintas para cada etapa de los casos clínicos y las
+# deja como candidatas en backend/app/demo/candidatas/, con su carpeta de origen. Los pólipos salen de la partición de
+# PRUEBA del modelo de visión (imágenes que el modelo no vio al entrenar), sin repetir la imagen del caso de demostración.
+name: Extraer imágenes de HyperKvasir para los casos
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/imagenes-distintas]
+    paths: [.github/workflows/imagenes-casos.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  extraer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar HyperKvasir (imágenes segmentadas de pólipos)
+        run: |
+          mkdir -p data && cd data
+          aia=$(echo | openssl s_client -connect datasets.simula.no:443 -servername datasets.simula.no 2>/dev/null \
+                | openssl x509 -noout -ext authorityInfoAccess | grep -o 'CA Issuers - URI:[^ ]*' | sed 's/CA Issuers - URI://')
+          curl -fsSL "$aia" -o intermedio.crt
+          (openssl x509 -inform DER -in intermedio.crt 2>/dev/null || openssl x509 -in intermedio.crt) > intermedio.pem
+          cat /etc/ssl/certs/ca-certificates.crt intermedio.pem > cadena.pem
+          curl -fsSL --retry 3 --cacert cadena.pem -o seg.zip https://datasets.simula.no/downloads/hyper-kvasir/hyper-kvasir-segmented-images.zip
+          ls -lh seg.zip && unzip -qo seg.zip
+          curl -fsSL --retry 3 --cacert cadena.pem -o kvasir-seg.zip https://datasets.simula.no/downloads/kvasir-seg.zip
+          unzip -qo kvasir-seg.zip
+          find . -maxdepth 3 -type d | head
+      - name: Elegir pólipos de la partición de prueba
+        run: |
+          gh release download modelo-vision -p particiones.json -D salidas
+          python3 -m pip install --quiet --break-system-packages pillow
+          python3 - <<'PY'
+          import json, os, glob, shutil
+          prueba = [os.path.basename(p) for p in json.load(open('salidas/particiones.json'))['prueba']]
+          from PIL import Image
+          imgs = 'data/segmented-images/images'
+          def huella(ruta):
+              im = Image.open(ruta).convert('L').resize((16, 16))
+              px = list(im.getdata()); m = sum(px) / len(px)
+              return tuple(1 if v > m else 0 for v in px), Image.open(ruta).size
+          hk = {n: huella(os.path.join(imgs, n)) for n in os.listdir(imgs)}
+          destino = 'backend/app/demo/candidatas'
+          man = json.load(open(f'{destino}/manifiesto.json'))
+          elegidas = []
+          for n in prueba[1:]:
+              h, tam = huella(os.path.join('data/Kvasir-SEG/images', n))
+              mejor = min(hk, key=lambda k: sum(a != b for a, b in zip(hk[k][0], h)) + (0 if hk[k][1] == tam else 50))
+              dist = sum(a != b for a, b in zip(hk[mejor][0], h))
+              if dist <= 6 and hk[mejor][1] == tam:
+                  elegidas.append((n, mejor))
+              if len(elegidas) == 8: break
+          print('Coincidencias Kvasir-SEG (prueba) → HyperKvasir segmentadas:', elegidas)
+          for i, (n, m) in enumerate(elegidas, 1):
+              shutil.copy(os.path.join(imgs, m), f'{destino}/polipo_{i}.jpg')
+              man['imagenes'].append({'archivo': f'polipo_{i}.jpg', 'origen': f'segmented-images/images/{m}',
+                                      'particion_modelo': f'prueba (Kvasir-SEG: {n})'})
+          json.dump(man, open(f'{destino}/manifiesto.json', 'w'), ensure_ascii=False, indent=2)
+          PY
+      - name: Subir las candidatas a la rama
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/app/demo/candidatas
+          git commit -m "Pólipos de la partición de prueba para las etapas de los casos (flujo imagenes-casos)"
+          git push

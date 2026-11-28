@@ -1,0 +1,51 @@
+{
+  "dataset": "HyperKvasir (Borgli et al., 2020)",
+  "licencia": "CC BY 4.0",
+  "extraidas_con": ".github/workflows/imagenes-casos.yml",
+  "imagenes": [
+    {
+      "archivo": "tamizaje_e1_polipo.jpg",
+      "origen_hyperkvasir": "segmented-images/images/8edb3546-55a5-4b0f-8594-5525cde170b2.jpg",
+      "particion_modelo": "prueba (Kvasir-SEG: cju8a3nhbpwnb0850d37fo2na.jpg)"
+    },
+    {
+      "archivo": "tamizaje_e2_preparacion.jpg",
+      "origen_hyperkvasir": "lower-gi-tract/quality-of-mucosal-views/bbps-0-1/1df65305-7d90-4c6e-81a3-1931610dadba.jpg"
+    },
+    {
+      "archivo": "tamizaje_e3_reseccion.jpg",
+      "origen_hyperkvasir": "lower-gi-tract/therapeutic-interventions/dyed-resection-margins/852a2644-bf92-4a85-b5d0-61a1bf776b52.jpg"
+    },
+    {
+      "archivo": "vision_e1_polipo.jpg",
+      "origen_hyperkvasir": "segmented-images/images/54d055a1-fb7f-4ee3-a453-6eaaf63bda1a.jpg",
+      "particion_modelo": "prueba (Kvasir-SEG: cjyzu3reghjya0794w7pwoi50.jpg)"
+    },
+    {
+      "archivo": "vision_e2_preparacion.jpg",
+      "origen_hyperkvasir": "lower-gi-tract/quality-of-mucosal-views/bbps-0-1/9d23002b-4db9-43b6-bf96-a3b738bac0dc.jpg"
+    },
+    {
+      "archivo": "vision_e3_reseccion.jpg",
+      "origen_hyperkvasir": "lower-gi-tract/therapeutic-interventions/dyed-resection-margins/0016b80d-1d3d-4fe0-ad7c-7a8e369352bb.jpg"
+    },
+    {
+      "archivo": "senales_e1_polipo.jpg",
+      "origen_hyperkvasir": "segmented-images/images/27bd085b-97e2-4ddf-839b-a2473aee2faa.jpg",
+      "particion_modelo": "prueba (Kvasir-SEG: cju3uz4o6gr9z0850lhxyxvsj.jpg)"
+    },
+    {
+      "archivo": "senales_e2_reseccion.jpg",
+      "origen_hyperkvasir": "lower-gi-tract/therapeutic-interventions/dyed-resection-margins/e047824d-8cbf-426a-8068-f7cc4ea3a254.jpg"
+    },
+    {
+      "archivo": "senales_e3_polipo.jpg",
+      "origen_hyperkvasir": "segmented-images/images/4b9d3bc8-0e5c-46c1-92a2-e284fb000d3c.jpg",
+      "particion_modelo": "prueba (Kvasir-SEG: cju8cdeazsm8h0801jxifmzur.jpg)"
+    },
+    {
+      "archivo": "senales_e4_preparacion.jpg",
+      "origen_hyperkvasir": "lower-gi-tract/quality-of-mucosal-views/bbps-0-1/00053206-b78e-4acd-b2ef-078130b71b26.jpg"
+    }
+  ]
+}

@@ -19,7 +19,7 @@ from app.modules.usuarios.router import router as usuarios_router
 from app.modules.vinculos.router import router as vinculos_router
 
 s = get_settings()
-app = FastAPI(title=s.app_nombre, version="1.0.1",
+app = FastAPI(title=s.app_nombre, version="1.0.2",
               description="API de la plataforma de simulación Colorrectal-Sim (Medical programmers, USC).")
 app.add_middleware(CORSMiddleware, allow_origins=[o.strip() for o in s.cors_origenes.split(",")],
                    allow_credentials=True, allow_methods=["*"], allow_headers=["*"])

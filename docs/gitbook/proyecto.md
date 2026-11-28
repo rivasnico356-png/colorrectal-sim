@@ -17,7 +17,7 @@ Construir una plataforma web de simulación en la que la persona resuelve casos 
 
 ## Alcance de la Release 1.0
 
-**Incluido:** registro con autorizaciones de la Ley 1581 de 2012 (Congreso de la República de Colombia, 2012), biblioteca de casos con revisión clínica, simulación por etapas, tutor de IA con respaldo, evaluación y gamificación, progreso, vínculo con el profesional de la salud, exportación seudonimizada, estudios propios desidentificados y cifrados, y un modelo de visión experimental.
+**Incluido:** registro con autorizaciones de la Ley 1581 de 2012 (Congreso de la República de Colombia, 2012), biblioteca de casos con revisión y publicación por un profesional distinto del autor (10 escenarios de decisión en tres casos clínicos), simulación por etapas, tutor de IA con respaldo, evaluación y gamificación, progreso, vínculo con el profesional de la salud, exportación seudonimizada, estudios propios desidentificados y cifrados, y un modelo de visión experimental.
 
 **Excluido:** uso en la atención clínica, datos de pacientes reales identificables, integración con historias clínicas y cualquier indicación de tratamiento.
 

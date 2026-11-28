@@ -59,8 +59,18 @@ Un hito marca un momento de control: tiene **duración cero** y no es una activi
 | 013 Sustentación y cierre | 29/11/2026 | Acta de cierre firmada por el propietario | Postmortem final del proyecto | — |
 
 {% hint style="warning" %}
-Las fechas son las de la línea base del 10/10/2026. Los hitos 007 a 011 se reprogramaron en la práctica: el primer commit es del 09/11/2026. La solicitud de cambio del cronograma (tarea N3 del plan de acción) fija las fechas nuevas; cuando el propietario la apruebe, esta tabla se actualiza.
+Las fechas son las de la línea base del 10/10/2026. La construcción empezó el 09/11/2026 y la solicitud de cambio SC-01 reprogramó los hitos 007 a 011, manteniendo el cierre del 29/11/2026.
 {% endhint %}
+
+| Hito | Fecha real |
+|---|---|
+| 007 Cierre del ciclo 1 · v0.5 | 11/11/2026 |
+| 008 Modelo de visión entrenado y evaluado | 12/11/2026 |
+| 009 Cierre del ciclo 2 · v0.9 | 21/11/2026 (pruebas del ciclo el 22/11) |
+| 010 Release 1.0 | 26/11/2026, con las correcciones v1.0.1 (27/11) y v1.0.2 (28/11) |
+| 011 Pruebas y validación concluidas | 27/11/2026 (SUS de 68,5 con 5 personas) |
+| 012 Documentación completa | GitBook el 15/11/2026; manual, informe final y documentación el 29/11/2026 |
+| 013 Sustentación y cierre | 29/11/2026 |
 
 ### Cronograma y valor ganado
 

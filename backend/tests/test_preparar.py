@@ -250,3 +250,103 @@ def test_imagenes_del_caso_de_vision_son_fotos_reales():
             assert (preparar.CASO_VISION.parent / destino).read_bytes().startswith(b"\xff\xd8\xff")
     assert not any(p.read_bytes()[:1] == b"{" for p in preparar.CASO_VISION.parent.glob("*.jpg"))
 
+
+
+def test_imagenes_del_caso_3_existen_y_suman_10_escenarios():
+    """El Caso 3 nombra solo imágenes reales de HyperKvasir y, con los casos de tamizaje y de visión, completa los
+    10 escenarios clínicos de decisión del Acta de constitución (3 + 3 + 4). El caso de demostración no cuenta: sus
+    2 etapas son de práctica, sin contenido clínico."""
+    import json
+
+    datos = json.loads(preparar.CASO_SENALES.read_text(encoding="utf-8"))
+    for etapa in datos["etapas"]:
+        destino = preparar.IMAGENES_SENALES[etapa["imagen_url"]]
+        assert destino == "IMAGEN_DEMO" or (preparar.CASO_SENALES.parent / destino).is_file()
+        assert sum(o["correcta"] for o in etapa["opciones"]) == 1
+    tamizaje = json.loads(preparar.CASO_TAMIZAJE.read_text(encoding="utf-8"))
+    vision = json.loads(preparar.CASO_VISION.read_text(encoding="utf-8"))
+    assert len(tamizaje["etapas"]) + len(vision["etapas"]) + len(datos["etapas"]) == 10
+
+
+@requiere_db
+def test_caso_3_se_publica_una_vez_con_la_ia_equivocada_en_la_etapa_2(monkeypatch, tmp_path):
+    """Caso 3: 4 etapas con una foto de HyperKvasir cada una, modelo de visión en la etapa 3 e IA errada en la 2."""
+    import json
+    from io import BytesIO
+
+    from PIL import Image
+
+    imagen = tmp_path / "ejemplo-kvasir.jpg"
+    buffer = BytesIO()
+    Image.new("RGB", (64, 64), (175, 85, 80)).save(buffer, "JPEG")
+    imagen.write_bytes(buffer.getvalue())
+    monkeypatch.setenv("CASO_DEMO", "1")
+    monkeypatch.setenv("IMAGEN_DEMO", str(imagen))
+    datos = json.loads(preparar.CASO_SENALES.read_text(encoding="utf-8"))
+    preparar.aplicar_esquema()
+    with SessionLocal() as db:
+        db.execute(text("UPDATE caso SET eliminado = TRUE WHERE titulo = :t"), {"t": datos["titulo"]})
+        db.commit()
+        id_caso = preparar.publicar_caso_senales(db)
+        assert id_caso is not None
+        assert preparar.publicar_caso_senales(db) is None
+        caso = db.execute(text("SELECT estado, tema FROM caso WHERE id_caso = :c"), {"c": id_caso}).one()
+        etapas = db.execute(text("""SELECT e.orden, e.usa_modelo_vision, count(r.id_recurso) AS imagenes FROM etapa e
+                                    LEFT JOIN recurso_multimedia r ON r.id_etapa = e.id_etapa
+                                    WHERE e.id_caso = :c GROUP BY e.orden, e.usa_modelo_vision ORDER BY e.orden"""),
+                            {"c": id_caso}).all()
+        ia_erronea = db.execute(text("""SELECT o.es_correcta FROM opcion_decision o JOIN etapa e ON e.id_etapa = o.id_etapa
+                                        WHERE e.id_caso = :c AND e.orden = 2 AND o.recomendada_ia"""), {"c": id_caso}).scalar()
+    assert caso.estado == "publicado" and caso.tema == "tamizaje"
+    assert [(e.orden, e.usa_modelo_vision, e.imagenes) for e in etapas] == [
+        (1, False, 1), (2, False, 1), (3, True, 1), (4, False, 1)]
+    assert ia_erronea is False
+
+
+def test_las_10_etapas_clinicas_tienen_fotos_distintas_de_hyperkvasir():
+    """Cada etapa de los tres casos clínicos usa su propia foto de HyperKvasir: ninguna se repite, todas son JPEG reales
+    y todas están en el manifiesto con su carpeta de origen."""
+    import hashlib
+    import json
+
+    manifiesto = json.loads((preparar.CASO_TAMIZAJE.parent / "etapas" / "manifiesto.json").read_text(encoding="utf-8"))
+    en_manifiesto = {m["archivo"] for m in manifiesto["imagenes"]}
+    huellas = []
+    for ruta_caso, mapa in ((preparar.CASO_TAMIZAJE, preparar.IMAGENES_TAMIZAJE), (preparar.CASO_VISION, preparar.IMAGENES_VISION),
+                            (preparar.CASO_SENALES, preparar.IMAGENES_SENALES)):
+        for etapa in json.loads(ruta_caso.read_text(encoding="utf-8"))["etapas"]:
+            archivo = preparar.CASO_TAMIZAJE.parent / mapa[etapa["imagen_url"]]
+            contenido = archivo.read_bytes()
+            assert contenido.startswith(b"\xff\xd8\xff")
+            assert archivo.name in en_manifiesto
+            huellas.append(hashlib.sha256(contenido).hexdigest())
+    assert len(huellas) == 10 and len(set(huellas)) == 10
+
+
+@requiere_db
+def test_un_caso_ya_publicado_recibe_las_fotos_nuevas_sin_perder_sus_recursos(monkeypatch, tmp_path):
+    """Si un caso ya estaba publicado con otra foto, al arrancar se cambia el contenido del mismo recurso por la foto
+    de su mapa; una segunda vez no cambia nada."""
+    import json
+
+    monkeypatch.setenv("CASO_DEMO", "1")
+    datos = json.loads(preparar.CASO_SENALES.read_text(encoding="utf-8"))
+    preparar.aplicar_esquema()
+    with SessionLocal() as db:
+        db.execute(text("UPDATE caso SET eliminado = TRUE WHERE titulo = :t"), {"t": datos["titulo"]})
+        db.commit()
+        id_caso = preparar.publicar_caso_senales(db)
+        recursos_antes = db.execute(text("""SELECT r.id_recurso FROM recurso_multimedia r JOIN etapa e ON e.id_etapa = r.id_etapa
+                                            WHERE e.id_caso = :c ORDER BY r.id_recurso"""), {"c": id_caso}).scalars().all()
+        # Simula la versión anterior: la etapa 1 con otra foto.
+        otra = (preparar.CASO_SENALES.parent / "preparacion-intestinal.jpg").read_bytes()
+        db.execute(text("""UPDATE recurso_contenido SET datos = :d, sha256 = 'x' WHERE id_recurso = :i"""),
+                   {"d": otra, "i": recursos_antes[0]})
+        db.commit()
+        assert preparar.publicar_caso_senales(db) is None
+        assert preparar.actualizar_imagenes_caso(db, id_caso, datos, preparar.IMAGENES_SENALES) == 0
+        recursos_despues = db.execute(text("""SELECT r.id_recurso FROM recurso_multimedia r JOIN etapa e ON e.id_etapa = r.id_etapa
+                                              WHERE e.id_caso = :c ORDER BY r.id_recurso"""), {"c": id_caso}).scalars().all()
+        datos_etapa1 = db.execute(text("SELECT datos FROM recurso_contenido WHERE id_recurso = :i"), {"i": recursos_antes[0]}).scalar()
+    assert recursos_despues == recursos_antes
+    assert bytes(datos_etapa1) == (preparar.CASO_SENALES.parent / "etapas" / "senales_e1_polipo.jpg").read_bytes()

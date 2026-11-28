@@ -1,9 +1,9 @@
 # 🩺 Colorrectal-Sim
 
 ![Estado](https://img.shields.io/badge/estado-versión%201.0-green)
-![Versión](https://img.shields.io/badge/versión-1.0.1-blue)
+![Versión](https://img.shields.io/badge/versión-1.0.2-blue)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.162-009688?logo=fastapi&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
@@ -111,7 +111,7 @@ colorrectal-sim/
 | Problema | Solución |
 |----------|----------|
 | `port is already allocated` | Otro programa usa el puerto 5432, 8000 o 5173. Ciérralo o cambia el puerto en `docker-compose.yml`. |
-| La base no tiene tablas | Los scripts de `db/` solo se ejecutan la primera vez. Borra el volumen con `docker compose down -v` y vuelve a levantar. Ojo: `-v` también borra los estudios propios cifrados (volumen `estudios_cifrados`). |
+| La base no tiene tablas | Los scripts de `db/` solo se ejecutan la primera vez. Borra el volumen con `docker compose down -v` y vuelve a levantar. Ojo: `-v` borra toda la base, incluidos los estudios propios cifrados (desde `db/08` se guardan en la base), y el volumen `estudios_cifrados` con los estudios cargados antes de ese cambio. |
 | El tutor siempre muestra la recomendación predefinida | Revisa `IA_API_KEY` en `.env`. |
 | Error de CORS en el navegador | Agrega la dirección del frontend a `CORS_ORIGENES`. |
 
