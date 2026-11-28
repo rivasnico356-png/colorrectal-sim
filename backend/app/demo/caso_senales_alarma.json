@@ -1,0 +1,161 @@
+{
+  "id": "senales-y-resultados-ccr-nivel-2",
+  "titulo": "Señales de alarma, antecedentes y resultados: cuándo ir a la colonoscopia",
+  "tema": "tamizaje",
+  "nivel": 2,
+  "descripcion": "Acompañas a una familia simulada en cuatro decisiones: qué hacer ante síntomas, cuándo empezar el tamizaje si hay antecedentes familiares, qué sigue tras una prueba de sangre oculta positiva y por qué importa la preparación. Es un caso educativo elaborado por el equipo (pendiente de validación clínica) y no reemplaza la consulta médica.",
+  "creditos_imagenes": {
+    "fuente": "HyperKvasir: A Comprehensive Multi-Class Image and Video Dataset for Gastrointestinal Endoscopy",
+    "autores": "Borgli et al. (2020)",
+    "licencia": "CC BY 4.0"
+  },
+  "paciente": {
+    "edad": 50,
+    "sintomas": false,
+    "antecedentes_familiares_ccr": true,
+    "nota": "Familia simulada: un padre tratado por cáncer colorrectal a los 46 años, una hija de 41 años, un hijo de 38 años y una tía de 50 años. Todos los datos son ficticios."
+  },
+  "etapas": [
+    {
+      "etapa": 1,
+      "titulo": "Cuando hay síntomas",
+      "imagen_url": "polipo_senales_etapa1.jpg",
+      "modelo_vision_activo": false,
+      "enunciado": "La hija, de 41 años, tiene desde hace varias semanas sangre en las deposiciones y un cambio en su ritmo intestinal que no se le quita. Piensa esperar a los 45 años, la edad del tamizaje. La imagen muestra un pólipo, una de las lesiones que pueden sangrar. ¿Qué debería hacer?",
+      "sugerencia_ia": {
+        "texto": "Consultar pronto al médico, sin esperar la edad del tamizaje.",
+        "es_correcta": true
+      },
+      "opciones": [
+        {
+          "texto": "Esperar a cumplir 45 años para hacerse el tamizaje",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "El tamizaje es para personas sin síntomas. Con señales de alarma no se espera a una edad: hay que consultar."
+        },
+        {
+          "texto": "Consultar pronto al médico, porque tiene señales de alarma",
+          "puntos": 100,
+          "correcta": true,
+          "sugerida_por_ia": true,
+          "retroalimentacion": "El sangrado en las deposiciones y un cambio persistente del ritmo intestinal son señales de alarma que necesitan valoración médica a cualquier edad. El médico decide qué exámenes hacer."
+        },
+        {
+          "texto": "Hacerse en casa una prueba de sangre oculta y no consultar si sale negativa",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "Las pruebas en heces son para tamizaje en personas sin síntomas. Si ya hay síntomas, un resultado negativo no reemplaza la consulta."
+        }
+      ],
+      "fuente": "Aponte-Martín et al. (2025), guía colombiana de tamizaje: el tamizaje se dirige a personas sin síntomas; las señales de alarma requieren valoración médica."
+    },
+    {
+      "etapa": 2,
+      "titulo": "Antecedentes en la familia",
+      "imagen_url": "reseccion_senales_etapa2.jpg",
+      "modelo_vision_activo": false,
+      "enunciado": "El hijo, de 38 años y sin síntomas, pregunta cuándo debe empezar el tamizaje. Su padre fue tratado por cáncer colorrectal a los 46 años (dato simulado). La imagen muestra la zona donde se retiró una lesión durante una colonoscopia. ¿Qué es lo correcto?",
+      "sugerencia_ia": {
+        "texto": "Esperar a los 45 años, como el resto de la población.",
+        "es_correcta": false,
+        "nota_tutor": "Alerta de prueba: La IA se equivoca a propósito en este punto para evaluar si el estudiante cuestiona las recomendaciones del sistema."
+      },
+      "opciones": [
+        {
+          "texto": "Esperar a los 45 años, como el resto de la población",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": true,
+          "retroalimentacion": "La IA se equivocó. Con un familiar de primer grado con cáncer colorrectal, el tamizaje se adelanta. Revisa siempre lo que sugiere la IA."
+        },
+        {
+          "texto": "Hablar ya con su médico: le corresponde empezar a los 40 años o 10 años antes de la edad del padre, lo que ocurra primero (36 años)",
+          "puntos": 100,
+          "correcta": true,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "Correcto. Con un familiar de primer grado afectado, la guía recomienda empezar a los 40 años o 10 años antes de la edad en que se le encontró el cáncer al familiar, lo que ocurra primero. Como tiene 38, ya debería consultar."
+        },
+        {
+          "texto": "Solo hacerse exámenes si aparece algún síntoma",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "El tamizaje busca lesiones antes de que den síntomas, y con antecedentes familiares es todavía más importante."
+        }
+      ],
+      "fuente": "Aponte-Martín et al. (2025), guía colombiana de tamizaje: inicio del tamizaje con un familiar de primer grado con cáncer colorrectal."
+    },
+    {
+      "etapa": 3,
+      "titulo": "Una prueba de sangre oculta positiva",
+      "imagen_url": "polipo_senales_etapa3.jpg",
+      "modelo_vision_activo": true,
+      "enunciado": "La tía, de 50 años y sin síntomas, se hizo la prueba inmunoquímica de sangre oculta en heces (FIT) y salió positiva. Le explican que esa prueba busca sangre que no se ve a simple vista. La imagen es de una colonoscopia; arriba ves lo que responde el modelo de visión. ¿Qué correspondía hacer tras el resultado positivo?",
+      "sugerencia_ia": {
+        "texto": "Hacer una colonoscopia para encontrar la causa del sangrado.",
+        "es_correcta": true
+      },
+      "opciones": [
+        {
+          "texto": "Repetir la prueba y, si sale negativa, olvidarse del resultado",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "Un resultado positivo no se borra con otro negativo: la causa del sangrado puede seguir ahí."
+        },
+        {
+          "texto": "Hacer una colonoscopia para encontrar la causa del sangrado",
+          "puntos": 100,
+          "correcta": true,
+          "sugerida_por_ia": true,
+          "retroalimentacion": "Correcto. Si la prueba de sangre oculta sale positiva, se necesita una colonoscopia para ver de dónde viene el sangrado. El resultado del modelo de visión es experimental y no reemplaza la valoración del médico."
+        },
+        {
+          "texto": "Esperar al control del próximo año",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "Esperar retrasa encontrar la causa. Un resultado positivo se estudia con colonoscopia."
+        }
+      ],
+      "fuente": "Aponte-Martín et al. (2025), guía colombiana de tamizaje: la prueba inmunoquímica positiva se estudia con colonoscopia."
+    },
+    {
+      "etapa": 4,
+      "titulo": "Por qué importa la preparación",
+      "imagen_url": "preparacion_senales_etapa4.jpg",
+      "modelo_vision_activo": false,
+      "enunciado": "En la colonoscopia de la tía, algunos tramos se ven como en la imagen, con restos que cubren la mucosa, porque no completó la preparación. El médico le dice que habrá que programar el examen de nuevo. ¿Por qué?",
+      "sugerencia_ia": {
+        "texto": "Porque los restos pueden ocultar pólipos y el examen no tuvo la calidad suficiente.",
+        "es_correcta": true
+      },
+      "opciones": [
+        {
+          "texto": "Porque los restos pueden ocultar pólipos y el examen no tuvo la calidad suficiente",
+          "puntos": 100,
+          "correcta": true,
+          "sugerida_por_ia": true,
+          "retroalimentacion": "Correcto. Una colonoscopia de calidad necesita una limpieza suficiente para ver los pólipos. Seguir bien las instrucciones de preparación evita repetir el examen."
+        },
+        {
+          "texto": "Porque el equipo de colonoscopia falló",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "El problema de la imagen no es el equipo sino la limpieza del colon."
+        },
+        {
+          "texto": "No hace falta repetirlo, porque el modelo de IA revisa las imágenes",
+          "puntos": 0,
+          "correcta": false,
+          "sugerida_por_ia": false,
+          "retroalimentacion": "Si los restos tapan la mucosa, ni el médico ni el modelo pueden ver lo que hay debajo."
+        }
+      ],
+      "fuente": "Aponte-Martín et al. (2025), Recomendación 5 y punto de buena práctica 4."
+    }
+  ]
+}
