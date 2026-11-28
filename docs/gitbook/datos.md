@@ -1,6 +1,6 @@
 # Base de datos y privacidad
 
-PostgreSQL 16 con **23 tablas**. El esquema se crea con siete scripts numerados que se ejecutan en orden; no se usa ORM ni Alembic. Al arrancar, el backend (`app/preparar.py`) aplica los que falten, y desde el 05 todos se pueden volver a ejecutar sin error:
+PostgreSQL 16 con **24 tablas**. El esquema se crea con nueve scripts numerados que se ejecutan en orden; no se usa ORM ni Alembic. Al arrancar, el backend (`app/preparar.py`) aplica los que falten, y desde el 05 todos se pueden volver a ejecutar sin error:
 
 | Script | Contenido |
 |---|---|
@@ -11,6 +11,8 @@ PostgreSQL 16 con **23 tablas**. El esquema se crea con siete scripts numerados 
 | `db/05_recursos_en_base.sql` | Tabla `recurso_contenido`: las imágenes y videos de los casos se guardan en la base para que no se pierdan al redesplegar |
 | `db/06_kvasir_seg.sql` | Sin efecto; se conserva para no romper bases ya creadas |
 | `db/07_solo_hyperkvasir.sql` | Deja HyperKvasir (Borgli et al., 2020), CC BY 4.0, como único dataset del catálogo |
+| `db/08_estudios_en_base.sql` | Tabla `estudio_contenido`: los estudios propios cifrados se guardan en la base para que no se pierdan al reiniciar el servidor |
+| `db/09_version_prompt_estudios.sql` | Columna `version_prompt` en `interpretacion_estudio` (RNF-007): cada interpretación guarda la versión del modelo y la del prompt del tutor |
 
 ## Protección de datos (Congreso de la República de Colombia, 2012)
 
