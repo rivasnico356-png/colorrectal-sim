@@ -1,0 +1,70 @@
+{
+  "dataset": "HyperKvasir (Borgli et al., 2020)",
+  "licencia": "CC BY 4.0",
+  "imagenes": [
+    {
+      "archivo": "preparacion_1.jpg",
+      "origen": "lower-gi-tract/quality-of-mucosal-views/bbps-0-1/00053206-b78e-4acd-b2ef-078130b71b26.jpg"
+    },
+    {
+      "archivo": "preparacion_2.jpg",
+      "origen": "lower-gi-tract/quality-of-mucosal-views/bbps-0-1/1df65305-7d90-4c6e-81a3-1931610dadba.jpg"
+    },
+    {
+      "archivo": "preparacion_3.jpg",
+      "origen": "lower-gi-tract/quality-of-mucosal-views/bbps-0-1/3a0bb0e7-7c06-490a-992b-aaa1c60babdc.jpg"
+    },
+    {
+      "archivo": "preparacion_4.jpg",
+      "origen": "lower-gi-tract/quality-of-mucosal-views/bbps-0-1/57d344bc-cd35-4605-a0e0-b6f547faed60.jpg"
+    },
+    {
+      "archivo": "preparacion_5.jpg",
+      "origen": "lower-gi-tract/quality-of-mucosal-views/bbps-0-1/7d984184-cdc7-45a6-9a0d-9bd06d892bb7.jpg"
+    },
+    {
+      "archivo": "preparacion_6.jpg",
+      "origen": "lower-gi-tract/quality-of-mucosal-views/bbps-0-1/9d23002b-4db9-43b6-bf96-a3b738bac0dc.jpg"
+    },
+    {
+      "archivo": "preparacion_7.jpg",
+      "origen": "lower-gi-tract/quality-of-mucosal-views/bbps-0-1/bdb1b5f6-656a-4f74-a194-d983659543c8.jpg"
+    },
+    {
+      "archivo": "preparacion_8.jpg",
+      "origen": "lower-gi-tract/quality-of-mucosal-views/bbps-0-1/dddff149-242b-4adb-9461-c11b2b07bb8c.jpg"
+    },
+    {
+      "archivo": "reseccion_1.jpg",
+      "origen": "lower-gi-tract/therapeutic-interventions/dyed-resection-margins/0016b80d-1d3d-4fe0-ad7c-7a8e369352bb.jpg"
+    },
+    {
+      "archivo": "reseccion_2.jpg",
+      "origen": "lower-gi-tract/therapeutic-interventions/dyed-resection-margins/225e19a3-efc2-4184-9d59-9ff77530ff3b.jpg"
+    },
+    {
+      "archivo": "reseccion_3.jpg",
+      "origen": "lower-gi-tract/therapeutic-interventions/dyed-resection-margins/445b6ca6-b0ff-4daf-ba5c-003d3bfd6453.jpg"
+    },
+    {
+      "archivo": "reseccion_4.jpg",
+      "origen": "lower-gi-tract/therapeutic-interventions/dyed-resection-margins/64647f02-c9f8-4d23-a58f-e3e789350c18.jpg"
+    },
+    {
+      "archivo": "reseccion_5.jpg",
+      "origen": "lower-gi-tract/therapeutic-interventions/dyed-resection-margins/852a2644-bf92-4a85-b5d0-61a1bf776b52.jpg"
+    },
+    {
+      "archivo": "reseccion_6.jpg",
+      "origen": "lower-gi-tract/therapeutic-interventions/dyed-resection-margins/9fbfcb74-c1ad-4b71-b15f-52b8fdf0ddc5.jpg"
+    },
+    {
+      "archivo": "reseccion_7.jpg",
+      "origen": "lower-gi-tract/therapeutic-interventions/dyed-resection-margins/c138d8a5-c7b5-4ac0-85b5-8b302ec43a9d.jpg"
+    },
+    {
+      "archivo": "reseccion_8.jpg",
+      "origen": "lower-gi-tract/therapeutic-interventions/dyed-resection-margins/e047824d-8cbf-426a-8068-f7cc4ea3a254.jpg"
+    }
+  ]
+}
