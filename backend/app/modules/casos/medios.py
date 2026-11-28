@@ -29,19 +29,14 @@ def bytes_de_ruta(db: Session, ruta: str) -> bytes | None:
 
 
 @router.get("/media/recursos/{nombre}", include_in_schema=False)
-def servir(nombre: str, rango: str | None = Header(None, alias="Range"),
-           si_no_coincide: str | None = Header(None, alias="If-None-Match"), db: Session = Depends(get_db)) -> Response:
+def servir(nombre: str, rango: str | None = Header(None, alias="Range"), db: Session = Depends(get_db)) -> Response:
     m = re.fullmatch(r"(\d+)\.(jpg|jpeg|png|mp4)", nombre.lower())
     fila = contenido(db, int(m.group(1))) if m else None
     if fila is None:
         raise HTTPException(404, "Recurso no encontrado.")
     datos = bytes(fila["datos"])
     total = len(datos)
-    # El navegador guarda el recurso pero pregunta cada vez si cambió (ETag): si un caso cambia de foto, se ve de inmediato.
-    etiqueta = f'"{fila["sha256"]}"'
-    cabeceras = {"Accept-Ranges": "bytes", "ETag": etiqueta, "Cache-Control": "public, no-cache"}
-    if si_no_coincide and etiqueta in [e.strip() for e in si_no_coincide.split(",")]:
-        return Response(status_code=304, headers=cabeceras)
+    cabeceras = {"Accept-Ranges": "bytes", "ETag": f'"{fila["sha256"]}"', "Cache-Control": "public, max-age=86400"}
     r = RANGO.match(rango or "")
     if not r or (not r.group(1) and not r.group(2)):
         return Response(datos, media_type=fila["tipo_mime"], headers=cabeceras)
