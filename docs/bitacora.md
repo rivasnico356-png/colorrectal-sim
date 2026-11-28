@@ -14,8 +14,9 @@ Registro con fechas (hora de Colombia; las horas son aproximadas y la hora exact
 
 | Hora | Qué | Evidencia | Resultado |
 |---|---|---|---|
+| 12:55 | PR #50: cada una de las 10 etapas clínicas con su propia foto de HyperKvasir (pólipos de la partición de prueba del modelo, preparación deficiente y resección), extraídas con el flujo `imagenes-casos.yml` | PR #50, CI: 91 pruebas, 91 % | Abierto, por aprobar |
 | 12:37 | PR #49: `.env.example` con todas las variables que lee el backend (`JWT_MINUTOS_EXPIRACION` en lugar de `JWT_MINUTOS`, que se ignoraba) | PR #49 (David Muñoz), CI | Fusionado |
-| 12:36 | PR #48: la interpretación de estudios guarda la versión del prompt del tutor y la recomendación configurada queda rotulada (RNF-007, `db/09`) | PR #48 (David Muñoz), CI: 91 pruebas, 91 % | Fusionado |
+| 12:36 | PR #48: la interpretación de estudios guarda la versión del prompt del tutor y la recomendación configurada queda rotulada (RNF-007, `db/09`) | PR #48 (David Muñoz), CI: 89 pruebas, 91 % | Fusionado |
 | 09:16 | PR #47: Caso 3 «Señales de alarma, antecedentes y resultados» (4 etapas). Con el caso de tamizaje y el Caso 2 suman los 10 escenarios del Acta de constitución | PR #47, aprobado por David Muñoz; demostración en la versión 1.0.2 | Fusionado |
 
 ## 27-11-2026
